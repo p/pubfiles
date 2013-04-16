@@ -4,4 +4,8 @@
 
 <!-- menu items go here -->
 
+<!--(include)-->
+menu.generic.xml
+<!--(end)-->
+
 </openbox_menu>

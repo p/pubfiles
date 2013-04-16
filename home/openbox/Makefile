@@ -45,24 +45,24 @@ all: left center right
 left:
 ifdef makeleft
 	mkdir -p $$HOME/.left-screen/openbox
-	export LEFT=yes SCREENS=${screens} LAPTOP=${laptopf}; ${FILTER} < rc.xml > $$HOME/.left-screen/openbox/rc.xml
-	export LEFT=yes SCREENS=${screens} LAPTOP=${laptopf}; ${FILTER} < menu.xml > $$HOME/.left-screen/openbox/menu.xml
+	export LEFT=yes SCREENS=${screens} LAPTOP=${laptopf}; ${FILTER} rc.xml > $$HOME/.left-screen/openbox/rc.xml
+	export LEFT=yes SCREENS=${screens} LAPTOP=${laptopf}; ${FILTER} menu.xml > $$HOME/.left-screen/openbox/menu.xml
 	install -m 555 autostart.sh $$HOME/.left-screen/openbox/autostart.sh
 endif
 
 right:
 ifdef makeright
 	mkdir -p $$HOME/.right-screen/openbox
-	export RIGHT=yes SCREENS=${screens} LAPTOP=${laptopf}; ${FILTER} < rc.xml > $$HOME/.right-screen/openbox/rc.xml
-	export RIGHT=yes SCREENS=${screens} LAPTOP=${laptopf}; ${FILTER} < menu.xml > $$HOME/.right-screen/openbox/menu.xml
+	export RIGHT=yes SCREENS=${screens} LAPTOP=${laptopf}; ${FILTER} rc.xml > $$HOME/.right-screen/openbox/rc.xml
+	export RIGHT=yes SCREENS=${screens} LAPTOP=${laptopf}; ${FILTER} menu.xml > $$HOME/.right-screen/openbox/menu.xml
 	install -m 555 autostart.sh $$HOME/.right-screen/openbox/autostart.sh
 endif
 
 center:
 ifdef makecenter
 	mkdir -p $$HOME/.center-screen/openbox
-	export CENTER=yes SCREENS=${screens} LAPTOP=${laptopf}; ${FILTER} < rc.xml > $$HOME/.center-screen/openbox/rc.xml
-	export CENTER=yes SCREENS=${screens} LAPTOP=${laptopf}; ${FILTER} < menu.xml > $$HOME/.center-screen/openbox/menu.xml
+	export CENTER=yes SCREENS=${screens} LAPTOP=${laptopf}; ${FILTER} rc.xml > $$HOME/.center-screen/openbox/rc.xml
+	export CENTER=yes SCREENS=${screens} LAPTOP=${laptopf}; ${FILTER} menu.xml > $$HOME/.center-screen/openbox/menu.xml
 	install -m 555 autostart.sh $$HOME/.center-screen/openbox/autostart.sh
 endif
 
