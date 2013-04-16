@@ -1,0 +1,4 @@
+.MAIN: all
+
+all: .PHONY
+	gmake
