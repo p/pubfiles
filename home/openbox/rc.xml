@@ -188,6 +188,15 @@
 
 <!-- keybinds go here -->
 
+<!-- Keyboard accessibility for root menu -->
+<keybind key="C-Escape">
+  <action name="ShowMenu"><menu>root-menu</menu></action>
+</keybind>
+
+<!--(include)-->
+rc.generic.xml
+<!--(end)-->
+
 <!-- Switching to each desktop -->
 <!--(if r.laptop or r.one)-->
   <keybind key="A-1">
