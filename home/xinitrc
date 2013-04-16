@@ -1,0 +1,73 @@
+#!/bin/sh
+# $Xorg: xinitrc.cpp,v 1.3 2000/08/17 19:54:30 cpqbld Exp $
+
+merge_defaults() {
+	userresources=$HOME/.Xresources
+	usermodmap=$HOME/.Xmodmap
+	sysresources=/usr/X11R6/lib/X11/xinit/.Xresources
+	sysmodmap=/usr/X11R6/lib/X11/xinit/.Xmodmap
+
+	# merge in defaults and keymaps
+
+	[ -f $sysresources ] && /usr/X11R6/bin/xrdb -merge $sysresources
+	[ -f $sysmodmap ] && /usr/X11R6/bin/xmodmap $sysmodmap
+	[ -f $userresources ] && /usr/X11R6/bin/xrdb -merge $userresources
+	[ -f $usermodmap ] && /usr/X11R6/bin/xmodmap $usermodmap
+}
+
+common_init() {
+	xset dpms 0 0 600
+	if test "`hostname -s`" = athena; then
+		layout=x41
+	else
+		layout=dvorak
+	fi
+	setxkbmap us $layout
+	
+	if id browser && which sudo && test -x `which sudo`; then
+		xauth list |xargs -E '
+' sudo -Hiu browser xauth add || true
+	fi
+}
+
+have_screen() {
+	screen="$1"
+	DISPLAY=:0.$screen xdpyinfo >/dev/null 2>&1
+}
+
+init_triple_head() {
+	if have_screen 2; then
+		DISPLAY=:0.2 XDG_CONFIG_HOME=$HOME/.right-screen openbox-session &
+	fi
+
+	if have_screen 1; then
+		DISPLAY=:0.1 XDG_CONFIG_HOME=$HOME/.left-screen openbox-session &
+	fi
+
+	DISPLAY=:0.0 XDG_CONFIG_HOME=$HOME/.center-screen exec openbox-session
+}
+
+init_dual_head() {
+	if have_screen 1; then
+		export DISPLAY=:0.1
+		XDG_CONFIG_HOME=$HOME/.right-screen openbox-session &
+	fi
+
+	export DISPLAY=:0.0
+	XDG_CONFIG_HOME=$HOME/.left-screen exec openbox-session
+}
+
+init_single_head() {
+	XDG_CONFIG_HOME=$HOME/.center-screen exec openbox-session
+}
+
+init_as_configured() {
+	case "$(cat $HOME/.info/max-screens)" in
+	2)
+		init_dual_head;;
+	3)
+		init_triple_head;;
+	*)
+		init_single_head;;
+	esac
+}
