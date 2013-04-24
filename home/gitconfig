@@ -1,0 +1,31 @@
+[alias]
+	st = status
+	ci = commit
+	co = checkout
+	cd = diff --cached
+	dc = diff --cached
+
+	sdc = svn dcommit
+	sf = svn fetch
+	sr = svn rebase
+
+	fa = fetch --all
+	br = branch
+	cp = cherry-pick
+	mm = merge --no-ff
+
+	rh = reset --hard HEAD
+	rhhp = reset --hard HEAD^
+
+	dif = diff
+	grpe = grep
+	ts = status
+	cpx = cherry-pick -X ours
+
+[user]
+	name = Oleg Pudeyev
+	email = oleg@bsdpower.com
+[merge]
+        log = True
+[core]
+	excludesfile = /home/pie/.gitignore
