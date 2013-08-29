@@ -21,6 +21,7 @@
 	grpe = grep
 	ts = status
 	cpx = cherry-pick -X ours
+	gerp = grep
 
 [user]
 	name = Oleg Pudeyev
