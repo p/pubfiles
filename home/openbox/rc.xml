@@ -197,6 +197,22 @@
 rc.generic.xml
 <!--(end)-->
 
+<keybind key="W-Left">
+  <action name='Execute'><command>xmousekeys -5 0</command></action>
+</keybind>
+<keybind key="W-Right">
+  <action name='Execute'><command>xmousekeys 5 0</command></action>
+</keybind>
+<keybind key="W-Up">
+  <action name='Execute'><command>xmousekeys 0 -5</command></action>
+</keybind>
+<keybind key="W-Down">
+  <action name='Execute'><command>xmousekeys 0 5</command></action>
+</keybind>
+<keybind key="W-Return">
+  <action name='Execute'><command>xdotool click 1</command></action>
+</keybind>
+
 <!-- Switching to each desktop -->
 <!--(if r.laptop or r.one)-->
   <keybind key="A-1">
