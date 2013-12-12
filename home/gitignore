@@ -1,3 +1,4 @@
 SciTEDirectory.properties
 *.pyc
 *~
+venv
