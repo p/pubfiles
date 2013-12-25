@@ -28,6 +28,6 @@
 [merge]
         log = True
 [core]
-	excludesfile = /home/pie/.gitignore
+	excludesfile = ~/.gitignore
 [push]
 	default = simple
