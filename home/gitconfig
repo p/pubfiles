@@ -29,3 +29,5 @@
         log = True
 [core]
 	excludesfile = /home/pie/.gitignore
+[push]
+	default = simple
