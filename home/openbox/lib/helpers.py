@@ -34,6 +34,13 @@ class Helpers:
     def opera(self):
         return 'sudo -Hiu browser opera'
     
+    @property
+    def chrome(self):
+        return 'sudo -Hiu browser chrome'
+    
+    def have_bin(self, basename):
+        return self._wrapper_tester(basename)
+    
     def _wrapper_tester(self, candidate):
         dirs = os.environ['PATH'].split(':')
         for dir in dirs:

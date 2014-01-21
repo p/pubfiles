@@ -95,6 +95,23 @@
       <!--(end)-->
     </action>
   </item>
+  
+  <!--(if h.have_bin('chrome'))-->
+  <item label="Chrome">
+    <action name="Execute">
+      <!--(if r.left)-->
+        <command>@! h.chrome !@ --user-data-dir=@! r.browser_home !@/.chrome-left</command>
+      <!--(elif r.right)-->
+        <command>@! h.chrome !@ --user-data-dir=@! r.browser_home !@/.chrome-right</command>
+      <!--(elif r.center)-->
+        <command>@! h.chrome !@ --user-data-dir=@! r.browser_home !@/.chrome-center</command>
+      <!--(else)-->
+        <command>@! h.chrome !@</command>
+      <!--(end)-->
+    </action>
+  </item>
+  <!--(end)-->
+  
   <item label="Scite">
     <action name="Execute"><command>scite</command></action>
   </item>
