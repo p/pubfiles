@@ -17,23 +17,34 @@ class CasePreservingConfigParser(ConfigParser.ConfigParser):
 def adjust_perm(path):
     print('Adjusting permissions on %s' % path)
     
-    subprocess.check_call(['sudo', '-u', 'browser', 'chmod', 'g+rwX', os.path.dirname(path)])
+    # browser profiles may be symlinked in which case adjusting
+    # the symlink won't do any good
+    dir = os.path.dirname(os.path.realpath(path))
+    subprocess.check_call(['sudo', '-u', 'browser', 'chmod', 'g+rwX', dir])
+    # as we read the config file it needs to be readable
+    if os.path.exists(path):
+        subprocess.check_call(['sudo', '-u', 'browser', 'chmod', 'g+rw', path])
 
 def adjust_content(add_path, path):
     print('Adjusting %s' % path)
     
-    with open(path) as f:
-        content = f.read()
-    regexp = re.compile(r'([^\[]+)(.+)', re.S)
-    match = regexp.match(content)
-    assert match
-    
-    preamble = match.group(1)
-    config = match.group(2)
+    if os.path.exists(path):
+        with open(path) as f:
+            content = f.read()
+        regexp = re.compile(r'([^\[]+)(.+)', re.S)
+        match = regexp.match(content)
+        assert match
+        
+        preamble = match.group(1)
+        config = match.group(2)
+    else:
+        preamble = ''
+        config = ''
     
     parser = CasePreservingConfigParser()
-    parser.readfp(StringIO.StringIO(config))
-    assert len(parser.sections()) > 0
+    if config != '':
+        parser.readfp(StringIO.StringIO(config))
+        assert len(parser.sections()) > 0
     
     add_parser = CasePreservingConfigParser()
     add_parser.read(add_path)
