@@ -24,9 +24,12 @@ common_init() {
 	fi
 	setxkbmap us $layout
 	
+	forward_xauth
+}
+
+forward_xauth() {
 	if id browser && which sudo && test -x `which sudo`; then
-		xauth list |xargs -E '
-' sudo -Hiu browser xauth add || true
+		xauth list |xargs -L1 -t sudo -iHu browser xauth add
 	fi
 }
 
