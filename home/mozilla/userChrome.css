@@ -1,0 +1,19 @@
+/* http://userstyles.org/styles/8248 */
+
+#urlbar[level] > * { background-color: #FFFFB7 !important; }
+
+/* http://userstyles.org/styles/3292 */
+
+.search-go-button, .search-go-button-stack { display: none !important; }
+
+/* http://www.mydigitallife.info/2009/07/29/how-to-remove-new-tab-button-in-firefox-3-5/ */
+
+.tabs-newtab-button { display: none; }
+
+/* hide the domain name excerpt/organization name displayed between favicon and location bar for secure connections */
+
+#identity-icon-label { display: none; }
+
+/* always show go button */
+
+#urlbar[pageproxystate="valid"] > #urlbar-icons > #go-button {  visibility: visible !important; }

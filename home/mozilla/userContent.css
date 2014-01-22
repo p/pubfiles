@@ -1,0 +1,9 @@
+/* Disable marquee display */
+/* http://www.mozilla.org/unix/customizing.html */
+marquee {
+  -moz-binding: none; display: block; height: auto !important;
+  /* This is better than just display:none !important;
+   * because you can still see the text in the marquee,
+   * but without scrolling.
+   */
+}
