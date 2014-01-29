@@ -68,7 +68,9 @@ user_pref('social.enabled', false);
 // https://support.mozilla.org/en-US/questions/926778
 user_pref('browser.newtab.url', 'about:blank');
 // Disable status bar delay - this is completely retarded
-user_pref('browser.overlink-delay', 0);
+// a delay of 0 is not working?
+// also: https://bugzilla.mozilla.org/show_bug.cgi?id=632365
+user_pref('browser.overlink-delay', 1);
 user_pref('status4evar.status.linkOver.delay.show', 0);
 user_pref('status4evar.status.linkOver.delay.hide', 0);
 // do not track
