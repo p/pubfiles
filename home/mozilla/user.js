@@ -103,3 +103,6 @@ user_pref('datareporting.healthreport.logging.dumpEnabled', false);
 
 user_pref('datareporting.policy.dataSubmissionPolicyAccepted', false);
 user_pref('datareporting.policy.dataSubmissionEnabled', false);
+
+// https://www.agwa.name/blog/post/verisigns_broken_name_servers_slow_down_https_for_google_and_others
+user_pref('security.OCSP.enabled', 0);
