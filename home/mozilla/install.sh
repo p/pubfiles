@@ -24,7 +24,16 @@ fi
 
 MOZ_HOME="$target"
 
-target_owner=$(stat -c "%u" "$target")
+do_stat() {
+  if test "`uname -s`" = Linux; then
+    stat -c %u "$@"
+  else
+    # freebsd
+    stat -f %u "$@"
+  fi
+}
+
+target_owner=$(do_stat "$target")
 me=`id -u`
 if test "$me" != "$target_owner"; then
 	USE_SUDO=true
