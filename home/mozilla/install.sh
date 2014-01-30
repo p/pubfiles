@@ -50,7 +50,7 @@ as_browser() {
 }
 
 if $USE_SUDO; then
-	as_browser chmod -R g+rwX ${MOZ_HOME}
+	as_browser chmod -R g+rwX ${MOZ_HOME} || true
 fi
 
 cwd=`pwd`
