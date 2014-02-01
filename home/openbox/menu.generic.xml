@@ -131,6 +131,11 @@
   </item>
   <menu id="comms-menu" />
   <menu id="misc-menu" />
+  <!--(if h.have_bin('VirtualBox'))-->
+    <item label="VirtualBox">
+      <action name="Execute"><command>VirtualBox</command></action>
+    </item>
+  <!--(end)-->
   <separator />
   <menu id="client-list-menu" />
   <separator />

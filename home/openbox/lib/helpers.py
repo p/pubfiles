@@ -11,8 +11,9 @@ class Helpers:
     @run_as_browser
     def default_firefox_bin(self):
         candidates = [
-            '/usr/local/lib/firefox/firefox-bin'
-            '/usr/local/lib/firefox3/firefox-bin'
+            '/usr/local/lib/firefox/firefox-bin',
+            '/usr/local/lib/firefox3/firefox-bin',
+            '/usr/bin/iceweasel',
         ]
         return self._pick(candidates, os.path.exists)
     
