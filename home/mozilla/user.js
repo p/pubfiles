@@ -73,6 +73,17 @@ user_pref('browser.newtab.url', 'about:blank');
 user_pref('browser.overlink-delay', 1);
 user_pref('status4evar.status.linkOver.delay.show', 0);
 user_pref('status4evar.status.linkOver.delay.hide', 0);
+// don't know what this does but probably don't want it
+user_pref('status4evar.download.notify.animate', false);
+// and these too
+user_pref('layout.css.prefixes.animations', false);
+user_pref('browser.fullscreen.animateUp', 0);
+user_pref('browser.panorama.animate_zoom', false);
+user_pref('browser.preferences.animateFadeIn', false);
+// what does this do that is useful
+user_pref('browser.download.manager.scanWhenDone', false);
+// is this the obnoxious download button explosion?
+user_pref('browser.download.manager.showAlertOnComplete', false);
 // do not track
 user_pref'privacy.donottrackheader.enabled', true);
 // reject third-party cookies
