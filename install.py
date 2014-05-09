@@ -7,4 +7,12 @@ import pyratemp
 
 abs_pub_root = os.path.abspath(pub_root)
 template = pyratemp.Template(filename=os.path.join(abs_pub_root, 'home/xinitrc.tpl'))
-print(template(pub_root=abs_pub_root))
+gen = template(pub_root=abs_pub_root)
+
+home_xinitrc = os.path.expanduser('~/.xinitrc')
+print('Writing %s' % home_xinitrc)
+if os.path.islink(home_xinitrc):
+    os.unlink(home_xinitrc)
+
+with open(home_xinitrc, 'w') as f:
+    f.write(gen)
