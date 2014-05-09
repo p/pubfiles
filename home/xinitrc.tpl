@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. "$HOME"/apps/pub/home/xinitrc
+. @! pub_root !@/home/xinitrc
 
 common_init
 init_as_configured
