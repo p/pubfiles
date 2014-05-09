@@ -16,3 +16,12 @@ if os.path.islink(home_xinitrc):
 
 with open(home_xinitrc, 'w') as f:
     f.write(gen)
+
+def ln_sf(src, dest):
+    print('Link %s to %s' % (src, dest))
+    if os.path.exists(dest) or os.path.islink(dest):
+        os.unlink(dest)
+    os.symlink(src, dest)
+
+ln_sf(os.path.join(abs_pub_root, 'home/gitconfig'), os.path.expanduser('~/.gitconfig'))
+ln_sf(os.path.join(abs_pub_root, 'home/gitignore'), os.path.expanduser('~/.gitignore'))
