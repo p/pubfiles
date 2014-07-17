@@ -117,3 +117,7 @@ user_pref('datareporting.policy.dataSubmissionEnabled', false);
 
 // https://www.agwa.name/blog/post/verisigns_broken_name_servers_slow_down_https_for_google_and_others
 user_pref('security.OCSP.enabled', 0);
+
+// stop html5 videos from automatically playing
+// https://support.mozilla.org/en-US/questions/961940
+user_pref('plugins.click_to_play', true);
