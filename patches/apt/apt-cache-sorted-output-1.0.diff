@@ -1,0 +1,29 @@
+diff --git a/cmdline/apt-cache.cc b/cmdline/apt-cache.cc
+index b8892d2..74176e5 100644
+--- a/cmdline/apt-cache.cc
++++ b/cmdline/apt-cache.cc
+@@ -1339,6 +1341,7 @@ bool Search(CommandLine &CmdL)
+    // Create the text record parser
+    pkgRecords Recs(*Cache);
+    // Iterate over all the version records and check them
++   vector <string> lines;
+    for (ExDescFile *J = DFList; J->Df != 0; ++J)
+    {
+       pkgRecords::Parser &P = Recs.Lookup(pkgCache::DescFileIterator(*Cache,J->Df));
+@@ -1375,9 +1378,15 @@ bool Search(CommandLine &CmdL)
+ 	    putc('\n',stdout);
+ 	 }	 
+ 	 else
+-	    printf("%s - %s\n",P.Name().c_str(),P.ShortDesc().c_str());
++            lines.push_back(P.Name() + " - " + P.ShortDesc());
+       }
+    }
++   if (lines.size() > 0) {
++       sort(lines.begin(), lines.end());
++       for (vector <string>::iterator it = lines.begin(); it != lines.end(); ++it) {
++           puts((*it).c_str());
++       }
++   }
+    
+    delete [] DFList;
+    for (unsigned I = 0; I != NumPatterns; I++)
