@@ -23,6 +23,7 @@
 	cpx = cherry-pick -X ours
 	gerp = grep
 	rc = rebase --continue
+	rbc = rebase --continue
 
 [user]
 	name = Oleg Pudeyev
