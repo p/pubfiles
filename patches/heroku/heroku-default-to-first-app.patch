@@ -1,0 +1,11 @@
+--- lib/heroku/command/base.rb.orig	2014-05-30 02:26:32.109330483 -0400
++++ lib/heroku/command/base.rb	2014-05-30 02:26:59.774175182 -0400
+@@ -221,7 +221,7 @@
+       remotes[remote]
+     else
+       apps = remotes.values.uniq
+-      if apps.size == 1
++      if apps.size >= 1
+         apps.first
+       else
+         raise(Heroku::Command::CommandFailed, "Multiple apps in folder and no app specified.\nSpecify app with --app APP.") unless options[:ignore_no_app]
