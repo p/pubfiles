@@ -1,0 +1,82 @@
+<th1>
+  if {![info exists mutype]} {set mutype {[links only]}}
+  if {![info exists icomment]} {set icomment {}}
+  if {![info exists username]} {set username $login}
+  if {[info exists submit]} {
+    if {$mutype eq "Wiki"} {
+      set mimetype text/x-fossil-wiki
+    } elseif {$mutype eq "HTML"} {
+      set mimetype text/html
+    } elseif {$mutype eq {[links only]}} {
+      set mimetype text/x-fossil-plain
+    } else {
+      set mimetype text/plain
+    }
+    submit_ticket
+    set preview 1
+  }
+</th1>
+<table cellpadding="5">
+<tr><td class="tktDspLabel">Title:</td><td colspan='2'>
+<input type="text" name="title" value="$<title>" size="60" />
+</td></tr>
+
+<tr><td class="tktDspLabel">Status:</td><td>
+<th1>combobox status $status_choices 2</th1>
+</td>
+
+<td rowspan="4">
+  Append Remark with format
+  <th1>combobox mutype {Wiki HTML {Plain Text} {[links only]}} 1</th1>
+  from
+  <input type="text" name="username" value="$<username>" size="30" />:<br />
+  <textarea name="icomment" cols="70" rows="15"
+   wrap="virtual" class="wikiedit">$<icomment></textarea>
+</td>
+
+</tr>
+
+<tr><td class="tktDspLabel">Type:</td><td>
+<th1>combobox type $type_choices 4</th1>
+</td></tr>
+
+<tr><td class="tktDspLabel">Priority:</td><td>
+<th1>combobox priority $priority_choices 3</th1>
+</td></tr>
+
+<tr><td class="tktDspLabel">Resolution:</td><td>
+<th1>combobox resolution $resolution_choices 3</th1>
+</td></tr>
+
+<th1>enable_output [info exists preview]</th1>
+<tr><td colspan="2">
+Description Preview:<br><hr>
+<th1>
+if {$mutype eq "Wiki"} {
+  wiki $icomment
+} elseif {$mutype eq "Plain Text"} {
+  set r [randhex]
+  wiki "<verbatim-$r>\n[string trimright $icomment]\n</verbatim-$r>"
+} elseif {$mutype eq {[links only]}} {
+  set r [randhex]
+  wiki "<verbatim-$r links>\n[string trimright $icomment]</verbatim-$r>"
+} else {
+  wiki "<nowiki>\n[string trimright $icomment]\n</nowiki>"
+}
+</th1>
+<hr>
+</td></tr>
+<th1>enable_output 1</th1>
+
+<tr>
+<td><td>
+<td align="left">
+<input type="submit" name="submit" value="Submit" />
+
+<input type="submit" name="preview" value="Preview" />
+
+<input type="submit" name="cancel" value="Cancel" />
+</td>
+</tr>
+
+</table>
