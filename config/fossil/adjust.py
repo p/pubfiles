@@ -32,6 +32,20 @@ pages = [
     'ticket-viewpage',
 ]
 
+reports = {
+    'Open Tickets': '''
+SELECT
+  substr(tkt_uuid,1,10) AS '#',
+  datetime(tkt_mtime) AS 'mtime',
+  type,
+  status,
+  subsystem,
+  title
+FROM ticket
+where status in ('Open', 'Verified')
+    ''',
+}
+
 # ---
 
 def build_ticket_common(ticket_options):
@@ -50,6 +64,23 @@ for page in pages:
 for name, value in configs:
     c.execute('''replace into config (name, value, mtime) values (?, ?, ?)''',
         (name, value, now))
+
+def fetchfirst(c):
+    row = c.fetchone()
+    if row is None:
+        return None
+    else:
+        return row[0]
+
+for name in reports:
+    c.execute('select rn from reportfmt where title=?', (name,))
+    rn = fetchfirst(c)
+    if rn:
+        c.execute('update reportfmt set sqlcode=?, mtime=?, owner=?',
+            (reports[name], 'now', 'predefined'))
+    else:
+        c.execute('insert into reportfmt (owner, title, mtime, sqlcode) values (?, ?, ?, ?)',
+            ('predefined', name, 'now', reports[name]))
 
 conn.commit()
 c.close()
