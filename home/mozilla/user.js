@@ -1,3 +1,12 @@
+// Bogus pref detection:
+// 1. Change a pref in about:config.
+// 2. Quit browser.
+// 3. Look for Invalidprefs.js file in profile directory.
+// Or, run jslint on this file before using it.
+
+// Uncomment for jslint:
+// var user_pref = function () { 1; };
+
 // backspace goes back in history
 user_pref('browser.backspace_action', 0);
 // hide tab bar when only one tab is open
@@ -85,7 +94,7 @@ user_pref('browser.download.manager.scanWhenDone', false);
 // is this the obnoxious download button explosion?
 user_pref('browser.download.manager.showAlertOnComplete', false);
 // do not track
-user_pref'privacy.donottrackheader.enabled', true);
+user_pref('privacy.donottrackheader.enabled', true);
 // reject third-party cookies
 user_pref('network.cookie.cookieBehavior', 1);
 // load all tabs when restoring session
