@@ -14,6 +14,7 @@ user_pref('browser.tabs.autoHide', true);
 // fit more tabs on screen simultaneously
 user_pref('browser.tabs.tabMinWidth', 30);
 // updates are not handled by brower
+user_pref('app.update.auto', false);
 user_pref('app.update.enabled', false);
 user_pref('browser.search.update', false);
 user_pref('extensions.update.enabled', false);
@@ -60,6 +61,8 @@ user_pref('keyword.URL', 'http://www.google.com/search?ie=UTF-8&oe=UTF-8&q=');
 user_pref('geo.enabled', false);
 // http://kb.mozillazine.org/Disabling_yellow_plugin_bar_-_Firefox
 user_pref('plugins.hide_infobar_for_missing_plugin', true);
+user_pref('plugins.hide_infobar_for_blocked_plugin', true);
+user_pref('plugins.hide_infobar_for_outdated_plugin', true);
 // not documented, and still does not do it
 user_pref('plugin.default_plugin_disabled', false);
 // stop stupid dns dumbness
@@ -104,11 +107,17 @@ user_pref('browser.sessionstore.restore_on_demand', false);
 // experimental
 user_pref('browser.download.manager.showWhenStarting', false);
 user_pref('browser.tabs.animate', false);
+user_pref('browser.download.animateNotifications', false);
 user_pref('browser.zoom.updateBackgroundTabs', false);
 user_pref('browser.fullscreen.animateUp', 0);
 user_pref('browser.fullscreen.autohide', false);
 user_pref('browser.panorama.animate_zoom', false);
 user_pref('browser.preferences.animateFadeIn', false);
+// https://bugzilla.mozilla.org/show_bug.cgi?id=649671
+user_pref('toolkit.scrollbox.smoothScroll', false);
+
+user_pref('browser.xul.error_pages.enabled', false);
+user_pref('browser.xul.error_pages.expert_bad_cert', true);
 
 // totally cretinous behavior
 // firefox 17 doorhanger idiocy is enough to never remember passwords
@@ -130,3 +139,9 @@ user_pref('security.OCSP.enabled', 0);
 // stop html5 videos from automatically playing
 // https://support.mozilla.org/en-US/questions/961940
 user_pref('plugins.click_to_play', true);
+
+// Disable: On GTK, we now default to showing the menubar only when alt is pressed:
+user_pref("ui.key.menuAccessKeyFocuses", false);
+
+// useless
+user_pref("browser.uitour.enabled", false);
