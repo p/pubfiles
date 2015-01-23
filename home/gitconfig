@@ -24,6 +24,7 @@
 	gerp = grep
 	rc = rebase --continue
 	rbc = rebase --continue
+	aa = add -A
 
 [user]
 	name = Oleg Pudeyev
