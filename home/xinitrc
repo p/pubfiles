@@ -29,7 +29,7 @@ common_init() {
 
 forward_xauth() {
 	if id browser && which sudo && test -x `which sudo`; then
-		xauth list |xargs -L1 -t sudo -iHu browser xauth add
+		xauth list |xargs -L1 -t sudo -iHu browser xauth -f /home/browser/.Xauthority add
 	fi
 }
 
