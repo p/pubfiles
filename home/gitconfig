@@ -25,6 +25,7 @@
 	rc = rebase --continue
 	rbc = rebase --continue
 	aa = add -A
+	rbs = rebase --skip
 
 [user]
 	name = Oleg Pudeyev
