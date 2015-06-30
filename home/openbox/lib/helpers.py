@@ -3,7 +3,7 @@ import os.path, os
 def run_as_browser(fn):
     def wrapped(*args, **kwargs):
         rv = fn(*args, **kwargs)
-        return 'sudo -Hiu browser %s' % rv
+        return 'sudo -Hiu browser env XAUTHORITY=/home/browser/.Xauthority %s' % rv
     return wrapped
 
 class Helpers:
