@@ -1,0 +1,33 @@
+--- a/apt-private/private-search.cc.orig	2016-08-15 10:42:08.669912486 -0400
++++ b/apt-private/private-search.cc	2016-08-15 11:04:01.121729300 -0400
+@@ -278,6 +285,7 @@
+ 
+    // Create the text record parser
+    pkgRecords Recs(*Cache);
++   std::vector<std::string> output_list;
+    // Iterate over all the version records and check them
+    for (ExDescFile *J = DFList; J->Df != 0; ++J)
+    {
+@@ -308,11 +316,20 @@
+       {
+ 	 if (ShowFull == true)
+ 	    DisplayRecordV1(CacheFile, J->V, std::cout);
+-	 else
+-	    printf("%s - %s\n",P.Name().c_str(),P.ShortDesc().c_str());
++	 else {
++            std::string entry = P.Name() + " - " + P.ShortDesc();
++            output_list.push_back(entry);
++         }
+       }
+    }
+    
++   if (ShowFull != true) {
++      std::sort(output_list.begin(), output_list.end());
++      std::vector<std::string>::const_iterator L;
++      for (L = output_list.begin(); L != output_list.end(); ++L)
++         std::cout << *L << std::endl;
++   }
++   
+    delete [] DFList;
+    delete [] PatternMatch;
+    for (unsigned I = 0; I != NumPatterns; I++)
