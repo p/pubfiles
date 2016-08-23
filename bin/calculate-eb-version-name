@@ -23,15 +23,17 @@ class Tag
     !`git log --pretty=format:%H |grep #{hash}`.empty?
   end
   
-  def most_recent_commit?
-    `git show --pretty=format:%H -s`.strip == hash
+  def most_recent_commit?(branch)
+    `git show #{branch} --pretty=format:%H -s`.strip == hash
   end
 end
 
 tags = `git tag |grep release-`.split("\n").map { |tag| Tag.new(tag.strip) }
 
+branch = ARGV.shift || 'HEAD'
+
 tags.delete_if do |tag|
-  !tag.in_current_branch?
+  !tag.in_branch?(branch)
 end
 
 tags.sort! do |a, b|
@@ -40,16 +42,26 @@ end
 
 tag = tags.first
 
-def tree_dirty?
-  !`git status --porcelain |grep -v '^??'`.strip.empty?
+def branch_is_head?(branch)
+  `git show --pretty=format:%H`.strip == `git show --pretty=format:%H #{branch}`
 end
 
-if tree_dirty?
-  joiner = '+'
-elsif tag.most_recent_commit?
-  joiner = '-'
+def tree_dirty?(branch)
+  branch == 'HEAD' && !`git status --porcelain |grep -v '^??'`.strip.empty?
+end
+
+if tag
+  if tree_dirty?(branch)
+    joiner = '+'
+  elsif tag.most_recent_commit?(branch)
+    joiner = '-'
+  else
+    joiner = '+'
+  end
+  
+  prefix = tag.tag.sub('release-', '') + joiner*2
 else
-  joiner = '+'
+  prefix = ''
 end
 
-puts tag.tag.sub('release-', '') + joiner*2 + Time.now.strftime('%Y%m%d-%H%M')
+puts prefix + Time.now.strftime('%Y%m%d-%H%M')
