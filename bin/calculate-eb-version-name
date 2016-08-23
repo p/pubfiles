@@ -1,0 +1,55 @@
+#!/usr/bin/env ruby
+
+class Tag
+  def initialize(tag)
+    @tag = tag
+  end
+  
+  attr_reader :tag
+  
+  def timestamp
+    @timestamp ||= `git show #{tag} --pretty=format:%ct -s`.to_i
+  end
+  
+  def hash
+    @hash ||= `git show #{tag} --pretty=format:%H -s`.strip
+  end
+  
+  def in_branch?(branch)
+    !`git log #{branch} --pretty=format:%H |grep #{hash}`.empty?
+  end
+  
+  def in_current_branch?
+    !`git log --pretty=format:%H |grep #{hash}`.empty?
+  end
+  
+  def most_recent_commit?
+    `git show --pretty=format:%H -s`.strip == hash
+  end
+end
+
+tags = `git tag |grep release-`.split("\n").map { |tag| Tag.new(tag.strip) }
+
+tags.delete_if do |tag|
+  !tag.in_current_branch?
+end
+
+tags.sort! do |a, b|
+  b.timestamp <=> a.timestamp
+end
+
+tag = tags.first
+
+def tree_dirty?
+  !`git status --porcelain |grep -v '^??'`.strip.empty?
+end
+
+if tree_dirty?
+  joiner = '+'
+elsif tag.most_recent_commit?
+  joiner = '-'
+else
+  joiner = '+'
+end
+
+puts tag.tag.sub('release-', '') + joiner*2 + Time.now.strftime('%Y%m%d-%H%M')
