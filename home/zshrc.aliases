@@ -1,1 +1,5 @@
-iw() { iceweasel -no-remote --ProfileManager & }
+if which iceweasel >/dev/null 2>&1; then
+  iw() { iceweasel -no-remote --ProfileManager & }
+else
+  iw() { firefox -no-remote --ProfileManager & }
+fi
