@@ -85,6 +85,29 @@ order by tkt_mtime desc
 #e7cffc 4 days ago
 #fcdecf 5+ days ago
     '''),
+    'Recently Fixed Tickets - Lite': dict(sqlcode='''
+SELECT
+case date(tkt_mtime)
+when date('now') then '#fcf8cf'
+when date('now', '-1 day') then '#cfe7fc'
+when date('now', '-2 days') then '#fccffa'
+when date('now', '-3 days') then '#cffcd5'
+when date('now', '-4 days') then '#e7cffc'
+else '#fcdecf' end bgcolor,
+  title
+FROM ticket
+where status in ('Closed') and resolution in ('Fixed')
+and date(tkt_mtime) > date('now', '-7 days')
+order by tkt_mtime
+    ''', cols='''
+#ffffff Closed:
+#fcf8cf Today
+#cfe7fc Yesterday
+#fccffa 2 days ago
+#cffcd5 3 days ago
+#e7cffc 4 days ago
+#fcdecf 5+ days ago
+    '''),
 }
 
 for name in reports:
