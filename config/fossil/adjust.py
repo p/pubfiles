@@ -58,6 +58,33 @@ order by priority != 'High', priority != 'Normal', tkt_ctime
 #cfe8bd Normal
 #cacae5 Low
     '''),
+    'Recently Closed Tickets': dict(sqlcode='''
+SELECT
+case date(tkt_mtime)
+when date('now') then '#fcf8cf'
+when date('now', '-1 day') then '#cfe7fc'
+when date('now', '-2 days') then '#fccffa'
+when date('now', '-3 days') then '#cffcd5'
+when date('now', '-4 days') then '#e7cffc'
+else '#fcdecf' end bgcolor,
+  substr(tkt_uuid,1,10) AS '#',
+  date(tkt_ctime) as created,
+  date(tkt_mtime) AS updated,
+  type,
+  title
+FROM ticket
+where status in ('Closed')
+and date(tkt_mtime) > date('now', '-7 days')
+order by tkt_mtime desc
+    ''', cols='''
+#ffffff Closed:
+#fcf8cf Today
+#cfe7fc Yesterday
+#fccffa 2 days ago
+#cffcd5 3 days ago
+#e7cffc 4 days ago
+#fcdecf 5+ days ago
+    '''),
 }
 
 for name in reports:
