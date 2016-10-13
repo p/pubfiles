@@ -12,8 +12,8 @@ ticket_options = {
     'type_choices': ['Bug', 'Feature', 'Task', 'Question'],
     'priority_choices': ['High', 'Normal', 'Low'],
     'severity_choices': ['Severe', 'Important', 'Minor'],
-    'resolution_choices': ['Open', 'Fixed', 'Rejected'],
-    'status_choices': ['Open', 'Closed'],
+    'resolution_choices': ['Open', 'Fixed', 'Rejected', 'Obsolete', 'Duplicate'],
+    'status_choices': ['Open', 'Closed', 'Postponed'],
     'subsystem_choices': [],
 }
 
