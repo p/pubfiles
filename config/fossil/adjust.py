@@ -2,6 +2,10 @@
 
 import sys, sqlite3, time as _time, os.path
 
+if len(sys.argv) != 2:
+    print('Usage: adjust.py /path/to/fossil/repo')
+    exit(10)
+
 repo_path = sys.argv[1]
 conn = sqlite3.connect(repo_path)
 c = conn.cursor()
