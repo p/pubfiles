@@ -58,7 +58,7 @@ order by priority != 'High', priority != 'Normal', tkt_ctime
 #cfe8bd Normal
 #cacae5 Low
     '''),
-    'Recently Closed Tickets': dict(sqlcode='''
+    'Recently Fixed Tickets': dict(sqlcode='''
 SELECT
 case date(tkt_mtime)
 when date('now') then '#fcf8cf'
@@ -73,7 +73,7 @@ else '#fcdecf' end bgcolor,
   type,
   title
 FROM ticket
-where status in ('Closed')
+where status in ('Closed') and resolution in ('Fixed')
 and date(tkt_mtime) > date('now', '-7 days')
 order by tkt_mtime desc
     ''', cols='''
