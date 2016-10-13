@@ -37,18 +37,32 @@ pages = [
 ]
 
 reports = {
-    'Open Tickets': '''
+    'Open Tickets': dict(sqlcode='''
 SELECT
+case priority
+when 'High' then '#f2dcdc'
+when 'Normal' then '#cfe8bd'
+when 'Low' then '#cacae5'
+else '#ffffff' end as bgcolor,
   substr(tkt_uuid,1,10) AS '#',
-  datetime(tkt_mtime) AS 'mtime',
+  date(tkt_ctime) as created,
+  date(tkt_mtime) AS updated,
   type,
-  status,
-  subsystem,
   title
 FROM ticket
 where status in ('Open', 'Verified')
-    ''',
+order by priority != 'High', priority != 'Normal', tkt_ctime
+    ''', cols='''
+#ffffff Priority:
+#f2dcdc High
+#cfe8bd Normal
+#cacae5 Low
+    '''),
 }
+
+for name in reports:
+    reports[name]['sqlcode'] = reports[name]['sqlcode'].strip()
+    reports[name]['cols'] = reports[name]['cols'].strip()
 
 # ---
 
@@ -80,11 +94,11 @@ for name in reports:
     c.execute('select rn from reportfmt where title=?', (name,))
     rn = fetchfirst(c)
     if rn:
-        c.execute('update reportfmt set sqlcode=?, mtime=?, owner=?',
-            (reports[name], 'now', 'predefined'))
+        c.execute('update reportfmt set sqlcode=?, cols=?, mtime=?, owner=?',
+            (reports[name]['sqlcode'], reports[name]['cols'], 'now', 'predefined'))
     else:
-        c.execute('insert into reportfmt (owner, title, mtime, sqlcode) values (?, ?, ?, ?)',
-            ('predefined', name, 'now', reports[name]))
+        c.execute('insert into reportfmt (owner, title, mtime, sqlcode, cols) values (?, ?, ?, ?, ?)',
+            ('predefined', name, 'now', reports[name]['sqlcode'], reports[name]['cols']))
 
 conn.commit()
 c.close()
