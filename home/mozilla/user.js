@@ -90,6 +90,7 @@ user_pref('status4evar.download.notify.animate', false);
 // and these too
 user_pref('layout.css.prefixes.animations', false);
 user_pref('browser.fullscreen.animateUp', 0);
+user_pref('browser.fullscreen.animate', false);
 user_pref('browser.panorama.animate_zoom', false);
 user_pref('browser.preferences.animateFadeIn', false);
 // what does this do that is useful
@@ -109,9 +110,7 @@ user_pref('browser.download.manager.showWhenStarting', false);
 user_pref('browser.tabs.animate', false);
 user_pref('browser.download.animateNotifications', false);
 user_pref('browser.zoom.updateBackgroundTabs', false);
-user_pref('browser.fullscreen.animateUp', 0);
 user_pref('browser.fullscreen.autohide', false);
-user_pref('browser.panorama.animate_zoom', false);
 user_pref('browser.preferences.animateFadeIn', false);
 // https://bugzilla.mozilla.org/show_bug.cgi?id=649671
 user_pref('toolkit.scrollbox.smoothScroll', false);
@@ -145,3 +144,14 @@ user_pref("ui.key.menuAccessKeyFocuses", false);
 
 // useless
 user_pref("browser.uitour.enabled", false);
+
+// disable reader popup
+// https://support.mozilla.org/en-US/questions/1065151
+user_pref('reader.parse-on-load.enabled', false);
+
+// disable url bar search suggestions prompt
+user_pref('browser.urlbar.userMadeSearchSuggestionsChoice', true);
+
+// do not fill top search result into url bar
+// https://support.mozilla.org/en-US/questions/976885
+//user_pref('browser.urlbar.autoFill', false);

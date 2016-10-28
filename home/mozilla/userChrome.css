@@ -17,3 +17,8 @@
 /* always show go button */
 
 #urlbar[pageproxystate="valid"] > #urlbar-icons > #go-button {  visibility: visible !important; }
+
+/* https://forum.palemoon.org/viewtopic.php?t=8665 */
+findbar {
+  transition: none !important;
+}
