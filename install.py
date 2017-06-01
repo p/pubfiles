@@ -26,3 +26,4 @@ def ln_sf(src, dest):
 ln_sf(os.path.join(abs_pub_root, 'home/gitconfig'), os.path.expanduser('~/.gitconfig'))
 ln_sf(os.path.join(abs_pub_root, 'home/gitignore'), os.path.expanduser('~/.gitignore'))
 ln_sf(os.path.join(abs_pub_root, 'home/SciTEUser.properties'), os.path.expanduser('~/.SciTEUser.properties'))
+ln_sf(os.path.join(abs_pub_root, 'home/gtkterm2rc'), os.path.expanduser('~/.gtkterm2rc'))
