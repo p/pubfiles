@@ -1,5 +1,16 @@
-if which iceweasel >/dev/null 2>&1; then
-  iw() { iceweasel -no-remote --ProfileManager & }
-else
-  iw() { firefox -no-remote --ProfileManager & }
+have() {
+  which "$@" >/dev/null 2>&1
+}
+
+if test -n "$DISPLAY"; then
+  if have iceweasel; then
+    iw() { iceweasel -no-remote --ProfileManager & }
+  elif have firefox; then
+    iw() { firefox -no-remote --ProfileManager & }
+  fi
+  
+  if have gnome-screensaver-command; then
+    lock() { gnome-screensaver-command -l }
+  fi
+
 fi

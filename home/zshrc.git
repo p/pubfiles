@@ -1,3 +1,9 @@
-if which gitk >/dev/null 2>&1 && test -n "$DISPLAY"; then
-  ga() { (if test -n "$1"; then cd "$1"; fi && gitk --all) & }
+have() {
+  which "$@" >/dev/null 2>&1
+}
+
+if test -n "$DISPLAY"; then
+  if have gitk; then
+    ga() { (if test -n "$1"; then cd "$1"; fi && gitk --all) & }
+  fi
 fi

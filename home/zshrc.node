@@ -1,0 +1,5 @@
+NVM_DIR="`realpath ~`/.nvm"
+if test -d $NVM_DIR; then
+  export NVM_DIR
+  [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
+fi
