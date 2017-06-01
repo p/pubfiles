@@ -14,10 +14,10 @@ if test "$1" = -u; then
   apt-get install fakeroot libgtk2.0-dev debhelper
 fi
 
-if test "`dirname "$0"`" != .; then
-  src="`dirname "$0"`"
+if test "`dirname "$0"`" = .; then
+  src=`pwd`
 else
-  src=/home/me/apps/exp/pubfiles/patches/scite
+  src="`dirname "$0"`"
 fi
 
 cwd="`pwd`"
