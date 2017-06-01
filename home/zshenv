@@ -1,0 +1,4 @@
+if test -f /etc/debian_version; then
+  export DEBEMAIL=oleg@bsdpower.com
+  export DEBFULLNAME='Oleg Pudeyev'
+fi
