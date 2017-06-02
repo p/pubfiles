@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -x
+
+git clone https://github.com/rbenv/rbenv.git ~/.rbenv
+(cd ~/.rbenv && git pull)
+
+git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build
+(cd ~/.rbenv/plugins/ruby-build && git pull)
