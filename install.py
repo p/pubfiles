@@ -23,6 +23,7 @@ def ln_sf(src, dest):
         os.unlink(dest)
     os.symlink(src, dest)
 
+ln_sf(os.path.join(abs_pub_root, 'home/zshenv'), os.path.expanduser('~/.zshenv'))
 ln_sf(os.path.join(abs_pub_root, 'home/gitconfig'), os.path.expanduser('~/.gitconfig'))
 ln_sf(os.path.join(abs_pub_root, 'home/gitignore'), os.path.expanduser('~/.gitignore'))
 ln_sf(os.path.join(abs_pub_root, 'home/SciTEUser.properties'), os.path.expanduser('~/.SciTEUser.properties'))
