@@ -2,3 +2,7 @@ if test -f /etc/debian_version; then
   export DEBEMAIL=oleg@bsdpower.com
   export DEBFULLNAME='Oleg Pudeyev'
 fi
+
+if test -d "$HOME/.rbenv/bin"; then
+  export PATH="$HOME/.rbenv/bin:$PATH"
+fi
