@@ -14,3 +14,5 @@ if test -n "$DISPLAY"; then
   fi
 
 fi
+
+alias g=grep
