@@ -11,6 +11,10 @@ if test -n "$DISPLAY"; then
   
   if have gnome-screensaver-command; then
     lock() { gnome-screensaver-command -l }
+    
+    if have pm-suspend; then
+      locks() { lock && sudo pm-suspend }
+    fi
   fi
 
 fi
