@@ -9,12 +9,14 @@ if test -n "$DISPLAY"; then
     iw() { firefox -no-remote --ProfileManager & }
   fi
   
-  if have gnome-screensaver-command; then
+  if have xscreensaver-command; then
+    lock() { xscreensaver-command -l }
+  elif have gnome-screensaver-command; then
     lock() { gnome-screensaver-command -l }
-    
-    if have pm-suspend; then
-      locks() { lock && sudo pm-suspend }
-    fi
+  fi
+  
+  if have pm-suspend && have lock; then
+    locks() { lock && sudo pm-suspend }
   fi
 
 fi

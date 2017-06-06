@@ -1,6 +1,10 @@
 #!/bin/sh
 # $Xorg: xinitrc.cpp,v 1.3 2000/08/17 19:54:30 cpqbld Exp $
 
+have() {
+  which "$@" >/dev/null 2>&1
+}
+
 merge_defaults() {
 	userresources=$HOME/.Xresources
 	usermodmap=$HOME/.Xmodmap
@@ -74,3 +78,5 @@ init_as_configured() {
 		init_single_head;;
 	esac
 }
+
+have xscreensaver && xscreensaver -no-splash &
