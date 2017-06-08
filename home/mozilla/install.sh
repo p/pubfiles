@@ -72,8 +72,8 @@ if $USE_SUDO; then
 fi
 
 cwd=`pwd`
-for dir in .mozilla/firefox; do
-	cd ${MOZ_HOME}/$dir
+for dir in .mozilla/firefox ".moonchild productions/pale moon"; do
+	cd "${MOZ_HOME}/$dir"
 	for profile in */; do
 		(
 			if $USE_SUDO; then

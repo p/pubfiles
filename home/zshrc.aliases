@@ -3,7 +3,14 @@ have() {
 }
 
 if test -n "$DISPLAY"; then
-  if have iceweasel; then
+  if have palemoon; then
+    iw() { palemoon -no-remote --ProfileManager & }
+    if have iceweasel; then
+      iwf() { iceweasel -no-remote --ProfileManager & }
+    elif have firefox; then
+      iwf() { firefox -no-remote --ProfileManager & }
+    fi
+  elif have iceweasel; then
     iw() { iceweasel -no-remote --ProfileManager & }
   elif have firefox; then
     iw() { firefox -no-remote --ProfileManager & }
