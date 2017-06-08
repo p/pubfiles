@@ -22,8 +22,17 @@ if test -n "$DISPLAY"; then
     lock() { gnome-screensaver-command -l }
   fi
   
+  wait-for-lock() {
+    while true; do
+      if xscreensaver-command -time |grep -q 'screen locked'; then
+        break
+      fi
+      sleep 0.2
+    done
+  }
+  
   if have pm-suspend && have lock; then
-    locks() { lock && sudo pm-suspend }
+    locks() { lock && wait-for-lock && sudo pm-suspend }
   fi
 
 fi
