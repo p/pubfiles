@@ -155,3 +155,7 @@ user_pref('browser.urlbar.userMadeSearchSuggestionsChoice', true);
 // do not fill top search result into url bar
 // https://support.mozilla.org/en-US/questions/976885
 //user_pref('browser.urlbar.autoFill', false);
+
+// http://www.palemoon.org/faq.shtml#Preference:_I_prefer_the_old_Ctrl-Tab
+user_pref('browser.ctrlTab.previews', false)
+
