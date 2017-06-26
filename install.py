@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import os.path, sys
 
 pub_root = os.path.dirname(__file__)
