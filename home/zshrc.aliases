@@ -38,3 +38,7 @@ if test -n "$DISPLAY"; then
 fi
 
 alias g=grep
+
+f() {
+  find "$@" |sort
+}
