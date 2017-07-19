@@ -7,11 +7,29 @@ if have rbenv; then
 fi
 
 if have bundler; then
+  register_fuubar() {
+    echo pwd >>$HOME/.fuubar-paths
+  }
+  deregister_fuubar() {
+    set -e
+    if test -f $HOME/.fuubar-paths; then
+      tempfile=`mktemp`
+      <$HOME/.fuubar-paths grep -v `pwd` >$tempfile
+      <$tempfile >$HOME/.fuubar-paths
+    fi
+  }
   alias bi='bundle install'
   alias bu='bundle update'
   alias be='bundle exec'
   alias br='bundle exec rake'
-  alias bs='bundle exec rspec'
+  bs() {
+    args=
+    if test -f $HOME/.fuubar-paths && grep -q `pwd` $HOME/.fuubar-paths; then
+      args="$args --format Fuubar"
+    fi
+    bundle exec rspec $args "$@"
+  }
+  #alias bs='bundle exec rspec --format Fuubar'
   alias brs='bundle exec rescue rspec'
   alias bpa='bundle pack --all'
 fi
