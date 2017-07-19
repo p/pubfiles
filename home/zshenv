@@ -10,3 +10,7 @@ fi
 if test -d "$HOME/.rbenv/bin"; then
   export PATH="$HOME/.rbenv/bin:$PATH"
 fi
+
+if test -d "$HOME/bin"; then
+  export PATH="$HOME/bin:$PATH"
+fi
