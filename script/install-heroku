@@ -1,0 +1,22 @@
+#!/bin/sh
+
+set -e
+
+tmp=`mktemp -d`
+cd $tmp
+
+os=linux
+arch=x64
+wget https://cli-assets.heroku.com/heroku-cli/channels/stable/heroku-cli-$os-$arch.tar.gz -O heroku.tar.gz
+tar xfz heroku.tar.gz
+rm -rf $HOME/opt/heroku
+mkdir -p $HOME/opt
+mv heroku-cli* $HOME/opt/heroku
+
+cd /tmp
+rm -rf "$tmp"
+
+cd $HOME
+mkdir -p bin
+cd bin
+ln -sf ../opt/heroku/bin/heroku
