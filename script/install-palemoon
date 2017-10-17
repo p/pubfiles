@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# https://software.opensuse.org/download.html?project=home:stevenpusser&package=palemoon
+
+set -e
+
+wget -nv https://download.opensuse.org/repositories/home:stevenpusser/Debian_9.0/Release.key -O - |
+  sudo apt-key add -
+
+echo 'deb http://download.opensuse.org/repositories/home:/stevenpusser/Debian_9.0/ /' |sudo tee /etc/apt/sources.list.d/palemoon.list 
+
+sudo apt-get update
+sudo apt-get install palemoon
