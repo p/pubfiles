@@ -2,8 +2,16 @@
 
 set -e
 
-git clone https://github.com/rbenv/rbenv.git ~/.rbenv
-(cd ~/.rbenv && git pull)
+if test -d ~/.rbenv; then
+  (cd ~/.rbenv && git pull)
+else
+  git clone https://github.com/rbenv/rbenv.git ~/.rbenv
+fi
 
-git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build
-(cd ~/.rbenv/plugins/ruby-build && git pull)
+if test -d ~/.rbenv/plugins/ruby-build; then
+  (cd ~/.rbenv/plugins/ruby-build && git pull)
+else
+  git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build
+fi
+
+sudo apt-get install gcc
