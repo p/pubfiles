@@ -18,6 +18,4 @@ apt-get install \
   firefox-esr \
   xinit xauth openbox xscreensaver \
   xfonts-terminus \
-  acpi pm-utils \
-  zip unzip \
-  alsa-utils
+  zip unzip

@@ -13,5 +13,6 @@ if test "`id -u`" != 0; then
 fi
 
 apt-get install \
-  youtube-dl mplayer \
+  acpi pm-utils \
+  youtube-dl mplayer alsa-utils \
   nfs-client
