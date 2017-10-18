@@ -18,7 +18,8 @@ apt-get install \
   firefox-esr \
   xinit xauth openbox xscreensaver \
   xfonts-terminus \
-  acpi pm-utils
+  acpi pm-utils \
+  zip unzip
 
 # Optionals:
 # nfs-client
