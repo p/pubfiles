@@ -1,0 +1,6 @@
+#!/bin/sh
+
+set -e
+
+mkdir -p "$HOME"/bin
+ln -sf /usr/sbin/pm-suspend "$HOME"/bin/pm-suspend
