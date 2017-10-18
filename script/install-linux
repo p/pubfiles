@@ -13,13 +13,11 @@ if test "`id -u`" != 0; then
 fi
 
 apt-get install \
-  zsh gitk \
+  zsh gitk curl \
   libvte9 \
   firefox-esr \
   xinit xauth openbox xscreensaver \
   xfonts-terminus \
   acpi pm-utils \
-  zip unzip
-
-# Optionals:
-# nfs-client
+  zip unzip \
+  alsa-utils
