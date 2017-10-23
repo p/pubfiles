@@ -19,3 +19,5 @@ echo "deb https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
 sudo apt-get update
 
 sudo apt-get install docker-ce
+
+sudo groupmod docker || sudo groupadd docker
