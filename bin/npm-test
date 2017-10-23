@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+
+# Workaround for https://github.com/npm/npm/issues/18940
+
+require 'json'
+
+def run(scripts, cmd)
+  if scripts[cmd]
+    tests = scripts[cmd].split('&&')
+    tests.each do |test|
+      test.strip!
+      if test =~ /\Anpm run (\w+)\z/
+        run(scripts, $1)
+      else
+        rv = system(test)
+        unless rv
+          $stderr.puts("Command exited with code #{$?.exitstatus}: #{test}")
+          exit 2
+        end
+      end
+    end
+  end
+end
+
+config = JSON.parse(File.read('package.json'))
+if scripts = config['scripts']
+  run(scripts, 'test')
+end
