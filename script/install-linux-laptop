@@ -16,3 +16,7 @@ apt-get install \
   acpi pm-utils \
   youtube-dl mplayer alsa-utils feh \
   nfs-client
+
+if lspci |grep -q 'Intel.*PRO/Wireless.*AGN'; then
+  apt-get install firmware-iwlwifi
+fi
