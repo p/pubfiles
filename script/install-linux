@@ -13,8 +13,8 @@ if test "`id -u`" != 0; then
 fi
 
 apt-get install \
-  zsh gitk curl \
-  libvte9 \
+  zsh gitk curl make \
+  libvte9 scite \
   firefox-esr \
   xinit xauth openbox xscreensaver \
   xfonts-terminus \
