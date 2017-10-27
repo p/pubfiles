@@ -25,8 +25,18 @@ def ln_sf(src, dest):
         os.unlink(dest)
     os.symlink(src, dest)
 
+def cp(src, dest):
+    print('Copy %s to %s' % (src, dest))
+    with open(dest, 'wb') as fw:
+        with open(src, 'rb') as fr:
+            fw.write(fr.read())
+
 ln_sf(os.path.join(abs_pub_root, 'home/zshenv'), os.path.expanduser('~/.zshenv'))
 ln_sf(os.path.join(abs_pub_root, 'home/gitconfig'), os.path.expanduser('~/.gitconfig'))
 ln_sf(os.path.join(abs_pub_root, 'home/gitignore'), os.path.expanduser('~/.gitignore'))
 ln_sf(os.path.join(abs_pub_root, 'home/SciTEUser.properties'), os.path.expanduser('~/.SciTEUser.properties'))
 ln_sf(os.path.join(abs_pub_root, 'home/gtkterm2rc'), os.path.expanduser('~/.gtkterm2rc'))
+
+target_path = os.path.expanduser('~/.zshrc')
+if not os.path.exists(target_path):
+    cp(os.path.join(abs_pub_root, 'home/zshrc.sample'), target_path)
