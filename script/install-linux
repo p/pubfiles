@@ -23,3 +23,6 @@ apt-get install \
 
 echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' > /etc/sudoers.d/sudo-group
 chmod 0400 /etc/sudoers.d/sudo-group
+
+apt-get install nvi
+update-alternatives --set editor /usr/bin/nvi
