@@ -4,25 +4,41 @@
 
 require 'json'
 
-def run(scripts, cmd)
-  if scripts[cmd]
-    tests = scripts[cmd].split('&&')
-    tests.each do |test|
-      test.strip!
-      if test =~ /\Anpm run (\w+)\z/
-        run(scripts, $1)
-      else
-        rv = system(test)
-        unless rv
-          $stderr.puts("Command exited with code #{$?.exitstatus}: #{test}")
-          exit 2
+class Runner
+  def initialize(skip_lint: false)
+    @skip_lint = skip_lint
+  end
+  
+  def run(scripts, cmd)
+    if scripts[cmd]
+      tests = scripts[cmd].split('&&')
+      tests.each do |test|
+        test.strip!
+        if test =~ /\Anpm run ([-\w]+)\z/
+          if (command = $1) =~ /^lint\b/
+            next
+          end
+          run(scripts, command)
+        else
+          rv = system(test)
+          unless rv
+            $stderr.puts("Command exited with code #{$?.exitstatus}: #{test}")
+            exit 2
+          end
         end
       end
     end
   end
 end
 
+if ARGV.first == '-t'
+  ARGV.shift
+  runner = Runner.new(skip_lint: true)
+else
+  runner = Runner.new
+end
+
 config = JSON.parse(File.read('package.json'))
 if scripts = config['scripts']
-  run(scripts, 'test')
+  runner.run(scripts, 'test')
 end
