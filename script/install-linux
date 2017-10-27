@@ -32,3 +32,5 @@ chsh -s /bin/zsh me
 if id w >/dev/null 2>&1; then
   chsh -s /bin/zsh w
 fi
+
+usermod -a -G sudo me
