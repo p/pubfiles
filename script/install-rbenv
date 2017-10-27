@@ -17,7 +17,7 @@ fi
 packages="gcc libssl-dev libreadline-dev zlib1g-dev"
 missing=
 for package in $packages; do
-  if ! dpkg -s "$package" >/dev/null; then
+  if ! dpkg -s "$package" >/dev/null 2>&1; then
     echo "Missing package: $package"
     missing="$missing $package"
   fi
