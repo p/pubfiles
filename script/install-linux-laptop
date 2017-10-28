@@ -13,10 +13,15 @@ if test "`id -u`" != 0; then
 fi
 
 apt-get install \
-  acpi pm-utils \
+  acpi pm-utils hdparm \
   youtube-dl mplayer alsa-utils feh \
   nfs-client
 
 if lspci |grep -q 'Intel.*PRO/Wireless.*AGN'; then
   apt-get install firmware-iwlwifi
+fi
+
+if ! grep -q '^apm = 255' /etc/hdparm.conf; then
+  sed -i -e s/'^apm =/#apm =/' /etc/hdparm.conf
+  echo apm = 255 |tee -a /etc/hdparm.conf
 fi
