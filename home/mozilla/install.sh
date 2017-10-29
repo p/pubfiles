@@ -73,6 +73,9 @@ fi
 
 cwd=`pwd`
 for dir in .mozilla/firefox ".moonchild productions/pale moon"; do
+	if ! test -d "${MOZ_HOME}/$dir"; then
+		continue
+	fi
 	cd "${MOZ_HOME}/$dir"
 	for profile in */; do
 		(
