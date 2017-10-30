@@ -14,7 +14,7 @@ else
   git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build
 fi
 
-packages="gcc libssl-dev libreadline-dev zlib1g-dev"
+packages="gcc libssl-dev libreadline-dev zlib1g-dev bzip2"
 missing=
 for package in $packages; do
   if ! dpkg -s "$package" >/dev/null 2>&1; then
