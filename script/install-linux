@@ -16,10 +16,19 @@ apt-get install \
   zsh sudo man-db openssh-server smartmontools \
   gitk curl make \
   libvte9 scite \
-  firefox-esr \
+  firefox-esr xpdf evince \
   xinit xauth openbox xscreensaver \
   xfonts-terminus \
   zip unzip
+
+install_mm=true
+if grep -q 'Intel.*7700K' /proc/cpuinfo; then
+  install_mm=false
+fi
+
+if $install_mm; then
+  apt-get install mplayer alsa-utils
+fi
 
 echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' > /etc/sudoers.d/sudo-group
 chmod 0400 /etc/sudoers.d/sudo-group
