@@ -13,7 +13,7 @@ if test "`id -u`" != 0; then
 fi
 
 apt-get install \
-  zsh sudo man-db openssh-server smartmontools \
+  zsh sudo man-db openssh-server smartmontools dnsutils \
   gitk curl make \
   libvte9 scite \
   firefox-esr xpdf evince \
