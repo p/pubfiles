@@ -12,22 +12,28 @@ if test "`id -u`" != 0; then
   fi
 fi
 
-apt-get install \
-  zsh sudo man-db openssh-server smartmontools dnsutils \
-  gitk curl make \
-  libvte9 scite \
-  firefox-esr xpdf evince \
-  xinit xauth openbox xscreensaver \
-  xfonts-terminus \
-  zip unzip
-
-install_mm=true
-if grep -q 'Intel.*7700K' /proc/cpuinfo; then
-  install_mm=false
+if echo "$0" |grep -q /; then
+  BASE=`dirname "$0"`
+else
+  echo "Cannot determine base directory" 1>&2
+  exit 2
 fi
 
-if $install_mm; then
-  apt-get install mplayer alsa-utils
+apt-get install \
+  zsh sudo man-db openssh-server smartmontools dnsutils \
+  git curl make \
+  zip unzip
+
+if ! is_headless; then
+  apt-get install \
+    gitk libvte9 scite \
+    firefox-esr xpdf evince \
+    xinit xauth openbox xscreensaver \
+    xfonts-terminus
+
+  if install_mm; then
+    apt-get install mplayer alsa-utils
+  fi
 fi
 
 echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' > /etc/sudoers.d/sudo-group
@@ -37,9 +43,12 @@ apt-get install nvi
 update-alternatives --set editor /usr/bin/nvi
 
 chsh -s /bin/zsh root
-chsh -s /bin/zsh me
-if id w >/dev/null 2>&1; then
-  chsh -s /bin/zsh w
+
+if have_user me; then
+  chsh -s /bin/zsh me
+  usermod -a -G sudo me
 fi
 
-usermod -a -G sudo me
+if have_user w; then
+  chsh -s /bin/zsh w
+fi
