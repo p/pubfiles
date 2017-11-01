@@ -63,7 +63,7 @@ fi
 if is_laptop; then
   install_if_needed \
     acpi pm-utils hdparm wireless-tools wpasupplicant \
-    nfs-client
+    nfs-common
 
   if lspci |grep -q 'Intel.*PRO/Wireless.*AGN'; then
     install_if_needed firmware-iwlwifi
