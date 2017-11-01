@@ -22,7 +22,8 @@ fi
 . $BASE/common.sh
 
 apt-get install \
-  zsh sudo man-db openssh-server smartmontools dnsutils \
+  openntpd smartmontools openssh-server \
+  zsh sudo man-db dnsutils \
   git curl make \
   zip unzip
 
