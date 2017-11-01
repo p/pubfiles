@@ -26,15 +26,15 @@ apt-get install \
   git curl make \
   zip unzip
 
-if ! is_headless; then
+if is_headful; then
   apt-get install \
-    gitk libvte9 scite \
+    gitk libvte9 scite feh \
     firefox-esr xpdf evince \
     xinit xauth openbox xscreensaver \
     xfonts-terminus
 
   if install_mm; then
-    apt-get install mplayer alsa-utils
+    apt-get install mplayer alsa-utils youtube-dl
   fi
 fi
 
@@ -53,4 +53,19 @@ fi
 
 if have_user w; then
   chsh -s /bin/zsh w
+fi
+
+if is_laptop; then
+  apt-get install \
+    acpi pm-utils hdparm wireless-tools wpasupplicant \
+    nfs-client
+
+  if lspci |grep -q 'Intel.*PRO/Wireless.*AGN'; then
+    apt-get install firmware-iwlwifi
+  fi
+
+  if ! grep -q '^apm = 255' /etc/hdparm.conf; then
+    sed -i -e s/'^apm =/#apm =/' /etc/hdparm.conf
+    echo apm = 255 |tee -a /etc/hdparm.conf
+  fi
 fi

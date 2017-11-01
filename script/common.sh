@@ -14,14 +14,16 @@ is_laptop() {
   fi
 }
 
-is_headless() {
-  grep -q 'Intel.*Q9300' /proc/cpuinfo
+have_user() {
+  usermod "$1" >/dev/null 2>&1
+}
+
+# MACHINES
+
+is_headful() {
+  ! grep -q 'Intel.*Q9300' /proc/cpuinfo
 }
 
 install_mm() {
   ! grep -q 'Intel.*7700K' /proc/cpuinfo
-}
-
-have_user() {
-  usermod "$1" >/dev/null 2>&1
 }
