@@ -30,7 +30,7 @@ apt-get install \
 if is_headful; then
   apt-get install \
     gitk libvte9 scite feh \
-    firefox-esr xpdf evince \
+    firefox-esr xpdf evince chromium \
     xinit xauth openbox xscreensaver \
     xfonts-terminus
 
