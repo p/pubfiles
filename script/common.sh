@@ -18,6 +18,27 @@ have_user() {
   usermod "$1" >/dev/null 2>&1
 }
 
+yesno() {
+  if test "$1" = 0; then
+    echo Yes
+  else
+    echo No
+  fi
+}
+
+install_if_needed() {
+  needed=
+  for pkg in "$@"; do
+    if ! dpkg -L "$pkg" >/dev/null 2>&1; then
+      needed="$needed $pkg"
+    fi
+  done
+  if test -n "$needed"; then
+    echo "Installing packages: $needed"
+    apt-get install $needed
+  fi
+}
+
 # MACHINES
 
 is_headful() {
