@@ -19,6 +19,8 @@ else
   exit 2
 fi
 
+. $BASE/common.sh
+
 apt-get install \
   zsh sudo man-db openssh-server smartmontools dnsutils \
   git curl make \
