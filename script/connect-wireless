@@ -1,0 +1,50 @@
+#!/usr/bin/env python
+
+import sys, subprocess, re
+
+spec = sys.argv[1:]
+if len(spec) != 1 and len(spec) != 2:
+    print('Takes ssid or ssid & password')
+    exit(3)
+
+def identify_interfaces():
+    wireless = []
+    dev_null = open('/dev/null', 'w')
+    try:
+        output = subprocess.check_output(['/sbin/iwconfig'], stderr=dev_null)
+    finally:
+        dev_null.close()
+    for line in output.split('\n'):
+        match = re.match(r'(\w+)\s+IEEE 802.11', line)
+        if match:
+            wireless.append(match.group(1))
+    output = subprocess.check_output(['ip', 'a'])
+    wired = []
+    for line in output.split("\n"):
+        match = re.match(r'\d+: (\w+):', line)
+        if match:
+            interface_name = match.group(1)
+            type = None
+        match = re.match(r'\s+link/(\w+)', line)
+        if match:
+            type = match.group(1)
+            if type == 'ether' and interface_name not in wireless:
+                wired.append(interface_name)
+    return dict(wired=wired, wireless=wireless)
+
+interfaces = identify_interfaces()
+wireless_interface = interfaces['wireless'][0]
+
+contents = 'iface %s inet dhcp\n' % wireless_interface
+if len(spec) == 1:
+    contents += '  wireless-essid %s' % spec[0]
+else:
+    contents += '  wpa-ssid %s\nwpa-psk %s\n' % tuple(spec)
+
+with open('/etc/network/interfaces.d/%s' % wireless_interface, 'w') as f:
+    f.write(contents)
+
+for interface in interfaces['wired']:
+    subprocess.call(['ifdown', interface])
+subprocess.call(['ifdown', wireless_interface])
+subprocess.check_call(['ifup', wireless_interface])
