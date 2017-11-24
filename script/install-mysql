@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# https://dev.mysql.com/get/mysql-apt-config_0.8.9-1_all.deb
+
+set -e
+
+tmpdir=`mktemp -d`
+
+url=https://dev.mysql.com/get/mysql-apt-config_0.8.9-1_all.deb
+curl -Lo "$tmpdir/`basename "$url"`" "$url"
+dpkg -i "$tmpdir/`basename "$url"`"
+apt-get update
+apt-get install mysql-server
