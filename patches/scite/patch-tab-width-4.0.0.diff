@@ -1,0 +1,21 @@
+--- ../src/SciTEBuffers.cxx.orig	2017-08-16 03:34:20.000000000 -0400
++++ ../src/SciTEBuffers.cxx	2017-11-30 14:40:41.127620589 -0500
+@@ -1157,7 +1157,8 @@
+ #if defined(_WIN32)
+ 					titleTab = sHotKey; // add hotkey to the tabbar
+ #elif defined(GTK)
+-					titleTab = sPos + GUI_TEXT(" ");
++					//titleTab = sPos + GUI_TEXT(" ");
++					titleTab = "";
+ #endif
+ 				}
+ 			}
+@@ -1184,6 +1185,8 @@
+ 			//char *cpDirEnd = strrchr(buffers.buffers[pos]->fileName, pathSepChar);
+ 			//strcat(entry, cpDirEnd + 1);
+
++                        titleTab = titleTab.substr(0, 9);
++
+ 			if (buffers.buffers[pos].isReadOnly && props.GetInt("read.only.indicator"))  {
+ 				entry=entry+GUI_TEXT(" |");
+ 				titleTab=titleTab+GUI_TEXT(" |");
