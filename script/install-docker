@@ -4,9 +4,8 @@
 
 set -e
 
-sudo apt-get install \
-     apt-transport-https \
-     ca-certificates
+sudo apt-get install apt-transport-https ca-certificates \
+  lsb-release
 
 id=$(. /etc/os-release; echo "$ID" |sed -e s/devuan/debian/)
 release=$(lsb_release -cs |sed -e s/buster/stretch/ -e s/ascii/stretch/)
