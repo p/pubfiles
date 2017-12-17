@@ -2,18 +2,21 @@
 
 # https://docs.docker.com/engine/installation/linux/docker-ce/debian/
 
-set -x
+set -e
 
 sudo apt-get install \
      apt-transport-https \
      ca-certificates
 
-curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | sudo apt-key add -
+id=$(. /etc/os-release; echo "$ID" |sed -e s/devuan/debian/)
+release=$(lsb_release -cs |sed -e s/buster/stretch/ -e s/ascii/stretch/)
+
+curl -fsSL https://download.docker.com/linux/$id/gpg | sudo apt-key add -
 
 # No docker for debian buster yet, use stretch instead
 
-echo "deb https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
-   $(lsb_release -cs |sed -e s/buster/stretch/) \
+echo "deb https://download.docker.com/linux/$id \
+   $release \
    stable" |sudo tee /etc/apt/sources.list.d/docker.list
 
 sudo apt-get update
@@ -21,3 +24,13 @@ sudo apt-get update
 sudo apt-get install docker-ce
 
 sudo groupmod docker || sudo groupadd docker
+
+if id w >/dev/null 2>/dev/null; then
+	sudo usermod -aG docker w
+fi
+
+sudo apt install docker-compose
+
+if test -f /etc/init.d/docker; then
+	sudo /etc/init.d/docker start
+fi
