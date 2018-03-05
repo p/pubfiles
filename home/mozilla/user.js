@@ -1,3 +1,6 @@
+// Disabling websites messing with pasting passwords:
+// https://www.cyberciti.biz/linux-news/google-chrome-extension-to-removes-password-paste-blocking-on-website/
+
 // Bogus pref detection:
 // 1. Change a pref in about:config.
 // 2. Quit browser.
@@ -6,6 +9,8 @@
 
 // Uncomment for jslint:
 // var user_pref = function () { 1; };
+
+user_pref('devtools.selfxss.count', 10000);
 
 // backspace goes back in history
 user_pref('browser.backspace_action', 0);
@@ -159,3 +164,4 @@ user_pref('browser.urlbar.userMadeSearchSuggestionsChoice', true);
 // http://www.palemoon.org/faq.shtml#Preference:_I_prefer_the_old_Ctrl-Tab
 user_pref('browser.ctrlTab.previews', false)
 
+user_pref('extensions.pocket.enabled', false)
