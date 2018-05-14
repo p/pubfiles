@@ -1,8 +1,8 @@
 # XScreenSaver Preferences File
-# Written by xscreensaver-demo 5.36 for w on Wed Sep 27 17:00:05 2017.
-# https://www.jwz.org/xscreensaver/
+# Written by xscreensaver-demo 5.34 for me on Mon Oct  3 18:44:30 2016.
+# http://www.jwz.org/xscreensaver/
 
-timeout:	0:10:00
+timeout:	0:05:00
 cycle:		0:10:00
 lock:		True
 lockTimeout:	0:00:00
@@ -17,7 +17,7 @@ demoCommand:	xscreensaver-demo
 prefsCommand:	xscreensaver-demo -prefs
 nice:		10
 memoryLimit:	0
-fade:		True
+fade:		False
 unfade:		False
 fadeSeconds:	0:00:03
 fadeTicks:	20
@@ -257,16 +257,7 @@ programs:								      \
 				tessellimage -root			    \n\
 - GL: 				winduprobot -root			    \n\
 - GL: 				splitflap -root				    \n\
-- GL: 				cubestack -root				    \n\
-- GL: 				cubetwist -root				    \n\
-- GL: 				discoball -root				    \n\
-- GL: 				dymaxionmap -root			    \n\
-- GL: 				energystream -root			    \n\
-- GL: 				hexstrut -root				    \n\
-- GL: 				hydrostat -root				    \n\
-- GL: 				raverhoop -root				    \n\
-- GL: 				splodesic -root				    \n\
-- GL: 				unicrud -root				    \n\
+				testx11 -root				    \n\
 
 
 pointerPollTime:    0:00:05
