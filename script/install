@@ -1,0 +1,45 @@
+#!/bin/sh
+
+set -e
+
+me="$0"
+if ! echo "$me" |grep -q /; then
+  echo "$0 ought to be a path" 1>&2
+  exit 2
+fi
+
+base=`python -c "import os.path; print(os.path.realpath('$me/../..'))"`
+dest="$HOME"
+
+echo "Installing from $base to $dest"
+
+have() {
+  which "$@" >/dev/null 2>&1
+}
+
+inst() {
+  what="$1"
+  echo "Symlinking $what"
+  ln -fs "$base"/home/"$what" "$dest"/."$what"
+}
+
+if have scite; then
+  inst SciTEUser.properties
+fi
+
+if have git; then
+  inst gitignore
+  inst gitconfig
+fi
+
+if have gtkterm2; then
+  inst gtkterm2rc
+fi
+
+if have xscreensaver; then
+  inst xscreensaver
+fi
+
+if have zsh; then
+  inst zshenv
+fi
