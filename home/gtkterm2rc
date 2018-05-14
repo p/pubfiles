@@ -51,7 +51,7 @@ blink=1
 ##
 # 0=FALSE, 1=TRUE
 ##
-beep=1
+beep=0
 
 ##
 # x y Default Terminal Size in pix
