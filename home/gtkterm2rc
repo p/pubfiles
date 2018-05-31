@@ -11,7 +11,7 @@ terminalScrollbar=2
 ##
 # 0=NO SCROLLBAR
 ##
-maxScrollbackBuffer=999
+maxScrollbackBuffer=2000
 
 ##
 # 0=FALSE, 1=TRUE
