@@ -8,7 +8,7 @@ if ! echo "$me" |grep -q /; then
   exit 2
 fi
 
-base=`python -c "import os.path; print(os.path.realpath('$me/../..'))"`
+base=`python -c "import os.path; print(os.path.realpath('$me/../..'))" || perl -e "use Cwd qw(abs_path); print abs_path('$me/../..')"`
 dest="$HOME"
 
 echo "Installing from $base to $dest"
