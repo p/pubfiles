@@ -29,7 +29,7 @@ if test -f /etc/debian_version; then
 fi
 
 if which yum >/dev/null 2>&1; then
-  packages="gcc libssl-devel libreadline-devel zlib-devel bzip2"
+  packages="gcc openssl-devel readline-devel zlib-devel bzip2"
   missing=
   for package in $packages; do
     if ! rpm -q $package >/dev/null 2>&1; then
