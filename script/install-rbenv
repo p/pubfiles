@@ -14,14 +14,30 @@ else
   git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build
 fi
 
-packages="gcc libssl-dev libreadline-dev zlib1g-dev bzip2"
-missing=
-for package in $packages; do
-  if ! dpkg -s "$package" >/dev/null 2>&1; then
-    echo "Missing package: $package"
-    missing="$missing $package"
+if test -f /etc/debian_version; then
+  packages="gcc libssl-dev libreadline-dev zlib1g-dev bzip2"
+  missing=
+  for package in $packages; do
+    if ! dpkg -s "$package" >/dev/null 2>&1; then
+      echo "Missing package: $package"
+      missing="$missing $package"
+    fi
+  done
+  if test -n "$missing"; then
+    sudo apt-get install $missing
   fi
-done
-if test -n "$missing"; then
-  sudo apt-get install $missing
+fi
+
+if which yum >/dev/null 2>&1; then
+  packages="gcc libssl-devel libreadline-devel zlib-devel bzip2"
+  missing=
+  for package in $packages; do
+    if ! rpm -q $package >/dev/null 2>&1; then
+      echo "Missing package: $package"
+      missing="$missing $package"
+    fi
+  done
+  if test -n "$missing"; then
+    sudo yum install $missing
+  fi
 fi
