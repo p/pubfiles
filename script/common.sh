@@ -15,7 +15,7 @@ is_laptop() {
 }
 
 have_user() {
-  usermod "$1" >/dev/null 2>&1
+  id "$1" >/dev/null 2>&1
 }
 
 yesno() {
