@@ -28,8 +28,8 @@ echo Multimedia: `install_mm; yesno $?`
 install_if_needed \
   openntpd smartmontools openssh-server \
   zsh sudo man-db dnsutils \
-  git curl make \
-  zip unzip
+  git curl make gcc \
+  zip unzip net-tools rsync python-pip tmux
 
 if is_headful; then
   install_if_needed \
