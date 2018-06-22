@@ -26,6 +26,7 @@
 	rbc = rebase --continue
 	aa = add -A
 	rbs = rebase --skip
+	pp = push p -u
 
 [user]
 	name = Oleg Pudeyev
