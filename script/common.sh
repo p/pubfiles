@@ -35,7 +35,11 @@ install_if_needed() {
   done
   if test -n "$needed"; then
     echo "Installing packages: $needed"
-    apt-get install $needed
+    if test `id -u` = 0; then
+      apt-get install $needed
+    else
+      sudo apt-get install $needed
+    fi
   fi
 }
 
