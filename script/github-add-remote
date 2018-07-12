@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+
+import urllib2, json, sys, re, subprocess
+
+if len(sys.argv) != 2:
+    sys.stderr.write('Usage: github-add-remote pr-url'+"\n")
+    exit(4)
+    
+url = sys.argv[1]
+match = re.match(r'https://github.com/([^/]+)/([^/]+)/pull/(\d+)$', url)
+if not match:
+    sys.stderr.write('Cannot make sense of the url'+"\n")
+    exit(4)
+    
+api_url = 'https://api.github.com/repos/%s/%s/pulls/%s' % (match.group(1), match.group(2), match.group(3))
+
+c = urllib2.urlopen(api_url).read()
+payload = json.loads(c)
+
+owner = payload['head']['user']['login']
+name = payload['head']['repo']['name']
+branch = payload['head']['ref']
+pr = payload['number']
+
+subprocess.check_call(['git', 'remote', 'add', name, 'git@github.com:%s/%s' % (owner, name), '-f'])
+subprocess.check_call(['git', 'checkout', '-b', 'pr-%s' % pr, '--track', '%s/%s' % (name, branch)])
