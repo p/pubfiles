@@ -1,0 +1,4 @@
+#!/bin/sh
+
+find $HOME/.rbenv -name quit.rb -path '*/byebug/*' -exec \
+  sed -e '/quit.confirmations.really/d' -i {} \;
