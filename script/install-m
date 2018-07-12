@@ -11,3 +11,17 @@ else
 fi
 
 chmod +x $HOME/bin/m
+
+# install dependencies
+
+if echo "$0" |grep -q /; then
+  BASE=`dirname "$0"`
+else
+  echo "Cannot determine base directory" 1>&2
+  exit 2
+fi
+
+. $BASE/common.sh
+
+# for enterprise server
+install_if_needed libsnmp30
