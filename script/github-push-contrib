@@ -1,0 +1,71 @@
+#!/usr/bin/env python
+
+# Pushes current branch to a contributor's branch on github.
+# The current branch must have format pr-123.
+# Any arguments to the script are forwarded to git push (e.g., -f).
+
+import urllib2, json, sys, re, subprocess
+
+output = subprocess.check_output(['git', 'branch'])
+branch = None
+for line in output.split("\n"):
+    if line[0] == '*':
+        branch = line[1:].strip()
+        break
+        
+if branch is None:
+    sys.stderr.write('Cannot figure out current branch'+"\n")
+    exit(4)
+
+match = re.match(r'pr-(\d+)$', branch)
+if match is None:
+    sys.stderr.write('Current branch is not of pr-123 format'+"\n")
+    exit(4)
+
+pr_num = int(match.group(1))
+
+# now figure out what repo we are working with
+
+output = subprocess.check_output(['git', 'remote', '-v'])
+lines = output.strip().split("\n")
+origins = [line.split("\t")[0] for line in lines]
+
+if 'upstream' in origins:
+    origin = 'upstream'
+elif 'origin' in origins:
+    origin = 'origin'
+else:
+    sys.stderr.write('Cannot figure out the origin'+"\n")
+    exit(4)
+    
+for line in lines:
+    name, url, which = re.split(r'\s+', line)
+    if name == origin:
+        if which == '(push)':
+            remote_url = url
+
+match = re.match(r'git@github.com:(\w+)/(\w+?)(.git)?$', remote_url)
+if match is None:
+    match = re.match(r'https://github.com/(\w+)/(\w+?)(.git)?$', remote_url)
+    if match is None:
+        sys.stderr.write("%s remote is a weird url\n" % origin)
+        exit(4)
+    
+upstream_owner_name = match.group(1)
+upstream_repo_name = match.group(2)
+
+# now find out who made the PR
+    
+api_url = 'https://api.github.com/repos/%s/%s/pulls/%s' % (upstream_owner_name, upstream_repo_name, pr_num)
+
+c = urllib2.urlopen(api_url).read()
+payload = json.loads(c)
+
+pr_owner_name = payload['head']['user']['login']
+pr_repo_name = payload['head']['repo']['name']
+pr_branch = payload['head']['ref']
+
+if pr_owner_name not in origins:
+    subprocess.check_call(['git', 'remote', 'add', pr_owner_name, 'git@github.com:%s/%s' % (pr_owner_name, pr_repo_name)])
+
+subprocess.check_call(['git', 'push', pr_owner_name, 'HEAD:%s' % pr_branch] + sys.argv[1:])
