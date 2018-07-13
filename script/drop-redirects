@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+
+require 'cgi'
+require 'uri'
+require 'nokogiri'
+
+doc = nil
+File.open(path = ARGV.shift) do |f|
+  doc = Nokogiri::HTML(f)
+end
+
+doc.xpath('//a').each do |a|
+  href = a.attr('href')
+  if href =~ %r,^https://www.google.com/url,
+    uri = URI.parse(href)
+    params = CGI.parse(uri.query)
+    href = params['q'].first
+    if href.strip.empty?
+      raise "Empty url"
+    end
+    a.set_attribute('href', href)
+  end
+end
+
+File.open(path, 'w') do |f|
+  f << doc.to_html
+end
