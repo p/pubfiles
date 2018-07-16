@@ -6,66 +6,97 @@
 
 import urllib2, json, sys, re, subprocess
 
-output = subprocess.check_output(['git', 'branch'])
-branch = None
-for line in output.split("\n"):
-    if line[0] == '*':
-        branch = line[1:].strip()
-        break
+class BranchLookupError(StandardError): pass
+class UnexpectedBranchName(StandardError): pass
+class UnexpectedRemoteUrl(StandardError): pass
+
+def get_current_branch():
+    output = subprocess.check_output(['git', 'branch'])
+    branch = None
+    for line in output.split("\n"):
+        if line[0] == '*':
+            branch = line[1:].strip()
+            break
+            
+    if branch is None:
+        raise BranchLookupError, 'Cannot figure out current branch'
         
-if branch is None:
-    sys.stderr.write('Cannot figure out current branch'+"\n")
-    exit(4)
+    return branch
 
-match = re.match(r'pr-(\d+)$', branch)
-if match is None:
-    sys.stderr.write('Current branch is not of pr-123 format'+"\n")
-    exit(4)
-
-pr_num = int(match.group(1))
-
-# now figure out what repo we are working with
-
-output = subprocess.check_output(['git', 'remote', '-v'])
-lines = output.strip().split("\n")
-origins = [line.split("\t")[0] for line in lines]
-
-if 'upstream' in origins:
-    origin = 'upstream'
-elif 'origin' in origins:
-    origin = 'origin'
-else:
-    sys.stderr.write('Cannot figure out the origin'+"\n")
-    exit(4)
-    
-for line in lines:
-    name, url, which = re.split(r'\s+', line)
-    if name == origin:
-        if which == '(push)':
-            remote_url = url
-
-match = re.match(r'git@github.com:(\w+)/(\w+?)(.git)?$', remote_url)
-if match is None:
-    match = re.match(r'https://github.com/(\w+)/(\w+?)(.git)?$', remote_url)
+def get_current_pr_num():
+    branch = get_current_branch()
+    match = re.match(r'pr-(\d+)$', branch)
     if match is None:
-        sys.stderr.write("%s remote is a weird url\n" % origin)
-        exit(4)
+        raise UnexpectedBranchName, 'Current branch is not of pr-123 format'
+
+    pr_num = int(match.group(1))
+    return pr_num
+
+def get_remote_names():
+    output = subprocess.check_output(['git', 'remote', '-v'])
+    lines = output.strip().split("\n")
+    names = [line.split("\t")[0] for line in lines]
+    return names
+
+def get_upstream_remote_name():
+    names = get_remote_names()
+
+    if 'upstream' in names:
+        name = 'upstream'
+    elif 'origin' in names:
+        name = 'origin'
+    else:
+        raise RemoteLookupError, 'Cannot determine the upstream remote'
+        
+    return name
+
+def get_remote_push_url(remote_name):
+    output = subprocess.check_output(['git', 'remote', '-v'])
+    lines = output.strip().split("\n")
     
-upstream_owner_name = match.group(1)
-upstream_repo_name = match.group(2)
+    remote_url = None
+    for line in lines:
+        name, url, which = re.split(r'\s+', line)
+        if name == remote_name:
+            if which == '(push)':
+                remote_url = url
+                break
 
-# now find out who made the PR
+    if remote_url is None:
+        raise RemoteLookupError, 'Cannot find remote %s' % remote_name
+        
+    return remote_url
+
+def split_github_url(remote_url):
+    match = re.match(r'git@github.com:(\w+)/(\w+?)(.git)?$', remote_url)
+    if match is None:
+        match = re.match(r'https://github.com/(\w+)/(\w+?)(.git)?$', remote_url)
+        if match is None:
+            raise UnexpectedRemoteUrl, "Weird url: %s" % remote_url
     
-api_url = 'https://api.github.com/repos/%s/%s/pulls/%s' % (upstream_owner_name, upstream_repo_name, pr_num)
+    return match.group(1), match.group(2)
 
-c = urllib2.urlopen(api_url).read()
-payload = json.loads(c)
+def get_pr_info(upstream_owner_name, upstream_repo_name, pr_num):
+    api_url = 'https://api.github.com/repos/%s/%s/pulls/%s' % (upstream_owner_name, upstream_repo_name, pr_num)
 
-pr_owner_name = payload['head']['user']['login']
-pr_repo_name = payload['head']['repo']['name']
-pr_branch = payload['head']['ref']
+    c = urllib2.urlopen(api_url).read()
+    payload = json.loads(c)
 
-if pr_owner_name not in origins:
+    pr_owner_name = payload['head']['user']['login']
+    pr_repo_name = payload['head']['repo']['name']
+    pr_branch = payload['head']['ref']
+    
+    return pr_owner_name, pr_repo_name, pr_branch
+
+branch = get_current_branch()
+pr_num = get_current_pr_num()
+origin = get_upstream_remote_name()
+remote_url = get_remote_push_url(origin)
+upstream_owner_name, upstream_repo_name = split_github_url(remote_url)
+pr_owner_name, pr_repo_name, pr_branch = get_pr_info(
+    upstream_owner_name, upstream_repo_name, pr_num)
+
+if pr_owner_name not in get_remote_names():
     subprocess.check_call(['git', 'remote', 'add', pr_owner_name, 'git@github.com:%s/%s' % (pr_owner_name, pr_repo_name)])
 
 subprocess.check_call(['git', 'push', pr_owner_name, 'HEAD:%s' % pr_branch] + sys.argv[1:])

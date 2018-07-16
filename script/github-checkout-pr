@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+
+import sys, subprocess
+
+def get_remote_names():
+    output = subprocess.check_output(['git', 'remote', '-v'])
+    lines = output.strip().split("\n")
+    names = [line.split("\t")[0] for line in lines]
+    return names
+
+def get_upstream_remote_name():
+    names = get_remote_names()
+
+    if 'upstream' in names:
+        name = 'upstream'
+    elif 'origin' in names:
+        name = 'origin'
+    else:
+        raise RemoteLookupError, 'Cannot determine the upstream remote'
+        
+    return name
+
+pr_num = int(sys.argv[1])
+
+origin = get_upstream_remote_name()
+
+subprocess.check_call(['git', 'fetch', origin, 'pull/%d/head' % pr_num])
+subprocess.check_call(['git', 'branch', 'pr-%d' % pr_num, 'FETCH_HEAD'])
+subprocess.check_call(['git', 'checkout', 'pr-%d' % pr_num])
