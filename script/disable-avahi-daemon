@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# devuan
+sudo which sysv-rc-conf || (apt-get update && apt-get install sysv-rc-conf)
+
+suod update-rc.d avahi-daemon disable
