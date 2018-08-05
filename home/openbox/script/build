@@ -1,0 +1,47 @@
+#!/usr/bin/env ruby
+
+require 'erb'
+require 'pathname'
+require 'tempfile'
+
+class Builder
+  def src_base
+    @src_base ||= Pathname.new(__FILE__).dirname.join('..')
+  end
+
+  def build
+    Dir.mktmpdir do |dir|
+      files = %w(rc.xml menu.xml)
+      files.each do |file|
+        transform_template(file, dir)
+      end
+      files.each do |file|
+        install_file(file, dir)
+      end
+    end
+  end
+
+  def transform_template(basename, dest_dir)
+    content = File.read(src_base.join(basename))
+    template = ERB.new(content)
+    result = template.result(binding)
+    File.open(tmp_rc_path = File.join(dest_dir, basename), 'w') do |f|
+      f << result
+    end
+  end
+
+  def install_file(basename, tmp_dir)
+    FileUtils.mkdir_p(openbox_rc_root)
+    FileUtils.cp(File.join(tmp_dir, basename), openbox_rc_root.join(basename))
+  end
+
+  def openbox_rc_root
+    if path = ENV['XDG_CONFIG_HOME']
+    else
+      raise "XDG_CONFIG_HOME not set"
+    end
+    Pathname.new(path).join('openbox')
+  end
+end
+
+Builder.new.build
