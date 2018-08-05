@@ -22,11 +22,15 @@ class Builder
   end
 
   def transform_template(basename, dest_dir)
-    content = File.read(src_base.join(basename))
-    template = ERB.new(content)
-    result = template.result(binding)
-    File.open(tmp_rc_path = File.join(dest_dir, basename), 'w') do |f|
-      f << result
+    if File.exist?(template_path = src_base.join(basename + '.erb'))
+      content = File.read(template_path)
+      template = ERB.new(content)
+      result = template.result(binding)
+      File.open(tmp_rc_path = File.join(dest_dir, basename), 'w') do |f|
+        f << result
+      end
+    else
+      FileUtils.cp(src_base.join(basename), dest_dir)
     end
   end
 
