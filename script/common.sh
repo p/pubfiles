@@ -1,3 +1,5 @@
+apt_updated=false
+
 have() {
   which "$1" >/dev/null 2>&1
 }
@@ -15,7 +17,6 @@ is_laptop() {
 }
 
 is_devuan() {
-  :
 }
 
 # actual debian, not derivative
@@ -48,6 +49,14 @@ install_if_needed() {
   done
   if test -n "$needed"; then
     echo "Installing packages: $needed"
+    if ! $apt_updated; then
+      if test `id -u` = 0; then
+        apt-get update
+      else
+        sudo apt-get update
+      fi
+      apt_updated=true
+    fi
     if test `id -u` = 0; then
       apt-get install $needed
     else
