@@ -17,6 +17,7 @@ is_laptop() {
 }
 
 is_devuan() {
+  :
 }
 
 # actual debian, not derivative
