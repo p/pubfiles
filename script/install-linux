@@ -61,6 +61,10 @@ if is_headful; then
   fi
 fi
 
+if lspci -v|grep iwlwifi; then
+  install_if_needed firmware-iwlwifi
+fi
+
 echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' > /etc/sudoers.d/sudo-group
 chmod 0400 /etc/sudoers.d/sudo-group
 
