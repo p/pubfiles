@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e
+
+mkdir -p $HOME/bin
+
+if which curl >/dev/null 2>/dev/null; then
+  curl -o $HOME/bin/n https://raw.githubusercontent.com/tj/n/master/bin/n
+else
+  wget -qO- $HOME/bin/n https://raw.githubusercontent.com/tj/n/master/bin/n
+fi
+
+chmod +x $HOME/bin/n
