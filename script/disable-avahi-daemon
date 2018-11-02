@@ -1,6 +1,13 @@
 #!/bin/sh
 
 # devuan
-sudo which sysv-rc-conf || (apt-get update && apt-get install sysv-rc-conf)
+if false; then
+sudo which sysv-rc-conf || (sudo apt-get update && sudo apt-get install sysv-rc-conf)
 
-suod update-rc.d avahi-daemon disable
+sudo update-rc.d avahi-daemon disable
+else
+:
+
+fi
+
+sudo apt-get remove avahi-daemon
