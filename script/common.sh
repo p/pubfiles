@@ -14,6 +14,18 @@ is_laptop() {
   fi
 }
 
+is_devuan() {
+}
+
+# actual debian, not derivative
+is_debian() {
+  if have lsb_release; then
+    test "`lsb_release -si`" = Debian
+  else
+    test -f /etc/debian_version
+  fi
+}
+
 have_user() {
   id "$1" >/dev/null 2>&1
 }
