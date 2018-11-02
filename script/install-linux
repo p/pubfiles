@@ -27,14 +27,18 @@ echo Multimedia: `install_mm; yesno $?`
 
 if is_debian; then
   sources_list_src=$BASE/../config/apt/debian/sources.list
-  if ! diff -q $sources_list /etc/apt/sources.list; then
-    backup_path=/etc/apt/sources.list.`date +%Y%m%d`
+  sources_list_dest=/etc/apt/sources.list
+  if ! test -e $sources_list_dest; then
+    install -m 644 $sources_list_src $sources_list_dest
+    apt-get update
+  elif ! diff -q $sources_list_src /etc/apt/sources.list; then
+    backup_path=$sources_list_dest.`date +%Y%m%d`
     if test -e $backup_path; then
       echo $backup_path already exists, aborting 1>&2
       exit 2
     fi
     mv /etc/apt/sources.list $backup_path
-    install -m 644 $sources_list /etc/apt/sources.list
+    install -m 644 $sources_list_src $sources_list_dest
     apt-get update
   fi
 fi
