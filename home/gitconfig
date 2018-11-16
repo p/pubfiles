@@ -27,6 +27,7 @@
 	aa = add -A
 	rbs = rebase --skip
 	pp = push p -u
+	g = grep
 
 [user]
 	name = Oleg Pudeyev
