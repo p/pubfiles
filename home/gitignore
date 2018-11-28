@@ -3,3 +3,4 @@ SciTEDirectory.properties
 *.pyc
 *~
 venv
+node_modules
