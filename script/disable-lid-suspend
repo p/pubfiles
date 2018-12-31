@@ -1,0 +1,11 @@
+#!/bin/sh
+
+set -e
+
+logind_path=/etc/elogind/logind.conf
+if test -f $logind_path; then
+  sed -i -e '/^HandleLidSwitch/s/^/#/' -e 's/^\[Login]$/[Login]'"\n"'HandleLidSwitch=ignore/' $logind_path
+else
+  echo "logind.conf not found" 1>&2
+  exit 2
+fi
