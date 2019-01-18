@@ -19,7 +19,7 @@ pr_owner_name, pr_repo_name, pr_branch = github.get_pr_info(
     upstream_owner_name, upstream_repo_name, pr_num)
 
 if pr_owner_name not in github.get_remote_names():
-    subprocess.check_call(['git', 'remote', 'add', pr_owner_name, 'https://github.com/%s/%s' % (pr_owner_name, pr_repo_name)])
+    #subprocess.check_call(['git', 'remote', 'add', pr_owner_name, 'https://github.com/%s/%s' % (pr_owner_name, pr_repo_name)])
     subprocess.check_call(['git', 'remote', 'add', pr_owner_name, 'git@github.com:%s/%s' % (pr_owner_name, pr_repo_name)])
 
 subprocess.check_call(['git', 'push', pr_owner_name, 'HEAD:%s' % pr_branch] + sys.argv[1:])
