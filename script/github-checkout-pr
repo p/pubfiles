@@ -27,9 +27,11 @@ pr_owner_name, pr_repo_name, pr_branch = github.get_pr_info(
 
 if pr_owner_name not in github.get_remote_names():
     subprocess.check_call(['git', 'remote', 'add', pr_owner_name, 'https://github.com/%s/%s' % (pr_owner_name, pr_repo_name)])
-    subprocess.check_call(['git', 'remote', 'set-url --push', pr_owner_name, 'git@github.com:%s/%s' % (pr_owner_name, pr_repo_name)])
+    subprocess.check_call(['git', 'remote', 'set-url', '--push', pr_owner_name, 'git@github.com:%s/%s' % (pr_owner_name, pr_repo_name)])
+
+subprocess.check_call(['git', 'fetch', pr_owner_name])
 
 subprocess.check_call(['git', 'checkout', 'master'])
+#import pdb;pdb.set_trace()
 subprocess.check_call(['git', 'checkout', '-b', 'pr-%d' % pr_num,
-    '--track', '%s/%s' % (pr_owner_name, upstream_repo_name)])
-subprocess.check_call(['git', 'checkout', 'pr-%d' % pr_num])
+    '--track', '%s/%s' % (pr_owner_name, pr_branch)])
