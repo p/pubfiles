@@ -38,5 +38,7 @@ with open('/etc/network/interfaces.d/%s' % wired_interface, 'w') as f:
 
 for interface in interfaces['wireless']:
     subprocess.call(['ifdown', interface])
+subprocess.call(['pkill', '-9', 'ifup'])
+subprocess.call(['pkill', '-9', 'ifdown'])
 subprocess.call(['ifdown', wired_interface])
 subprocess.check_call(['ifup', wired_interface])
