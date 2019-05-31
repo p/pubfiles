@@ -1,0 +1,30 @@
+#!/usr/bin/env ruby
+
+require 'fileutils'
+require 'exifr/jpeg'
+autoload :Magick, 'rmagick'
+
+ARGV.each do |path|
+  puts(path)
+  exif = EXIFR::JPEG.new(path)
+  if exif.orientation && exif.orientation.to_sym != :TopLeft
+    img = Magick::Image.from_blob(File.read(path)).first
+    new_img = exif.orientation.transform_rmagick(img)
+    new_img.strip!
+    begin
+      begin
+        tmp_path = path + '.rotated'
+        File.open(tmp_path, 'w') do |f|
+          f << new_img.to_blob
+        end
+        FileUtils.mv(tmp_path, path)
+      rescue
+        FileUtils.rm_f(tmp_path)
+        raise
+      end
+    ensure
+      img.destroy!
+      new_img.destroy!
+    end
+  end
+end
