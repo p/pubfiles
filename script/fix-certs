@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Adds text description of the certificate to the top of the file,
+# and puts newline at the end if one is not already there.
+
+for src in "$@"; do
+  if test -d "$src"; then
+    find "$src" -type f -exec "$0" {} \;
+  else
+    openssl -text -in "$src" |awk '{print $0}' >"$src.exp" && mv "$src".exp "$src"
+  fi
+done
