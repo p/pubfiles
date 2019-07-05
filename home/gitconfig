@@ -28,6 +28,7 @@
 	rbs = rebase --skip
 	pp = push p -u
 	g = grep
+	mnf = merge --no-ff
 
 [user]
 	name = Oleg Pudeyev
