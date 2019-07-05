@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+
+require 'fileutils'
+
+Dir['*.mp3'].each do |path|
+  bpm_path = "#{path}.bpm"
+  unless File.file?(bpm_path)
+    next
+  end
+  
+  bpm = File.read(bpm_path).to_i
+  if bpm == 0
+    next
+  end
+  
+  bpm_group = (bpm / 10) * 10
+  
+  dest_dir = "bpm/#{bpm_group}"
+  
+  p path, bpm_group
+  
+  FileUtils.mkdir_p(dest_dir)
+  FileUtils.cp(path, dest_dir)
+end
