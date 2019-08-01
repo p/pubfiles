@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -e
+
+if echo "$1" |grep -q '^-'; then
+  kill_arg="$1"
+  shift
+fi
+
+ps awwxu |grep "$@" |awk '{print $2}' |grep -vx "$$" |xargs kill $kill_arg
