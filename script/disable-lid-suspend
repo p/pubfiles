@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# disable sleep on lid close
+# https://unix.stackexchange.com/questions/307497/gnome-disable-sleep-on-lid-close
+
 set -e
 
 logind_path=/etc/elogind/logind.conf
