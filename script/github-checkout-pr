@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import urllib2
 import sys, subprocess, os.path, os
 
 pr_num = int(sys.argv[1])
@@ -22,16 +23,21 @@ import github
 origin = github.get_upstream_remote_name()
 remote_url = github.get_remote_fetch_url(origin)
 upstream_owner_name, upstream_repo_name = github.split_github_url(remote_url)
-pr_owner_name, pr_repo_name, pr_branch = github.get_pr_info(
-    upstream_owner_name, upstream_repo_name, pr_num)
+try:
+    pr_owner_name, pr_repo_name, pr_branch = github.get_pr_info(
+        upstream_owner_name, upstream_repo_name, pr_num)
+except urllib2.HTTPError:
+    sys.stderr.write("Unable to get PR info, will checkout without setting up the remote\n")
+    subprocess.check_call(['git', 'fetch', 'origin', 'pull/%s/head:pr-%s' % (pr_num, pr_num)])
+    subprocess.check_call(['git', 'checkout', 'pr-%d' % pr_num])
+else:
+    if pr_owner_name not in github.get_remote_names():
+        subprocess.check_call(['git', 'remote', 'add', pr_owner_name, 'https://github.com/%s/%s' % (pr_owner_name, pr_repo_name)])
+        subprocess.check_call(['git', 'remote', 'set-url', '--push', pr_owner_name, 'git@github.com:%s/%s' % (pr_owner_name, pr_repo_name)])
 
-if pr_owner_name not in github.get_remote_names():
-    subprocess.check_call(['git', 'remote', 'add', pr_owner_name, 'https://github.com/%s/%s' % (pr_owner_name, pr_repo_name)])
-    subprocess.check_call(['git', 'remote', 'set-url', '--push', pr_owner_name, 'git@github.com:%s/%s' % (pr_owner_name, pr_repo_name)])
+    subprocess.check_call(['git', 'fetch', pr_owner_name])
 
-subprocess.check_call(['git', 'fetch', pr_owner_name])
-
-subprocess.check_call(['git', 'checkout', 'master'])
-#import pdb;pdb.set_trace()
-subprocess.check_call(['git', 'checkout', '-b', 'pr-%d' % pr_num,
-    '--track', '%s/%s' % (pr_owner_name, pr_branch)])
+    subprocess.check_call(['git', 'checkout', 'master'])
+    #import pdb;pdb.set_trace()
+    subprocess.check_call(['git', 'checkout', '-b', 'pr-%d' % pr_num,
+        '--track', '%s/%s' % (pr_owner_name, pr_branch)])
