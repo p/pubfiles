@@ -7,4 +7,7 @@ if echo "$1" |grep -q '^-'; then
   shift
 fi
 
-ps awwxu |grep "$@" |awk '{print $2}' |grep -vx "$$" |xargs kill $kill_arg
+for p in `ps awwxu |grep "$@" |awk '{print $2}' |grep -vx "$$"`; do
+  kill $kill_arg $p || true
+done
+
