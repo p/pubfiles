@@ -5,7 +5,7 @@ set -e
 if test "`id -u`" != 0; then
   if which sudo 2>/dev/null 1>&2; then
     echo "This needs to be run as root, trying sudo" 1>&2
-    exec sudo "$0" "$@"
+    exec sudo sh -x "$0" "$@"
   else
     echo "This needs to be run as root" 1>&2
     exit 2
@@ -70,8 +70,14 @@ chmod 0400 /etc/sudoers.d/sudo-group
 
 install_if_needed nvi
 update-alternatives --set editor /usr/bin/nvi
+update-alternatives --set vi /usr/bin/nvi
 
 chsh -s /bin/zsh root
+if test "`id -u`" = 0 && test -n "$SUDO_USER"; then
+  user=$SUDO_USER
+elif test "`id -u`" != 0; then
+  chsh -s /bin/zsh `id -un`
+fi
 
 if have_user me; then
   chsh -s /bin/zsh me

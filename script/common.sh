@@ -29,6 +29,10 @@ is_debian() {
   fi
 }
 
+is_ubuntu() {
+  test "`lsb_release -is`" = Ubuntu 2>/dev/null
+}
+
 have_user() {
   id "$1" >/dev/null 2>&1
 }
@@ -69,7 +73,7 @@ install_if_needed() {
 # MACHINES
 
 is_headful() {
-  ! grep -q 'Intel.*Q9300' /proc/cpuinfo
+  ! grep -q 'Intel.*Q9300' /proc/cpuinfo && ! is_ubuntu
 }
 
 install_mm() {
