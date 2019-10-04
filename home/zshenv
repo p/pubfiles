@@ -11,7 +11,7 @@ if test -d "$HOME/.rbenv/bin"; then
   export PATH="$HOME/.rbenv/bin:$PATH"
 fi
 
-if test -d "$HOME/bin"; then
-  export PATH="$HOME/bin:$PATH"
-fi
 export PATH=$PATH:~/.local/bin
+
+# Recent linuxes botch date format, get the old one back
+export LC_ALL=C
