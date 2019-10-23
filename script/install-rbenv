@@ -14,7 +14,11 @@ else
   git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build
 fi
 
-git clone git://github.com/tpope/rbenv-aliases.git ~/.rbenv/plugins/rbenv-aliases
+if test -d ~/.rbenv/plugins/rbenv-aliases; then
+  (cd ~/.rbenv/plugins/rbenv-aliases && git pull)
+else
+  git clone git://github.com/tpope/rbenv-aliases.git ~/.rbenv/plugins/rbenv-aliases
+fi
 
 rbenv alias --auto || true
 
