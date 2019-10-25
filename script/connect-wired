@@ -28,6 +28,9 @@ def identify_interfaces():
                 wired.append(interface_name)
     return dict(wired=wired, wireless=wireless)
 
+subprocess.call(['pkill', '-9', 'ifdown'])
+subprocess.call(['pkill', '-9', 'ifup'])
+
 interfaces = identify_interfaces()
 wired_interface = interfaces['wired'][0]
 
