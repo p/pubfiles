@@ -32,4 +32,5 @@ if have bundler; then
   #alias bs='bundle exec rspec --format Fuubar'
   alias brs='bundle exec rescue rspec'
   alias bpa='bundle pack --all'
+  alias rrake='rm -f *.lock; rake'
 fi
