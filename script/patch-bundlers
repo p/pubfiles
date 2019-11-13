@@ -1,0 +1,4 @@
+#!/bin/sh
+
+find $HOME/.rbenv -name lockfile_parser.rb -path '*/bundler*/*' -exec \
+  sed -i -e 's/raise.*You must use Bundler/#raise LockfileError, "Use any bundler you like"/' {} \;
