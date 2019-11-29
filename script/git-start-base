@@ -5,11 +5,10 @@ set -e
 base="$1"
 
 if test -z "$base"; then
-  echo "Usage: `basename "$0"` base-numebr" 1>&2
-  exit 1
+  branch="base"
+else
+  branch="base-$base"
 fi
-
-branch="base-$base"
 
 git branch -D "$branch" || true
 git checkout master
