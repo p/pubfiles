@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -e
+
+dest=$1
+shift
+
+if test -z "$dest"; then
+  echo "Provide port number or url" 1>&2
+  exit 1
+fi
+
+port=`echo $dest |sed -e 's/.*://'`
+
+exec ssh -p $port 0.tcp.ngrok.io "$@"
