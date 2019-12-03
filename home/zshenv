@@ -15,3 +15,5 @@ export PATH=$PATH:~/.local/bin
 
 # Recent linuxes botch date format, get the old one back
 export LC_ALL=C
+
+export FILTER_BRANCH_SQUELCH_WARNING=1
