@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -e
+
+	for f in *.go ./**/*.go; do 
+	if test -n "${GOPATH}"; then
+		${GOPATH}/bin/goimports -w $f
+		fi
+		go fmt $f && sed -i -e 's/	/  /g' $f; \
+	done
