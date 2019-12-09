@@ -15,4 +15,6 @@ compinit
 . ~/apps/pubfiles/home/zshrc.git
 . ~/apps/pubfiles/home/zshrc.ruby
 
-rbenv shell 2.4.2
+if which rbenv >/dev/null 2>&1; then
+  rbenv shell 2.6
+fi
