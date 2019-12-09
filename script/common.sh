@@ -48,7 +48,7 @@ yesno() {
 install_if_needed() {
   needed=
   for pkg in "$@"; do
-    if ! dpkg -L "$pkg" >/dev/null 2>&1; then
+    if ! dpkg-query -l "$pkg" |sed -e '1,/^++/d' |grep -q ^i >/dev/null 2>&1; then
       needed="$needed $pkg"
     fi
   done
