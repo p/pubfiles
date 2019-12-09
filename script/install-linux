@@ -114,3 +114,7 @@ fi
 echo 'blacklist pcspkr' >> /etc/modprobe.d/blacklist.conf
 
 "$(dirname $0)"/disable-lid-suspend
+
+if test -f /usr/bin/gtkterm2; then
+  update-alternatives --set x-terminal-emulator /usr/bin/gtkterm2
+fi
