@@ -17,7 +17,7 @@ is_laptop() {
 }
 
 is_devuan() {
-  :
+  grep -qi devuan /etc/issue
 }
 
 # actual debian, not derivative

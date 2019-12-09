@@ -25,7 +25,9 @@ echo Installing for:
 echo Headful: `is_headful; yesno $?`
 echo Multimedia: `install_mm; yesno $?`
 
-if is_debian; then
+if is_devuan; then
+ :
+elif is_debian; then
   sources_list_src=$BASE/../config/apt/debian/sources.list
   sources_list_dest=/etc/apt/sources.list
   if ! test -e $sources_list_dest; then
