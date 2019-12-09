@@ -77,5 +77,5 @@ is_headful() {
 }
 
 install_mm() {
-  ! grep -q 'Intel.*7700K' /proc/cpuinfo
+  ! hostname |grep -q special
 }
