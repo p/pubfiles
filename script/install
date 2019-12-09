@@ -23,21 +23,23 @@ inst() {
   ln -fs "$base"/home/"$what" "$dest"/."$what"
 }
 
-if have scite; then
-  inst SciTEUser.properties
+if test `id -u` != 0; then
+  if have scite; then
+    inst SciTEUser.properties
+  fi
+
+  if have gtkterm2; then
+    inst gtkterm2rc
+  fi
+
+  if have xscreensaver; then
+    inst xscreensaver
+  fi
 fi
 
 if have git; then
   inst gitignore
   inst gitconfig
-fi
-
-if have gtkterm2; then
-  inst gtkterm2rc
-fi
-
-if have xscreensaver; then
-  inst xscreensaver
 fi
 
 if have zsh; then
