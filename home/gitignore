@@ -4,3 +4,4 @@ SciTEDirectory.properties
 *~
 venv
 node_modules
+.*.swp
