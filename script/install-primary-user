@@ -5,4 +5,10 @@ set -e
 mkdir -p "$HOME"/bin
 ln -sf /usr/sbin/pm-suspend "$HOME"/bin/pm-suspend
 
-cp home/xscreensaver $HOME/.xscreensaver
+if ! test -f $HOME/.xscreensaver; then
+  ln -s home/xscreensaver $HOME/.xscreensaver
+fi
+
+if ! test -f $HOME/.xinitrc; then
+  cp home/xinitrc $HOME/.xinitrc
+fi
