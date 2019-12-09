@@ -30,7 +30,8 @@ is_debian() {
 }
 
 is_ubuntu() {
-  test "`lsb_release -is`" = Ubuntu 2>/dev/null
+  # TODO is lsb_release always present on ubuntus?
+  have lsb_release && test "`lsb_release -is`" = Ubuntu 2>/dev/null
 }
 
 have_user() {
