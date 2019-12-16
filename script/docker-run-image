@@ -1,0 +1,56 @@
+#!/usr/bin/env ruby
+
+image_name, port = ARGV
+
+unless port
+  raise "Usage: docker-run-image image-name port"
+end
+
+# gem install docker-api
+require 'docker'
+require 'yaml'
+require 'base64'
+
+Docker.validate_version!
+
+config = YAML.load(File.read(File.expand_path('~/.docker/config.json')))
+auth = config['auths']['https://index.docker.io/v1/']['auth']
+username, password = Base64.decode64(auth).split(':')
+
+Docker.authenticate!(username: username, password: password)
+
+image = Docker::Image.create(fromImage: image_name)
+puts "#{image_name} => #{image.id}"
+
+containers = Docker::Container.all(all: true)
+container = containers.detect do |c|
+  c.info['ImageID'] == image.id
+end
+
+if container.nil?
+  container = Docker::Container.create(Image: image_name)
+end
+
+container = Docker::Container.get(container.id)
+
+status = container.info['State']['Status']
+if status == 'running'
+  puts "Container #{container.id} for #{image_name} is already running"
+else
+  puts "Starting container for #{image_name}"
+  container.start!
+end
+
+if false
+require 'byebug'
+byebug
+1
+end
+
+container = Docker::Container.get(container.id)
+status = container.info['State']['Status']
+if status != 'running'
+  raise "Bad status #{status} for container #{container.id}"
+end
+
+#p image
