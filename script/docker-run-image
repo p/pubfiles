@@ -1,9 +1,11 @@
 #!/usr/bin/env ruby
 
-image_name, port = ARGV
+# Port forwarding docs: https://github.com/moby/moby/issues/2785
 
-unless port
-  raise "Usage: docker-run-image image-name port"
+image_name, container_port, host_port = ARGV
+
+unless host_port
+  raise "Usage: docker-run-image image-name container-port host-port"
 end
 
 # gem install docker-api
@@ -28,17 +30,23 @@ container = containers.detect do |c|
 end
 
 if container.nil?
-  container = Docker::Container.create(Image: image_name)
+  container = Docker::Container.create(
+    Image: image_name,
+  )
 end
 
 container = Docker::Container.get(container.id)
+
+#container.delete(force: true)
 
 status = container.info['State']['Status']
 if status == 'running'
   puts "Container #{container.id} for #{image_name} is already running"
 else
   puts "Starting container for #{image_name}"
-  container.start!
+  container.start!(PortBindings: {
+    "#{container_port}/tcp" => [{HostPort: host_port.to_s}],
+  })
 end
 
 if false
