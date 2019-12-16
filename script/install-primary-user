@@ -3,7 +3,9 @@
 set -e
 
 mkdir -p "$HOME"/bin
-ln -sf /usr/sbin/pm-suspend "$HOME"/bin/pm-suspend
+if test -x /usr/sbin/pm-suspend; then
+  ln -sf /usr/sbin/pm-suspend "$HOME"/bin/pm-suspend
+fi
 
 if ! test -f $HOME/.xscreensaver; then
   ln -s home/xscreensaver $HOME/.xscreensaver
