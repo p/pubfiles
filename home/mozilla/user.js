@@ -1,6 +1,9 @@
 // Disabling websites messing with pasting passwords:
 // https://www.cyberciti.biz/linux-news/google-chrome-extension-to-removes-password-paste-blocking-on-website/
 
+// Pale moon pref list:
+// https://forum.palemoon.org/viewtopic.php?f=24&t=3357&p=19126
+
 // Bogus pref detection:
 // 1. Change a pref in about:config.
 // 2. Quit browser.
@@ -165,3 +168,9 @@ user_pref('browser.urlbar.userMadeSearchSuggestionsChoice', true);
 user_pref('browser.ctrlTab.previews', false)
 
 user_pref('extensions.pocket.enabled', false)
+
+// disable switch to tab in pale moon
+// https://forum.palemoon.org/viewtopic.php?t=10186
+// all values:
+// https://forum.palemoon.org/viewtopic.php?f=3&t=8757&p=58089&hilit=Browser.urlbar.default.behavior#p58089
+user_pref('browser.urlbar.default.behavior', 128)
