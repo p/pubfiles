@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -e
+
+base=/usr/local/n/versions/node
+
+version=`ls $base/ |sort |tail -n 1`
+
+for f in $base/$version/bin/*; do
+  echo `basename "$f"`
+  ln -fs "$f" $HOME/bin/`basename "$f"`
+done
