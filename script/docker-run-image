@@ -2,10 +2,10 @@
 
 # Port forwarding docs: https://github.com/moby/moby/issues/2785
 
-image_name, container_port, host_port = ARGV
+image_name, container_port, host_port, host_bind_ip = ARGV
 
 unless host_port
-  raise "Usage: docker-run-image image-name container-port host-port"
+  raise "Usage: docker-run-image image-name container-port host-port [host-bind-ip]"
 end
 
 # gem install docker-api
@@ -44,9 +44,15 @@ if status == 'running'
   puts "Container #{container.id} for #{image_name} is already running"
 else
   puts "Starting container for #{image_name}"
-  container.start!(PortBindings: {
-    "#{container_port}/tcp" => [{HostPort: host_port.to_s}],
-  })
+  spec = {HostPort: host_port.to_s}
+  if host_bind_ip
+    spec[:HostIp] = host_bind_ip
+  end
+  config = {PortBindings: {
+    "#{container_port}/tcp" => [spec],
+  }}
+  puts config
+  container.start!(config)
 end
 
 if false
