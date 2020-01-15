@@ -5,10 +5,36 @@
 
 set -e
 
-logind_path=/etc/elogind/logind.conf
-if test -f $logind_path; then
-  sed -i -e '/^HandleLidSwitch/s/^/#/' -e 's/^\[Login]$/[Login]'"\n"'HandleLidSwitch=ignore/' $logind_path
+devuan_logind_path=/etc/elogind/logind.conf
+debian_logind_path=/etc/systemd/logind.conf
+
+if test "`id -u`" != 0; then
+  if which sudo 2>/dev/null 1>&2; then
+    echo "This needs to be run as root, trying sudo" 1>&2
+    exec sudo sh -x "$0" "$@"
+  else
+    echo "This needs to be run as root" 1>&2
+    exit 2
+  fi
+fi
+
+done=false
+
+if test -f $devuan_logind_path; then
+  logind_path=$devuan_logind_path
+elif test -f $debian_logind_path; then
+  logind_path=$debian_logind_path
 else
-  echo "logind.conf not found" 1>&2
+  logind_path=
+fi
+
+if test -n "$logind_path"; then
+  sed -i -e '/^HandleLidSwitch/s/^/#/' -e 's/^\[Login]$/[Login]'"\n"'HandleLidSwitch=ignore/' $logind_path
+  sed -i -e '/^HandleLidSwitchDocked/s/^/#/' -e 's/^\[Login]$/[Login]'"\n"'HandleLidSwitchDocked=ignore/' $logind_path
+  done=true
+fi
+
+if ! $done; then
+  echo "Unknown system" 1>&2
   exit 2
 fi
