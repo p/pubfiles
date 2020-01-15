@@ -1,0 +1,24 @@
+#!/bin/sh
+
+set -e
+
+if test "`id -u`" != 0; then
+  if which sudo 2>/dev/null 1>&2; then
+    echo "This needs to be run as root, trying sudo" 1>&2
+    exec sudo sh -x "$0" "$@"
+  else
+    echo "This needs to be run as root" 1>&2
+    exit 2
+  fi
+fi
+
+mkdir -p /etc/polkit-1/rules.d
+cat >/etc/polkit-1/rules.d/80-libvirt-manage.rules <<EOT
+polkit.addRule(function(action, subject) {
+  if (action.id == "org.libvirt.unix.manage" &&
+      subject.local && subject.active && (subject.user == "w" || subject.user == "me")) {
+      return polkit.Result.YES;
+  }
+});
+EOT
+
