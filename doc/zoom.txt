@@ -1,0 +1,2 @@
+Configure zoommtg: links in firefox:
+https://superuser.com/questions/1343020/how-to-configure-firefox-open-zoom-urls-using-zoom-application
