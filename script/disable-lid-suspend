@@ -39,6 +39,11 @@ if which systemctl >/dev/null 2>&1; then
   done=true
 fi
 
+if which systemctl >/dev/null 2>&1; then
+  systemctl mask sleep.target suspend.target
+  done=true
+fi
+
 if ! $done; then
   echo "Unknown system" 1>&2
   exit 2
