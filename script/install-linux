@@ -119,3 +119,21 @@ echo 'blacklist pcspkr' >> /etc/modprobe.d/blacklist.conf
 if test -f /usr/bin/gtkterm2; then
   update-alternatives --set x-terminal-emulator /usr/bin/gtkterm2
 fi
+
+# reduce password delay to a manageable level
+# https://unix.stackexchange.com/questions/2126/why-is-there-a-big-delay-after-entering-a-wrong-password
+# https://askubuntu.com/questions/877385/how-can-i-lower-the-delay-after-incorrectly-entered-login-and-sudo-passwords
+
+if test -f /etc/pam.d/sshd && test -f /etc/pam.d/login; then
+  # disable delay everywhere, then set it to 0.5 seconds by default
+  # and to 1 second for sshd
+  for f in /etc/pam.d/common*; do
+    sed -i -Ee 's/^(auth.*pam_unix.so)( nodelay)?(.*)/\1\3 nodelay/' $f
+    sed -i -Ee 's/^(auth.*pam_faildelay.so.*)/#\1/' $f
+  done
+  echo auth optional pam_faildelay.so delay=500000 |tee -a /etc/pam.d/login
+  echo auth optional pam_faildelay.so delay=1000000 |tee -a /etc/pam.d/sshd
+else
+  echo Unknown pam configuration 1>&2
+  exit 1
+fi
