@@ -55,10 +55,11 @@ install_if_needed \
   git curl make gcc \
   zip unzip net-tools rsync python-pip tmux
 
+# chromium is no longer here - use ungoogled-chromium
 if is_headful; then
   install_if_needed \
     gitk libvte9 scite feh \
-    firefox-esr xpdf evince chromium \
+    firefox-esr xpdf evince \
     xinit xauth openbox xscreensaver \
     xfonts-terminus
 
