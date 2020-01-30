@@ -1,0 +1,4 @@
+/etc/apt/sources.list.d/xmms.list:
+
+deb https://www.pvv.ntnu.no/~knuta/xmms/squeeze ./
+deb-src https://www.pvv.ntnu.no/~knuta/xmms/squeeze ./
