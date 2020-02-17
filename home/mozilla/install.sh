@@ -19,7 +19,7 @@ shift $((OPTIND-1))
 
 if ! test -d "$target"; then
 	echo "Trying to install to $target which does not exist." 1>&2
-	if test -f ~/.mozilla/firefox/profiles.ini; then
+	if test -f ~/.mozilla/firefox/profiles.ini || test -f ~/.moonchild\ productions/pale\ moon/profiles.ini; then
 		read -p "Found ~/.mozilla/firefox/profiles.ini, install to ~ ? [Yn] " yn
 		case $yn in
 		[yY])
