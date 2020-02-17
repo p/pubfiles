@@ -108,6 +108,13 @@ if is_laptop; then
     sed -i -e s/'^apm =/#apm =/' /etc/hdparm.conf
     echo apm = 255 |tee -a /etc/hdparm.conf
   fi
+
+  if ! grep -q '^spindown_time = 255' /etc/hdparm.conf; then
+    sed -i -e s/'^spindown_time =/#spindown_time =/' /etc/hdparm.conf
+    echo spindown_time = 255 |tee -a /etc/hdparm.conf
+  fi
+  
+  echo '/dev/sda { }' |tee -a /etc/hdparm.conf
 fi
 
 # disable beep
