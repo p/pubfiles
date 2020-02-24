@@ -4,5 +4,5 @@ set -e
 
 ids=$(docker container ls -a |tail +2 |awk '{print $1}')
 if test -n "$ids"; then
-  docker container rm $ids
+  docker container rm $ids "$@"
 fi
