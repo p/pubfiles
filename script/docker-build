@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -e
+
+name="$1"
+
+if test -z "$name"; then
+  echo "Image name not specified, using `basename $(pwd)`" 1>&2
+  name=`basename $(pwd)`
+fi
+
+docker build -t "$name" .
