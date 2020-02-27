@@ -2,6 +2,18 @@
 
 # Port forwarding docs: https://github.com/moby/moby/issues/2785
 
+require 'optparse'
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: docker-run-image [options] image-name container-port host-port [host-bind-ip]"
+
+  opts.on("-e", "--env FOO=BAR", "Set environment variable") do |v|
+    options[:env] ||= []
+    options[:env] << v
+  end
+end.parse!
+
 image_name, container_port, host_port, host_bind_ip = ARGV
 
 unless host_port
@@ -48,9 +60,14 @@ else
   if host_bind_ip
     spec[:HostIp] = host_bind_ip
   end
-  config = {PortBindings: {
-    "#{container_port}/tcp" => [spec],
-  }}
+  config = {
+    PortBindings: {
+      "#{container_port}/tcp" => [spec],
+    },
+  }
+  if options[:env]
+    config[:Env] = options[:env]
+  end
   puts config
   container.start!(config)
 end
