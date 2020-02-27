@@ -42,10 +42,12 @@ container = containers.detect do |c|
 end
 
 if container.nil?
-  container = Docker::Container.create(
+  config = {
     Image: image_name,
     Env: options[:env],
-  )
+  }
+  puts "Creating container with config: #{config}"
+  container = Docker::Container.create(config)
 end
 
 container = Docker::Container.get(container.id)
