@@ -103,7 +103,7 @@ fi
 
 if is_laptop; then
   install_if_needed \
-    acpi pm-utils hdparm wireless-tools wpasupplicant \
+    acpi pm-utils hdparm wireless-tools rfkill wpasupplicant \
     nfs-common
 
   if lspci |grep -q 'Intel.*PRO/Wireless.*AGN'; then
