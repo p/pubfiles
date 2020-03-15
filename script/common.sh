@@ -74,7 +74,7 @@ install_if_needed() {
 # MACHINES
 
 is_headful() {
-  ! grep -q 'Intel.*Q9300' /proc/cpuinfo && ! is_ubuntu
+  laptop-detect
 }
 
 install_mm() {

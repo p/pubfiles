@@ -45,7 +45,7 @@ install_sources() {
 
 if is_devuan; then
  install_sources $BASE/../config/apt/devuan/sources.list
-elif is_debian; then
+elif is_debian && ! is_ubuntu; then
  install_sources $BASE/../config/apt/debian/sources.list
 fi
 
@@ -59,16 +59,22 @@ install_if_needed \
 if is_headful; then
   install_if_needed \
     gitk libvte9 scite feh \
-    firefox-esr xpdf evince \
+    xpdf evince \
     xinit xauth openbox xscreensaver \
     xfonts-terminus
 
   if install_mm; then
     install_if_needed mplayer alsa-utils youtube-dl
   fi
+
+  if is_ubuntu; then
+    install_if_needed firefox
+  else
+    install_if_needed firefox-esr
+  fi
 fi
 
-if lspci -v|grep iwlwifi; then
+if lspci -v|grep iwlwifi && ! is_ubuntu; then
   install_if_needed firmware-iwlwifi
 fi
 
