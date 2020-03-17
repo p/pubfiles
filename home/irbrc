@@ -1,0 +1,4 @@
+# Use readline instead of reline on Ruby 2.7.
+# Makes line editing work and removes slow syntax highlighting.
+IRB.conf[:USE_SINGLELINE] = true
+
