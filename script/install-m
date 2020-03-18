@@ -24,4 +24,9 @@ fi
 . $BASE/common.sh
 
 # for enterprise server
-install_if_needed libsnmp30
+if is_ubuntu; then
+  packages=libsnmp30
+else
+  packages=libsnmp35
+fi
+install_if_needed $packages
