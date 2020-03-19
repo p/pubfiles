@@ -20,6 +20,7 @@ else
   git clone git://github.com/tpope/rbenv-aliases.git ~/.rbenv/plugins/rbenv-aliases
 fi
 
+eval "`~/.rbenv/bin/rbenv init -`"
 rbenv alias --auto || true
 
 if test -f /etc/debian_version; then
