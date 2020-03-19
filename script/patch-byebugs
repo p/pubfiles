@@ -2,3 +2,8 @@
 
 find $HOME/.rbenv -name quit.rb -path '*/byebug/*' -exec \
   sed -e '/quit.confirmations.really/d' -i {} \;
+
+# JRuby ruby-debug
+
+find $HOME/.rbenv -name quit.rb -path '*/ruby-debug/*' -exec \
+  sed -e 's/confirm("Really quit.*")/true/' -i {} \;
