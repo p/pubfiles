@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-linux.html#cliv2-linux-install
+# OR
+# https://github.com/aws/aws-cli
+
+set -e
+
+pip install awscli
