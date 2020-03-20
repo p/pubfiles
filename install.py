@@ -37,6 +37,7 @@ ln_sf(os.path.join(abs_pub_root, 'home/gitignore'), os.path.expanduser('~/.gitig
 ln_sf(os.path.join(abs_pub_root, 'home/SciTEUser.properties'), os.path.expanduser('~/.SciTEUser.properties'))
 ln_sf(os.path.join(abs_pub_root, 'home/gtkterm2rc'), os.path.expanduser('~/.gtkterm2rc'))
 ln_sf(os.path.join(abs_pub_root, 'home/irbrc'), os.path.expanduser('~/.irbrc'))
+ln_sf(os.path.join(abs_pub_root, 'home/gemrc'), os.path.expanduser('~/.gemrc'))
 
 target_path = os.path.expanduser('~/.zshrc')
 if not os.path.exists(target_path):

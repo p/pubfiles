@@ -1,0 +1,2 @@
+# https://stackoverflow.com/questions/1381725/how-to-make-no-ri-no-rdoc-the-default-for-gem-install?rq=1
+gem: --no-document
