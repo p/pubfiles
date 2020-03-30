@@ -60,7 +60,7 @@ if is_headful; then
   install_if_needed \
     gitk libvte9 scite feh \
     xpdf evince \
-    xinit xauth openbox xscreensaver \
+    xinit xauth openbox xscreensaver x11-xserver-utils \
     xfonts-terminus
 
   if install_mm; then
