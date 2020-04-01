@@ -1,0 +1,11 @@
+if test -f ~/.ssh/agent; then
+        eval `cat ~/.ssh/agent`
+        if test -z "$SSH_AGENT_PID" || ! kill -0 $SSH_AGENT_PID || ! pgrep ssh-agent |fgrep -qx $SSH_AGENT_PID; then
+                unset SSH_AGENT_PID
+        fi
+fi
+
+if test -z "$SSH_AGENT_PID"; then
+        ssh-agent >~/.ssh/agent
+        eval `cat ~/.ssh/agent`
+fi
