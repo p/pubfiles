@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# Inspiration: https://github.com/dmelo/vswm
+
 import sys, subprocess, re
 
 spec = sys.argv[1:]
