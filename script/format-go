@@ -1,0 +1,8 @@
+#!/bin/sh
+
+set -e
+
+for f in `find . -name \*.go`; do
+  go fmt $f
+  sed -i -e 's/	/  /g' $f
+done
