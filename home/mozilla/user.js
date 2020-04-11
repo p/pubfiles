@@ -174,3 +174,5 @@ user_pref('extensions.pocket.enabled', false)
 // all values:
 // https://forum.palemoon.org/viewtopic.php?f=3&t=8757&p=58089&hilit=Browser.urlbar.default.behavior#p58089
 user_pref('browser.urlbar.default.behavior', 128)
+
+// https://superuser.com/questions/1539855/how-can-i-disable-address-bar-animation-in-mozilla-firefox-75
