@@ -134,3 +134,11 @@ if test -f /usr/bin/gtkterm2; then
 fi
 
 "$(dirname $0)"/configure-password-delay
+
+# https://www.tecmint.com/set-system-locales-in-linux/
+if have update-locale; then
+  update-locale LC_ALL=C.UTF-8
+fi
+if false && have localectl; then
+  localectl set-locale LANG=C.UTF-8
+fi
