@@ -1,0 +1,494 @@
+*%******************************************************************************************
+*% ACnfgPS.GDL
+*% This file implements the *BidiQuery, *BidiResponse and *Option elements that correspond to  
+*% the InstalledMemory, DuplexUnit and HardDisk features in AutoCnfg.PPD file. The feature  
+*% name in the GDL file should exaclty match the corresponding feature and option names in the PPD. 
+*%******************************************************************************************
+
+
+%*******************************************************************************************
+*%                                                         Memory
+*%
+*%******************************************************************************************
+
+*Feature: InstalledMemory
+{
+	*FeatureType: PRINTER_PROPERTY
+        *BidiQuery: InstalledMemory
+	{
+		*QueryString: "\Printer.Configuration.Memory:Size"
+	}
+
+	*BidiResponse: InstalledMemory
+	{
+		*ResponseType: BIDI_INT
+		*ResponseData: ENUM_OPTION(Memory)
+	}
+        *Option: 32Meg
+	{
+ 		*BidiValue: INT(32768)
+	}
+	*Option: 40Meg
+	{
+		*BidiValue: INT(40960)
+	}
+	*Option: 48Meg
+	{
+		*BidiValue: INT(49152)
+	}
+	*Option: 64Meg
+	{
+		*BidiValue: INT(65536)
+	}
+	*Option: 84Meg
+	{
+		*BidiValue: INT(86016)
+	}
+	*Option: 96Meg
+	{
+		*BidiValue: INT(98304)
+	}
+	*Option: 128Meg
+	{
+		*BidiValue: INT(131072)
+	}
+	*Option: 160Meg
+	{
+		*BidiValue: INT(163840)
+	}
+	*Option: 256Meg
+	{
+		*BidiValue: INT(262144)
+	}
+	*Option: 384Meg
+	{
+		*BidiValue: INT(393216)
+	}
+	*Option: 512Meg
+	{
+		*BidiValue: INT(524288)
+	}
+	*Option: 640Meg
+	{
+		*BidiValue: INT(655360)
+	}
+	*Option: 768Meg
+	{
+		*BidiValue: INT(786432)
+	}
+}
+
+
+*%******************************************************************************************
+*%                                      Duplex Unit
+*%******************************************************************************************
+
+*Feature: DuplexUnit
+{
+        *FeatureType: PRINTER_PROPERTY
+	*BidiQuery: DuplexUnit
+	{
+		*QueryString: "\Printer.Configuration.DuplexUnit:Installed"
+	}
+
+	*BidiResponse: DuplexUnit
+	{
+		*ResponseType: BIDI_BOOL
+		*ResponseData: ENUM_OPTION(DuplexUnit)
+	}
+
+	*Option: False
+	{
+		*BidiValue: BOOL(FALSE)
+	}
+
+	*Option: True
+	{
+		*BidiValue: BOOL(TRUE)
+	}
+}
+
+*%******************************************************************************************
+*%                                      Hard Disk
+*%******************************************************************************************
+
+*Feature: HardDisk
+{
+    *FeatureType: PRINTER_PROPERTY
+    *BidiQuery:HardDisk
+    {
+		*QueryString: "\Printer.Configuration.HardDisk:Installed"
+    } 
+    *BidiResponse: HardDisk
+    {
+		*ResponseType: BIDI_BOOL
+		*ResponseData: ENUM_OPTION(PrinterHardDisk)
+    }		
+    *Option: False
+    {
+		*BidiValue: BOOL(FALSE)
+	}
+    *Option: True
+    {
+		*BidiValue: BOOL(TRUE)
+    }
+}
+
+*%*******************************************************************************************
+*%                     FlashMemory
+*%
+*%******************************************************************************************
+
+*Feature: Flash
+{
+        *FeatureType: PRINTER_PROPERTY
+        *BidiQuery: Flash
+        {
+                *QueryString: "\Printer.Configuration.OptionalCard:Installed"
+        }
+
+        *BidiResponse: Flash
+        {
+                *ResponseType: BIDI_BOOL
+                *ResponseData: ENUM_OPTION(Flash)
+        }
+        *Option: False
+        {
+                *BidiValue: BOOL(FALSE)
+        }
+        *Option: True
+        {
+                *BidiValue: BOOL(TRUE)
+        }
+}
+
+*%******************************************************************************************
+*%      				Input Bins
+*%******************************************************************************************
+*%
+
+*Feature: Tray2 
+{
+        *FeatureType: PRINTER_PROPERTY
+        *BidiQuery: Tray2
+        {
+                *QueryString: "\Printer.Layout.InputBin.Tray2:Capacity"
+        }
+
+        *BidiResponse: Tray2
+        {
+                *ResponseType: BIDI_INT
+                *ResponseData: ENUM_OPTION(Tray2)
+        }
+        *Option: False
+        {
+                *BidiValue: INT(0)
+        }
+        *Option: 2True250
+        {
+                *BidiValue: INT(250)
+        }
+        *Option: 2True500
+        {
+                *BidiValue: INT(500)
+        }
+        *Option: 2True550
+        {
+                *BidiValue: INT(550)
+        }
+        *Option: 2True2000
+        {
+                *BidiValue: INT(2000)
+        }
+        *Option: 2TrueEnv
+        {
+                *BidiValue: INT(60)
+        }
+
+}
+*Feature: Tray3
+{
+        *FeatureType: PRINTER_PROPERTY
+        *BidiQuery: Tray3
+        {
+                *QueryString: "\Printer.Layout.InputBin.Tray3:Capacity"
+        }
+
+        *BidiResponse: Tray3
+        {
+                *ResponseType: BIDI_INT
+                *ResponseData: ENUM_OPTION(Tray3)
+        }
+        *Option: False
+        {
+                *BidiValue: INT(0)
+        }
+        *Option: 3True250
+        {
+                *BidiValue: INT(250)
+        }
+        *Option: 3True500
+        {
+                *BidiValue: INT(500)
+        }
+        *Option: 3True550
+        {
+                *BidiValue: INT(550)
+        }
+        *Option: 3True2000
+        {
+                *BidiValue: INT(2000)
+        }
+        *Option: 3TrueEnv
+        {
+                *BidiValue: INT(60)
+        }
+
+}
+*Feature: Tray4
+{
+        *FeatureType: PRINTER_PROPERTY
+        *BidiQuery: Tray4
+        {
+                *QueryString: "\Printer.Layout.InputBin.Tray4:Capacity"
+        }
+
+        *BidiResponse: Tray4
+        {
+                *ResponseType: BIDI_INT
+                *ResponseData: ENUM_OPTION(Tray4)
+        }
+        *Option: False
+        {
+                *BidiValue: INT(0)
+        }
+        *Option: 4True250
+        {
+                *BidiValue: INT(250)
+        }
+        *Option: 4True500
+        {
+                *BidiValue: INT(500)
+        }
+        *Option: 4True550
+        {
+                *BidiValue: INT(550)
+        }
+        *Option: 4True2000
+        {
+                *BidiValue: INT(2000)
+        }
+        *Option: 4TrueEnv
+        {
+                *BidiValue: INT(60)
+        }
+
+}
+*Feature: Tray5
+{
+        *FeatureType: PRINTER_PROPERTY
+        *BidiQuery: Tray5
+        {
+                *QueryString: "\Printer.Layout.InputBin.Tray5:Capacity"
+        }
+
+        *BidiResponse: Tray5
+        {
+                *ResponseType: BIDI_INT
+                *ResponseData: ENUM_OPTION(Tray5)
+        }
+        *Option: False
+        {
+                *BidiValue: INT(0)
+        }
+        *Option: 5True250
+        {
+                *BidiValue: INT(250)
+        }
+        *Option: 5True500
+        {
+                *BidiValue: INT(500)
+        }
+        *Option: 5True550
+        {
+                *BidiValue: INT(550)
+        }
+        *Option: 5True2000
+        {
+                *BidiValue: INT(2000)
+        }
+        *Option: 5TrueEnv
+        {
+                *BidiValue: INT(60)
+        }
+
+}
+*Feature: EnvFeeder
+{
+        *FeatureType: PRINTER_PROPERTY
+        *BidiQuery: EnvFeed
+        {
+                *QueryString: "\Printer.Layout.InputBin.EnvFeed:Capacity"
+        }
+        *BidiResponse: EnvFeed
+        {
+                *ResponseType: BIDI_INT
+                *ResponseData: ENUM_OPTION(EnvFeed)
+        }        
+        *Option: False
+        {
+                *BidiValue: INT(0)
+        }
+
+        *Option: True
+        {
+                *BidiValue: INT(85)
+        }                
+}
+
+*Feature: MultiPurpose
+{
+        *FeatureType: PRINTER_PROPERTY
+        *BidiQuery: MultiPurpose
+        {
+                *QueryString: "\Printer.Layout.InputBin.MultiPurposeBin:Installed"
+        }
+
+        *BidiResponse: MultiPurpose
+        {
+                *ResponseType: BIDI_BOOL
+                *ResponseData: ENUM_OPTION(MultiPurpose)
+        }
+        
+
+        *Option: NotInstalled
+        {
+                *BidiValue: BOOL(FALSE)
+        }
+
+        *Option: Installed
+        {
+                *BidiValue: BOOL(TRUE)
+        }        
+}
+
+*%******************************************************************************************
+*%                                     Output Bins
+*%******************************************************************************************
+
+*Feature: OutputBins
+{
+     *FeatureType: PRINTER_PROPERTY
+     *BidiQuery: OutputBins
+     {
+             *QueryString: "\Printer.Finishing.OutputBin.Bin1:Capacity"
+     }
+
+     *BidiResponse: OutputBins
+     {
+             *ResponseType: BIDI_INT
+             *ResponseData: ENUM_OPTION(OutputBins)
+     }
+     *Option: False
+     {
+             *BidiValue: INT(0)
+     }
+     *Option: 1BinF
+     {
+             *BidiValue: INT(750)
+     }
+     *Option: 5Bin
+     {
+             *BidiValue: INT(120)
+     }
+}
+
+*%***Feature: Finisher_1Bin
+*%**{
+*%**        *FeatureType: PRINTER_PROPERTY
+*%**        *BidiQuery: Finisher_1Bin
+*%**        {
+*%**                *QueryString: "\Printer.Finishing.OutputBin.Bin1:Capacity"
+*%**        }
+*%**
+*%**        *BidiResponse: Finisher_1Bin
+*%**        {
+*%**                *ResponseType: BIDI_INT
+*%**                *ResponseData: ENUM_OPTION(Finisher_1Bin)
+*%**        }
+*%**        *Option: False
+*%**        {
+*%**                *BidiValue: INT(0)
+*%**        }
+*%**        *Option: True
+*%**        {
+*%**                *BidiValue: INT(750)
+*%**        }
+*%**}
+
+*Feature: OutputExpander_1
+{
+        *FeatureType: PRINTER_PROPERTY
+        *BidiQuery: OutputExpander
+        {
+                *QueryString: "\Printer.Finishing.OutputBin.Bin1:Capacity"
+        }
+        *BidiResponse: OutputExpander
+        {
+                *ResponseType: BIDI_INT
+                *ResponseData: ENUM_OPTION(OutputExpander)
+        }
+        *Option: False
+        {
+                *BidiValue: INT(0)
+        }
+        *Option: True
+        {
+                *BidiValue: INT(650)
+        }
+}
+
+*Feature: OutputExpander_2
+{
+        *FeatureType: PRINTER_PROPERTY
+        *BidiQuery: OutputExpander
+        {
+                *QueryString: "\Printer.Finishing.OutputBin.Bin2:Capacity"
+        }
+        *BidiResponse: OutputExpander
+        {
+                *ResponseType: BIDI_INT
+                *ResponseData: ENUM_OPTION(OutputExpander)
+        }
+        *Option: False
+        {
+                *BidiValue: INT(0)
+        }
+        *Option: True
+        {
+                *BidiValue: INT(650)
+        }
+}
+
+*Feature: OutputExpander_3
+{
+        *FeatureType: PRINTER_PROPERTY
+        *BidiQuery: OutputExpander
+        {
+                *QueryString: "\Printer.Finishing.OutputBin.Bin3:Capacity"
+        }
+        *BidiResponse: OutputExpander
+        {
+                *ResponseType: BIDI_INT
+                *ResponseData: ENUM_OPTION(OutputExpander)
+        }
+        *Option: False
+        {
+                *BidiValue: INT(0)
+        }
+        *Option: True
+        {
+                *BidiValue: INT(650)
+        }
+}
+
