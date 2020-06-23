@@ -2,7 +2,7 @@
 
 # Inspiration: https://github.com/dmelo/vswm
 
-import sys, subprocess, re
+import sys, subprocess, re, os, os.path
 
 spec = sys.argv[1:]
 if len(spec) != 1 and len(spec) != 2:
@@ -34,8 +34,8 @@ def identify_interfaces():
                 wired.append(interface_name)
     return dict(wired=wired, wireless=wireless)
 
-subprocess.call(['pkill', '-9', 'ifdown'])
-subprocess.call(['pkill', '-9', 'ifup'])
+for process in ['ifdown', 'ifup', 'dhclient', 'wpa_supplicant']:
+    subprocess.call(['pkill', '-9', process])
 
 interfaces = identify_interfaces()
 wireless_interface = interfaces['wireless'][0]
@@ -44,12 +44,30 @@ contents = 'iface %s inet dhcp\n' % wireless_interface
 if len(spec) == 1:
     contents += '  wireless-essid %s' % spec[0]
 else:
-    contents += '  wpa-ssid %s\nwpa-psk %s\n' % tuple(spec)
+    contents += '  wpa-ssid "%s"\n  wpa-psk "%s"\n' % tuple(spec)
 
 with open('/etc/network/interfaces.d/%s' % wireless_interface, 'w') as f:
+    f.write(contents)
+
+contents = 'network={\n  ssid="%s"' % spec[0]
+if len(spec) > 1:
+    contents += '\n  key_mgmt=WPA-PSK\n  psk="%s"' % spec[1]
+contents += '\n}\n'
+
+wpa_conf_path = '/etc/network/wpa_supplicant.conf.d/%s' % spec[0]
+if not os.path.exists('/etc/network/wpa_supplicant.conf.d'):
+    os.mkdir('/etc/network/wpa_supplicant.conf.d')
+with open(wpa_conf_path, 'w') as f:
     f.write(contents)
 
 for interface in interfaces['wired']:
     subprocess.call(['ifdown', interface])
 subprocess.call(['ifdown', wireless_interface])
-subprocess.check_call(['ifup', wireless_interface])
+subprocess.check_call(['iwconfig', wireless_interface, 'essid', spec[0]])
+print('Starting wpa_supplicant')
+subprocess.check_call(['wpa_supplicant', '-B', '-s',
+    '-D', 'nl80211,wext',
+    '-i', wireless_interface,
+    '-c', wpa_conf_path])
+print('Running dhclient')
+subprocess.check_call(['dhclient', wireless_interface])
