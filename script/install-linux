@@ -131,6 +131,10 @@ if test -f /etc/needrestart/notify.conf; then
   echo "NR_NOTIFYD_DISABLE_NOTIFY_SEND='1'" |tee -a /etc/needrestart/notify.conf
 fi
 
+if test -f /etc/needrestart/notify.d/400-notify-send; then
+  chmod -x /etc/needrestart/notify.d/400-notify-send
+fi
+
 # disable beep
 # https://linuxconfig.org/turn-off-beep-bell-on-linux-terminal
 echo 'blacklist pcspkr' >> /etc/modprobe.d/blacklist.conf
