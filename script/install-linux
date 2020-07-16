@@ -125,6 +125,12 @@ if is_laptop; then
   echo '/dev/sda { }' |tee -a /etc/hdparm.conf
 fi
 
+# Disable shared library warnings on current devuan
+# https://unix.stackexchange.com/questions/522459/how-can-i-get-these-dialogs-informing-me-that-i-need-to-restart-to-stop-popping
+if test -f /etc/needrestart/notify.conf; then
+  echo "NR_NOTIFYD_DISABLE_NOTIFY_SEND='1'" |tee -a /etc/needrestart/notify.conf
+fi
+
 # disable beep
 # https://linuxconfig.org/turn-off-beep-bell-on-linux-terminal
 echo 'blacklist pcspkr' >> /etc/modprobe.d/blacklist.conf
