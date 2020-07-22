@@ -125,14 +125,17 @@ if is_laptop; then
   echo '/dev/sda { }' |tee -a /etc/hdparm.conf
 fi
 
+if false; then
 # Disable shared library warnings on current devuan
 # https://unix.stackexchange.com/questions/522459/how-can-i-get-these-dialogs-informing-me-that-i-need-to-restart-to-stop-popping
 if test -f /etc/needrestart/notify.conf; then
   echo "NR_NOTIFYD_DISABLE_NOTIFY_SEND='1'" |tee -a /etc/needrestart/notify.conf
 fi
+fi
 
-if test -f /etc/needrestart/notify.d/400-notify-send; then
-  chmod -x /etc/needrestart/notify.d/400-notify-send
+for f in 200-write 400-notify-send; do
+if test -f /etc/needrestart/notify.d/$f; then
+  chmod -x /etc/needrestart/notify.d/$f
 fi
 
 # disable beep
