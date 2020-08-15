@@ -49,11 +49,13 @@ elif is_debian && ! is_ubuntu; then
  install_sources $BASE/../config/apt/debian/sources.list
 fi
 
+apt-get install -y python-pip || apt-get install -y python3-pip
+
 install_if_needed \
   openntpd smartmontools openssh-server \
   zsh sudo man-db dnsutils \
   git curl make gcc \
-  zip unzip net-tools rsync python-pip tmux
+  zip unzip net-tools rsync tmux
 
 # chromium is no longer here - use ungoogled-chromium
 if is_headful; then
