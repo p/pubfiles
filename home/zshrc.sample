@@ -16,5 +16,7 @@ compinit
 . ~/apps/pubfiles/home/zshrc.ruby
 
 if which rbenv >/dev/null 2>&1; then
-  rbenv shell 2.6
+  rbenv shell 2.7
 fi
+
+iw() { palemoon -ProfileManager -no-remote }
