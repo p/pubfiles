@@ -38,6 +38,9 @@ ln_sf(os.path.join(abs_pub_root, 'home/SciTEUser.properties'), os.path.expanduse
 ln_sf(os.path.join(abs_pub_root, 'home/gtkterm2rc'), os.path.expanduser('~/.gtkterm2rc'))
 ln_sf(os.path.join(abs_pub_root, 'home/irbrc'), os.path.expanduser('~/.irbrc'))
 ln_sf(os.path.join(abs_pub_root, 'home/gemrc'), os.path.expanduser('~/.gemrc'))
+if not os.path.exists(os.path.join(abs_pub_root, 'home/config')):
+    os.mkdir(os.path.join(abs_pub_root, 'home/config'))
+ln_sf(os.path.join(abs_pub_root, 'home/config/user-dirs.dirs'), os.path.expanduser('~/.config/user-dirs.dirs'))
 
 target_path = os.path.expanduser('~/.zshrc')
 if not os.path.exists(target_path):
