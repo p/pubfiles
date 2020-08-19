@@ -8,7 +8,7 @@ if test -x /usr/sbin/pm-suspend; then
 fi
 
 if ! test -f $HOME/.xscreensaver; then
-  ln -s home/xscreensaver $HOME/.xscreensaver
+  ln -s apps/pubfiles/home/xscreensaver $HOME/.xscreensaver
 fi
 
 if ! test -f $HOME/.xinitrc; then
