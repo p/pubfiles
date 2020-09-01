@@ -133,17 +133,18 @@ if is_laptop; then
 fi
 
 if false; then
-# Disable shared library warnings on current devuan
-# https://unix.stackexchange.com/questions/522459/how-can-i-get-these-dialogs-informing-me-that-i-need-to-restart-to-stop-popping
-if test -f /etc/needrestart/notify.conf; then
-  echo "NR_NOTIFYD_DISABLE_NOTIFY_SEND='1'" |tee -a /etc/needrestart/notify.conf
-fi
+  # Disable shared library warnings on current devuan
+  # https://unix.stackexchange.com/questions/522459/how-can-i-get-these-dialogs-informing-me-that-i-need-to-restart-to-stop-popping
+  if test -f /etc/needrestart/notify.conf; then
+    echo "NR_NOTIFYD_DISABLE_NOTIFY_SEND='1'" |tee -a /etc/needrestart/notify.conf
+  fi
 fi
 
 for f in 200-write 400-notify-send; do
-if test -f /etc/needrestart/notify.d/$f; then
-  chmod -x /etc/needrestart/notify.d/$f
-fi
+  if test -f /etc/needrestart/notify.d/$f; then
+    chmod -x /etc/needrestart/notify.d/$f
+  fi
+done
 
 # disable beep
 # https://linuxconfig.org/turn-off-beep-bell-on-linux-terminal
