@@ -46,7 +46,7 @@ install_sources() {
 if test -f /etc/setup.conf; then
   release=`cat /etc/setup.conf |grep ^release= |awk -F= '{print $2}'`
 fi
-if test -n "$release"; then
+if test -z "$release"; then
   release=testing
 fi
 
