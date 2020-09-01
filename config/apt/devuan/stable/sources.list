@@ -1,0 +1,9 @@
+# Devuan stable
+
+deb http://us.deb.devuan.org/merged stable main contrib non-free
+deb http://us.deb.devuan.org/merged stable-updates main contrib non-free
+deb http://us.deb.devuan.org/merged stable-security main contrib non-free
+
+deb-src http://us.deb.devuan.org/merged stable main contrib non-free
+deb-src http://us.deb.devuan.org/merged stable-updates main contrib non-free
+deb-src http://us.deb.devuan.org/merged stable-security main contrib non-free
