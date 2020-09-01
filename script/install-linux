@@ -43,10 +43,17 @@ install_sources() {
   fi
 }
 
+if test -f /etc/setup.conf; then
+  release=`cat /etc/setup.conf |grep ^release= |awk -F= '{print $2}'`
+fi
+if test -n "$release"; then
+  release=testing
+fi
+
 if is_devuan; then
- install_sources $BASE/../config/apt/devuan/sources.list
+ install_sources $BASE/../config/apt/devuan/$release/sources.list
 elif is_debian && ! is_ubuntu; then
- install_sources $BASE/../config/apt/debian/sources.list
+ install_sources $BASE/../config/apt/debian/$release/sources.list
 fi
 
 apt-get install -y python-pip || apt-get install -y python3-pip
