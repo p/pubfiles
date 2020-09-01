@@ -1,2 +1,4 @@
-  Acquire::http::Timeout "7";
-  Acquire::ftp::Timeout "7";
+# https://askubuntu.com/questions/141513/how-to-lower-wait-time-for-repository-updates
+
+Acquire::http::Timeout "7";
+Acquire::ftp::Timeout "7";
