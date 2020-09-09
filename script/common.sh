@@ -78,5 +78,5 @@ is_headful() {
 }
 
 install_mm() {
-  ! hostname |grep -q special
+  ! hostname |grep -q special&& ! grep -q EPYC /proc/cpuinfo
 }
