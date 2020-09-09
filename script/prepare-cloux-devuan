@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e
+
+apt-get remove php-common libapr1
+
+if dpkg -l |grep ^ii |grep -q php; then
+  echo Some php packages remain:
+  dpkg -l |grep ^ii |grep php
+  exit 1
+fi
+
+
