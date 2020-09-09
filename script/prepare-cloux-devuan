@@ -2,7 +2,7 @@
 
 set -e
 
-apt-get remove php-common libapr1
+apt-get remove php-common libapr1 nfs-common libnfsidmap2 hiawatha rpcbind libtirpc-common
 
 if dpkg -l |grep ^ii |grep -q php; then
   echo Some php packages remain:

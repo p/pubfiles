@@ -77,6 +77,10 @@ is_headful() {
   laptop-detect
 }
 
+is_aws() {
+  grep -q EPYC /proc/cpuinfo
+}
+
 install_mm() {
-  ! hostname |grep -q special&& ! grep -q EPYC /proc/cpuinfo
+  ! hostname |grep -q special && ! is_aws
 }

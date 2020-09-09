@@ -58,8 +58,12 @@ fi
 
 apt-get install -y python-pip || apt-get install -y python3-pip
 
+if ! is_aws; then
+  install_if_needed smartmontools
+fi
+
 install_if_needed \
-  openntpd smartmontools openssh-server \
+  openntpd openssh-server \
   zsh sudo man-db dnsutils \
   git curl make gcc \
   zip unzip net-tools rsync tmux
