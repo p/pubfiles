@@ -3,4 +3,10 @@
 set -e
 
 groupmod wheel || groupadd -g 2500 wheel
-useradd -m -s /bin/zsh -u 2501 -G wheel,cdrom,floppy,audio,dip,video,plugdev,netdev,bluetooth me
+groups=
+for group in wheel cdrom floppy audio dip video plugdev netdev bluetooth docker; do
+  if groupmod $group; then
+    groups="$groups $group"
+  fi
+done
+useradd -m -s /bin/zsh -u 2501 -G $groups me
