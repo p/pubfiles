@@ -2,7 +2,7 @@
 
 # Inspiration: https://github.com/dmelo/vswm
 
-import sys, subprocess, re, os, os.path
+import sys, subprocess, re, os, os.path, time as _time
 
 spec = sys.argv[1:]
 if len(spec) != 1 and len(spec) != 2:
@@ -63,6 +63,7 @@ with open(wpa_conf_path, 'w') as f:
 for interface in interfaces['wired']:
     subprocess.call(['ifdown', interface])
 subprocess.call(['ifdown', wireless_interface])
+_time.sleep(1)
 subprocess.check_call(['iwconfig', wireless_interface, 'essid', spec[0]])
 print('Starting wpa_supplicant')
 subprocess.check_call(['wpa_supplicant', '-B', '-s',
