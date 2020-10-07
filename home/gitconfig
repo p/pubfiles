@@ -29,6 +29,7 @@
 	pp = push p -u
 	g = grep
 	mnf = merge --no-ff
+	gi = g -i
 
 [user]
 	name = Oleg Pudeyev
