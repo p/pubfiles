@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
-import urllib2
+try:
+    from urllib.error import HTTPError
+except ImportError:
+    from urllib2 import HTTPError
 import sys, subprocess, os.path, os
 
 pr_num = int(sys.argv[1])
@@ -26,7 +29,7 @@ upstream_owner_name, upstream_repo_name = github.split_github_url(remote_url)
 try:
     pr_owner_name, pr_repo_name, pr_branch = github.get_pr_info(
         upstream_owner_name, upstream_repo_name, pr_num)
-except urllib2.HTTPError:
+except HTTPError:
     sys.stderr.write("Unable to get PR info, will checkout without setting up the remote\n")
     subprocess.check_call(['git', 'fetch', 'origin', 'pull/%s/head:pr-%s' % (pr_num, pr_num)])
     subprocess.check_call(['git', 'checkout', 'pr-%d' % pr_num])
