@@ -3,8 +3,8 @@ have() {
 }
 
 if test -n "$DISPLAY"; then
-  if have palemoon; then
-    iw() { palemoon -no-remote --ProfileManager & }
+  if have waterfox; then
+    iw() { waterfox -no-remote --ProfileManager & }
     if have iceweasel; then
       iwf() { iceweasel -no-remote --ProfileManager & }
     elif have firefox; then
