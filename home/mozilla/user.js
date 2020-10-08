@@ -81,6 +81,8 @@ user_pref('alerts.disableSlidingEffect', true);
 user_pref('general.smoothScroll', false);
 // disable smooth scrolling of tabs
 user_pref('toolkit.scrollbox.smoothScroll', false);
+user_pref('layout.css.scroll-behavior.enabled', false);
+user_pref('layout.css.scroll-behavior.property-enabled', false);
 // for good measure
 user_pref('social.active', false);
 user_pref('social.enabled', false);

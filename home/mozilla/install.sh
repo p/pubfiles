@@ -72,7 +72,7 @@ if $USE_SUDO; then
 fi
 
 cwd=`pwd`
-for dir in .mozilla/firefox ".moonchild productions/pale moon"; do
+for dir in .mozilla/firefox ".moonchild productions/pale moon" .waterfox; do
 	if ! test -d "${MOZ_HOME}/$dir"; then
 		continue
 	fi
