@@ -161,6 +161,8 @@ user_pref('reader.parse-on-load.enabled', false);
 
 // disable url bar search suggestions prompt
 user_pref('browser.urlbar.userMadeSearchSuggestionsChoice', true);
+user_pref('browser.search.suggest.enabled', false);
+user_pref('browser.urlbar.timesBeforeHidingSuggestionsHint', 0)
 
 // do not fill top search result into url bar
 // https://support.mozilla.org/en-US/questions/976885
@@ -178,3 +180,9 @@ user_pref('extensions.pocket.enabled', false)
 user_pref('browser.urlbar.default.behavior', 128)
 
 // https://superuser.com/questions/1539855/how-can-i-disable-address-bar-animation-in-mozilla-firefox-75
+
+// https://support.mozilla.org/en-US/questions/1157121
+user_pref("network.captive-portal-service.enabled", false);
+
+// https://support.mozilla.org/en-US/questions/1285537
+user_pref("media.videocontrols.picture-in-picture.video-toggle.enabled", false);
