@@ -95,10 +95,14 @@ user_pref('browser.newtab.url', 'about:blank');
 user_pref('browser.overlink-delay', 1);
 user_pref('status4evar.status.linkOver.delay.show', 0);
 user_pref('status4evar.status.linkOver.delay.hide', 0);
+user_pref('toolkit.cosmeticAnimations.enabled', false)
+user_pref('browser.stopReloadAnimation.enabled', false)
+user_pref('browser.suppress_first_window_animation', true)
 // don't know what this does but probably don't want it
 user_pref('status4evar.download.notify.animate', false);
 // and these too
 user_pref('layout.css.prefixes.animations', false);
+user_pref('dom.animations-api.element-animate.enabled', false)
 user_pref('browser.fullscreen.animateUp', 0);
 user_pref('browser.fullscreen.animate', false);
 user_pref('browser.panorama.animate_zoom', false);
@@ -186,3 +190,8 @@ user_pref("network.captive-portal-service.enabled", false);
 
 // https://support.mozilla.org/en-US/questions/1285537
 user_pref("media.videocontrols.picture-in-picture.video-toggle.enabled", false);
+
+// Do not check whether browser is the default one because I have many browsers.
+user_pref('browser.shell.checkDefaultBrowser', false);
+
+user_pref('browser.urlbar.delay', 0)
