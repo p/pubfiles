@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Inspiration: https://github.com/dmelo/vswm
 
@@ -13,14 +13,14 @@ def identify_interfaces():
     wireless = []
     dev_null = open('/dev/null', 'w')
     try:
-        output = subprocess.check_output(['/sbin/iwconfig'], stderr=dev_null)
+        output = subprocess.check_output(['/sbin/iwconfig'], stderr=dev_null).decode()
     finally:
         dev_null.close()
     for line in output.split('\n'):
         match = re.match(r'(\w+)\s+IEEE 802.11', line)
         if match:
             wireless.append(match.group(1))
-    output = subprocess.check_output(['ip', 'a'])
+    output = subprocess.check_output(['ip', 'a']).decode()
     wired = []
     for line in output.split("\n"):
         match = re.match(r'\d+: (\w+):', line)
