@@ -24,6 +24,7 @@ user_pref('browser.tabs.tabMinWidth', 30);
 // updates are not handled by brower
 user_pref('app.update.auto', false);
 user_pref('app.update.enabled', false);
+user_pref('app.update.doorhanger', false);
 user_pref('browser.search.update', false);
 user_pref('extensions.update.enabled', false);
 user_pref('lightweightThemes.update.enabled', false);
