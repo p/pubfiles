@@ -1,14 +1,4 @@
-# 
+deb http://deb.devuan.org/merged testing main contrib non-free
+deb-src http://deb.devuan.org/merged testing main contrib non-free
 
-# deb cdrom:[Devuan GNU/Linux 2.1 (ascii) amd64 NETINSTALL - 2019-11-19 09:44:20 UTC]/ ascii main non-free
 
-#deb cdrom:[Devuan GNU/Linux 2.1 (ascii) amd64 NETINSTALL - 2019-11-19 09:44:20 UTC]/ ascii main non-free
-
-deb http://us.deb.devuan.org/merged testing main contrib non-free
-deb-src http://us.deb.devuan.org/merged testing main contrib non-free
-
-#deb http://us.deb.devuan.org/merged ascii-security main
-#deb-src http://us.deb.devuan.org/merged ascii-security main
-
-#deb http://us.deb.devuan.org/merged ascii-updates main
-#deb-src http://us.deb.devuan.org/merged ascii-updates main
