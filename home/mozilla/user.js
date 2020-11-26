@@ -174,15 +174,15 @@ user_pref('browser.urlbar.timesBeforeHidingSuggestionsHint', 0);
 //user_pref('browser.urlbar.autoFill', false);
 
 // http://www.palemoon.org/faq.shtml#Preference:_I_prefer_the_old_Ctrl-Tab
-user_pref('browser.ctrlTab.previews', false)
+user_pref('browser.ctrlTab.previews', false);
 
-user_pref('extensions.pocket.enabled', false)
+user_pref('extensions.pocket.enabled', false);
 
 // disable switch to tab in pale moon
 // https://forum.palemoon.org/viewtopic.php?t=10186
 // all values:
 // https://forum.palemoon.org/viewtopic.php?f=3&t=8757&p=58089&hilit=Browser.urlbar.default.behavior#p58089
-user_pref('browser.urlbar.default.behavior', 128)
+user_pref('browser.urlbar.default.behavior', 128);
 
 // https://superuser.com/questions/1539855/how-can-i-disable-address-bar-animation-in-mozilla-firefox-75
 
@@ -195,4 +195,8 @@ user_pref("media.videocontrols.picture-in-picture.video-toggle.enabled", false);
 // Do not check whether browser is the default one because I have many browsers.
 user_pref('browser.shell.checkDefaultBrowser', false);
 
-user_pref('browser.urlbar.delay', 0)
+user_pref('browser.urlbar.delay', 0);
+
+user_pref('browser.sessionstore.restore_tabs_lazily', false);
+
+// TODO disable dns over https

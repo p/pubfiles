@@ -1,3 +1,6 @@
+// TODO: classic layout
+// https://greasyfork.org/scripts/406160-github-com-classic-layout/code/GitHubcom:%20classic%20layout.user.js#bypass=true
+
 var css = '\
 .pr-toolbar {\
     position: static !important;\
