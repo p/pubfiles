@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Pushes current branch to a contributor's branch on github.
 # The current branch must have format pr-123.
