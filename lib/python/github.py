@@ -11,7 +11,7 @@ class UnexpectedRemoteUrl(Exception): pass
 def get_current_branch():
     output = subprocess.check_output(['git', 'branch'])
     branch = None
-    for line in output.split("\n"):
+    for line in output.decode().split("\n"):
         if line[0] == '*':
             branch = line[1:].strip()
             break

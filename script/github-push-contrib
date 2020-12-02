@@ -4,7 +4,7 @@
 # The current branch must have format pr-123.
 # Any arguments to the script are forwarded to git push (e.g., -f).
 
-import urllib2, json, sys, re, subprocess, os.path
+import urllib, json, sys, re, subprocess, os.path
 
 sys.path[0:0] = [os.path.join(os.path.dirname(__file__), '../lib/python')]
 
