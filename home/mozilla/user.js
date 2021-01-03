@@ -200,3 +200,6 @@ user_pref('browser.urlbar.delay', 0);
 user_pref('browser.sessionstore.restore_tabs_lazily', false);
 
 // TODO disable dns over https
+
+// https://www.maketecheasier.com/disable-video-autoplay-firefox-chrome/
+user_pref('media.autoplay.enabled', false);
