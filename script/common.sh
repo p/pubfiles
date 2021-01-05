@@ -82,5 +82,5 @@ is_aws() {
 }
 
 install_mm() {
-  ! hostname |grep -q special && ! is_aws
+  ! hostname |grep -q special && ! is_aws && ! hostname |grep -q bsdpower.com
 }
