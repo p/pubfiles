@@ -170,10 +170,12 @@ if false && have localectl; then
   localectl set-locale LANG=C.UTF-8
 fi
 
-# https://wiki.archlinux.org/index.php/Fan_speed_control
-modprobe thinkpad_acpi fan_control=1
-if test -f /sys/devices/platform/thinkpad_acpi/rfkill; then
-  echo options thinkpad_acpi fan_control=1 |tee /etc/modprobe.d/thinkpad_acpi.conf
+if is_laptop; then
+  # https://wiki.archlinux.org/index.php/Fan_speed_control
+  modprobe thinkpad_acpi fan_control=1
+  if test -f /sys/devices/platform/thinkpad_acpi/rfkill; then
+    echo options thinkpad_acpi fan_control=1 |tee /etc/modprobe.d/thinkpad_acpi.conf
+  fi
 fi
 
 # sensors
