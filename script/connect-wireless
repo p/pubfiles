@@ -66,9 +66,11 @@ subprocess.call(['ifdown', wireless_interface])
 _time.sleep(1)
 subprocess.check_call(['iwconfig', wireless_interface, 'essid', spec[0]])
 print('Starting wpa_supplicant')
-subprocess.check_call(['wpa_supplicant', '-B', '-s',
+subprocess.check_call(['wpa_supplicant', '-B',
     '-D', 'nl80211,wext',
     '-i', wireless_interface,
+    '-f', '/tmp/wpa_supplicant.log',
     '-c', wpa_conf_path])
+os.chmod('/tmp/wpa_supplicant.log', 0o644)
 print('Running dhclient')
-subprocess.check_call(['dhclient', wireless_interface])
+subprocess.check_call(['dhclient', '-v', wireless_interface])
