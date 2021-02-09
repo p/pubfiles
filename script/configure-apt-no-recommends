@@ -1,0 +1,7 @@
+#!/bin/sh
+
+cat <<-EOT >/etc/apt/apt.conf.d/40-no-recommends
+APT {
+  Install-Recommends "false";
+}
+EOT
