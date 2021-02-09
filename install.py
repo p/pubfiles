@@ -7,18 +7,6 @@ sys.path.append(os.path.join(pub_root, 'home/openbox/lib'))
 
 import pyratemp
 
-abs_pub_root = os.path.abspath(pub_root)
-template = pyratemp.Template(filename=os.path.join(abs_pub_root, 'home/xinitrc.tpl'))
-gen = template(pub_root=abs_pub_root)
-
-home_xinitrc = os.path.expanduser('~/.xinitrc')
-print('Writing %s' % home_xinitrc)
-if os.path.islink(home_xinitrc):
-    os.unlink(home_xinitrc)
-
-with open(home_xinitrc, 'w') as f:
-    f.write(gen)
-
 def ln_sf(src, dest):
     print('Link %s to %s' % (src, dest))
     if os.path.exists(dest) or os.path.islink(dest):
@@ -31,19 +19,47 @@ def cp(src, dest):
         with open(src, 'rb') as fr:
             fw.write(fr.read())
 
-ln_sf(os.path.join(abs_pub_root, 'home/zshenv'), os.path.expanduser('~/.zshenv'))
-ln_sf(os.path.join(abs_pub_root, 'home/gitconfig'), os.path.expanduser('~/.gitconfig'))
-ln_sf(os.path.join(abs_pub_root, 'home/gitignore'), os.path.expanduser('~/.gitignore'))
-ln_sf(os.path.join(abs_pub_root, 'home/SciTEUser.properties'), os.path.expanduser('~/.SciTEUser.properties'))
-ln_sf(os.path.join(abs_pub_root, 'home/gtkterm2rc'), os.path.expanduser('~/.gtkterm2rc'))
+def have(binary):
+    for path in os.environ['PATH'].split(':'):
+        bin_path = os.path.join(path, binary)
+        if os.path.exists(bin_path) and os.stat(bin_path).st_mode & 0o111:
+            return True
+    return False
+
+abs_pub_root = os.path.abspath(pub_root)
+template = pyratemp.Template(filename=os.path.join(abs_pub_root, 'home/xinitrc.tpl'))
+gen = template(pub_root=abs_pub_root)
+
+home_xinitrc = os.path.expanduser('~/.xinitrc')
+print('Writing %s' % home_xinitrc)
+if os.path.islink(home_xinitrc):
+    os.unlink(home_xinitrc)
+
+with open(home_xinitrc, 'w') as f:
+    f.write(gen)
+
+if have('xscreensaver'):
+    ln_sf(os.path.join(abs_pub_root, 'home/xscreensaver'), os.path.expanduser('~/.xscreensaver'))
+
+if have('zsh'):
+    ln_sf(os.path.join(abs_pub_root, 'home/zshenv'), os.path.expanduser('~/.zshenv'))
+    
+    target_path = os.path.expanduser('~/.zshrc')
+    if not os.path.exists(target_path):
+        cp(os.path.join(abs_pub_root, 'home/zshrc.sample'), target_path)
+
+if have('git'):
+    ln_sf(os.path.join(abs_pub_root, 'home/gitconfig'), os.path.expanduser('~/.gitconfig'))
+    ln_sf(os.path.join(abs_pub_root, 'home/gitignore'), os.path.expanduser('~/.gitignore'))
+
 ln_sf(os.path.join(abs_pub_root, 'home/irbrc'), os.path.expanduser('~/.irbrc'))
 ln_sf(os.path.join(abs_pub_root, 'home/gemrc'), os.path.expanduser('~/.gemrc'))
+
+ln_sf(os.path.join(abs_pub_root, 'home/SciTEUser.properties'), os.path.expanduser('~/.SciTEUser.properties'))
+ln_sf(os.path.join(abs_pub_root, 'home/gtkterm2rc'), os.path.expanduser('~/.gtkterm2rc'))
+
 if not os.path.exists(os.path.join(abs_pub_root, 'home/config')):
     os.mkdir(os.path.join(abs_pub_root, 'home/config'))
 if not os.path.exists(os.path.expanduser('~/.config')):
     os.mkdir(os.path.expanduser('~/.config'))
 ln_sf(os.path.join(abs_pub_root, 'home/config/user-dirs.dirs'), os.path.expanduser('~/.config/user-dirs.dirs'))
-
-target_path = os.path.expanduser('~/.zshrc')
-if not os.path.exists(target_path):
-    cp(os.path.join(abs_pub_root, 'home/zshrc.sample'), target_path)
