@@ -40,6 +40,8 @@ ln_sf(os.path.join(abs_pub_root, 'home/irbrc'), os.path.expanduser('~/.irbrc'))
 ln_sf(os.path.join(abs_pub_root, 'home/gemrc'), os.path.expanduser('~/.gemrc'))
 if not os.path.exists(os.path.join(abs_pub_root, 'home/config')):
     os.mkdir(os.path.join(abs_pub_root, 'home/config'))
+if not os.path.exists(os.path.expanduser('~/.config')):
+    os.mkdir(os.path.expanduser('~/.config'))
 ln_sf(os.path.join(abs_pub_root, 'home/config/user-dirs.dirs'), os.path.expanduser('~/.config/user-dirs.dirs'))
 
 target_path = os.path.expanduser('~/.zshrc')
