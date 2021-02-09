@@ -114,18 +114,20 @@ if have_user w; then
   chsh -s /bin/zsh w
 fi
 
+install_if_needed hdparm
+
+if ! grep -q '^apm = 255' /etc/hdparm.conf; then
+  sed -i -e s/'^apm =/#apm =/' /etc/hdparm.conf
+  echo apm = 255 |tee -a /etc/hdparm.conf
+fi
+
 if is_laptop; then
   install_if_needed \
-    acpi pm-utils hdparm wireless-tools rfkill wpasupplicant \
+    acpi pm-utils wireless-tools rfkill wpasupplicant \
     nfs-common
 
   if lspci |grep -q 'Intel.*PRO/Wireless.*AGN'; then
     install_if_needed firmware-iwlwifi
-  fi
-
-  if ! grep -q '^apm = 255' /etc/hdparm.conf; then
-    sed -i -e s/'^apm =/#apm =/' /etc/hdparm.conf
-    echo apm = 255 |tee -a /etc/hdparm.conf
   fi
 
   if ! grep -q '^spindown_time = 255' /etc/hdparm.conf; then
