@@ -87,8 +87,12 @@ if is_headful; then
   fi
 fi
 
-if lspci -v|grep iwlwifi && ! is_ubuntu; then
+if lspci -v|grep -q iwlwifi && ! is_ubuntu; then
   install_if_needed firmware-iwlwifi
+fi
+
+if lspci |grep -q Radeon; then
+  install_if_needed firmware-amd-graphics
 fi
 
 echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' > /etc/sudoers.d/sudo-group
