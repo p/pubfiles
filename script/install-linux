@@ -192,3 +192,5 @@ fi
 # https://bbs.archlinux.org/viewtopic.php?id=122412
 
 openntpd -ss
+
+echo 'Run sensors-detect if you haven't to load kernel modules for hardware sersors.'
