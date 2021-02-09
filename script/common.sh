@@ -82,5 +82,5 @@ is_aws() {
 }
 
 install_mm() {
-  ! hostname |grep -q special && ! is_aws && ! hostname |grep -q bsdpower.com
+  ! hostname |grep -q special && ! is_aws && ! hostname |grep -q bsdpower.com && ! grep -q 'AMD E-350' /proc/cpuinfo
 }
