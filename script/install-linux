@@ -193,4 +193,4 @@ fi
 
 openntpd -ss
 
-echo 'Run sensors-detect if you haven't to load kernel modules for hardware sersors.'
+echo 'Run sensors-detect if you haven'"'"'t to load kernel modules for hardware sersors.'
