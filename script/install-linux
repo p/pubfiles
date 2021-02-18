@@ -25,6 +25,9 @@ echo Installing for:
 echo Headful: `is_headful; yesno $?`
 echo Multimedia: `install_mm; yesno $?`
 
+echo Press any key to continue
+read a
+
 install_sources() {
   sources_list_src="$1"
   sources_list_dest=/etc/apt/sources.list
