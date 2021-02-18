@@ -74,7 +74,7 @@ install_if_needed() {
 # MACHINES
 
 is_headful() {
-  laptop-detect
+  laptop-detect || test `hostname` = sneak
 }
 
 is_aws() {
