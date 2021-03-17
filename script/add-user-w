@@ -2,9 +2,14 @@
 
 set -e
 
+groups=
 for group in cdrom floppy audio dip video plugdev netdev bluetooth docker; do
   if groupmod $group; then
-    groups="$groups,$group"
+    if test -n "$groups"; then
+      groups="$groups,$group"
+    else
+      groups="$group"
+    fi
   fi
 done
 if id w >/dev/null 2>&1; then
