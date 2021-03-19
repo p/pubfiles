@@ -167,6 +167,13 @@ user_pref('reader.parse-on-load.enabled', false);
 // disable url bar search suggestions prompt
 user_pref('browser.urlbar.userMadeSearchSuggestionsChoice', true);
 user_pref('browser.search.suggest.enabled', false);
+// for good measure
+user_pref('browser.urlbar.suggest.searches', false);
+// more searrch suggestions: https://support.mozilla.org/en-US/questions/1099987
+user_pref('browser.urlbar.unifiedcomplete', false);
+// this seems to stop the browser offering to search when I edit the URL
+// in the address bar
+user_pref('browser.urlbar.oneOffSearches', false);
 user_pref('browser.urlbar.timesBeforeHidingSuggestionsHint', 0);
 
 // do not fill top search result into url bar
@@ -203,3 +210,9 @@ user_pref('browser.sessionstore.restore_tabs_lazily', false);
 
 // https://www.maketecheasier.com/disable-video-autoplay-firefox-chrome/
 user_pref('media.autoplay.enabled', false);
+
+// assuming this would disable sites prompting to enable notifications
+user_pref('dom.webnotifications.enabled', false);
+// for good measure
+user_pref('dom.webnotifications.serviceworker.enabled', false);
+user_pref('notification.feature.enabled', false);
