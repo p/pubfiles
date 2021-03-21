@@ -1,4 +1,5 @@
-deb http://deb.devuan.org/merged testing main contrib non-free
-deb-src http://deb.devuan.org/merged testing main contrib non-free
+deb http://sledjhamr.org/devuan/merged testing main contrib non-free
+deb-src http://sledjhamr.org/devuan/merged testing main contrib non-free
 
-
+#deb http://deb.devuan.org/merged testing main contrib non-free
+#deb-src http://deb.devuan.org/merged testing main contrib non-free
