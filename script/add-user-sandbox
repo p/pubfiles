@@ -2,7 +2,7 @@
 
 set -e
 
-if id w >/dev/null 2>&1; then
+if id sandbox >/dev/null 2>&1; then
   usermod -s /bin/zsh sandbox
 else
   useradd -m -s /bin/zsh -u 2508 sandbox
