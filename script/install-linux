@@ -68,7 +68,7 @@ fi
 install_if_needed \
   openntpd openssh-server \
   zsh sudo man-db dnsutils \
-  git curl make gcc \
+  git curl wget make gcc \
   zip unzip net-tools rsync tmux
 
 # chromium is no longer here - use ungoogled-chromium
