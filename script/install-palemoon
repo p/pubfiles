@@ -4,7 +4,7 @@
 
 set -e
 
-wget -nv https://download.opensuse.org/repositories/home:stevenpusser/Debian_9.0/Release.key -O - |
+curl -L https://download.opensuse.org/repositories/home:/stevenpusser/Debian_9.0/Release.key |
   sudo apt-key add -
 
 echo 'deb http://download.opensuse.org/repositories/home:/stevenpusser/Debian_9.0/ /' |sudo tee /etc/apt/sources.list.d/palemoon.list 
