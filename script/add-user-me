@@ -3,14 +3,15 @@
 set -e
 
 groupmod wheel || groupadd -g 2500 wheel
-groups=wheel
+groupmod power || groupadd -g 2590 power
+groups=wheel,power
 for group in cdrom floppy audio dip video plugdev netdev bluetooth docker; do
   if groupmod $group; then
     groups="$groups,$group"
   fi
 done
-if id w >/dev/null 2>&1; then
-  usermod -s /bin/zsh -G $groups me
+if id me >/dev/null 2>&1; then
+  usermod -s /bin/zsh -aG $groups me
 else
   useradd -m -s /bin/zsh -u 2501 -G $groups me
 fi

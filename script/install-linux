@@ -173,6 +173,11 @@ fi
 
 "$(dirname $0)"/configure-password-delay
 
+mkdir -p /etc/sudoers.d
+for f in "$(dirname $0)"/../config/sudoers.d/*; do
+  install -m 400 "$f" /etc/sudoers.d
+done
+
 # https://www.tecmint.com/set-system-locales-in-linux/
 if have update-locale; then
   update-locale LC_ALL=C.UTF-8
