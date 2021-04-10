@@ -137,7 +137,8 @@ user_pref('browser.xul.error_pages.expert_bad_cert', true);
 
 // totally cretinous behavior
 // firefox 17 doorhanger idiocy is enough to never remember passwords
-user_pref('signon.rememberSignons', false);
+// give this another go?
+//user_pref('signon.rememberSignons', false);
 
 // firefox health report bs
 user_pref('datareporting.healthreport.about.reportUrl', 'http://localhost');
@@ -178,9 +179,11 @@ user_pref('browser.urlbar.unifiedcomplete', false);
 user_pref('browser.urlbar.oneOffSearches', false);
 user_pref('browser.urlbar.timesBeforeHidingSuggestionsHint', 0);
 
+user_pref('browser.search.defaultenginename', 'DuckDuckGo');
+
 // do not fill top search result into url bar
 // https://support.mozilla.org/en-US/questions/976885
-//user_pref('browser.urlbar.autoFill', false);
+user_pref('browser.urlbar.autoFill', false);
 
 // http://www.palemoon.org/faq.shtml#Preference:_I_prefer_the_old_Ctrl-Tab
 user_pref('browser.ctrlTab.previews', false);
