@@ -5,7 +5,10 @@ require 'json'
 path = File.expand_path('~/.config/chromium/Local State')
 
 content = JSON.parse(File.read(path))
-experiments = content['browser']['enabled_labs_experiments']
+unless content.key?('browser')
+  content['browser'] = {}
+end
+experiments = content['browser']['enabled_labs_experiments'] || []
 %w(
   smooth-scrolling@2
   fingerprinting-canvas-image-data-noise
