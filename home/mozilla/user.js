@@ -28,6 +28,7 @@ user_pref('app.update.doorhanger', false);
 user_pref('browser.search.update', false);
 user_pref('extensions.update.enabled', false);
 user_pref('lightweightThemes.update.enabled', false);
+user_pref('app.update.checkInstallTime', false);
 // don't want even more google phoning
 user_pref('browser.safebrowsing.enabled', false);
 user_pref('browser.safebrowsing.malware.enabled', false);
@@ -49,6 +50,7 @@ user_pref('dom.event.contextmenu.enabled', false);
 user_pref('extensions.livehttpheaders.excludeRegexp', '.gif$|.jpg$|.ico$|.css$|.js$|.png$|google');
 // disable about:config scare warning
 user_pref('general.warnOnAboutConfig', false);
+user_pref('browser.aboutConfig.showWarning', false);
 // use more memory for caching pages in memory
 // http://blog.pluron.com/2008/07/why-you-should.html
 // http://kb.mozillazine.org/Browser.cache.memory.capacity
