@@ -218,3 +218,7 @@ user_pref('dom.webnotifications.enabled', false);
 // for good measure
 user_pref('dom.webnotifications.serviceworker.enabled', false);
 user_pref('notification.feature.enabled', false);
+
+// https://bugzilla.mozilla.org/show_bug.cgi?id=959893
+// https://www.purevpn.com/internet-privacy/disable-webrtc
+user_pref('media.peerconnection.enabled', false);
