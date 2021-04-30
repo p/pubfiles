@@ -21,13 +21,6 @@ fi
 
 . $BASE/common.sh
 
-echo Installing for:
-echo Headful: `is_headful; yesno $?`
-echo Multimedia: `install_mm; yesno $?`
-
-echo Press any key to continue
-read a
-
 install_sources() {
   sources_list_src="$1"
   sources_list_dest=/etc/apt/sources.list
@@ -53,11 +46,22 @@ if test -z "$release"; then
   release=testing
 fi
 
+echo Installing for:
+echo Devuan: `is_devuan; yesno $?`
+echo Release: $release
+echo Headful: `is_headful; yesno $?`
+echo Multimedia: `install_mm; yesno $?`
+
+echo Press any key to continue
+read a
+
 if is_devuan; then
  install_sources $BASE/../config/apt/devuan/$release/sources.list
 elif is_debian && ! is_ubuntu; then
  install_sources $BASE/../config/apt/debian/$release/sources.list
 fi
+
+apt-get remove tasksel
 
 apt-get install -y python-pip || apt-get install -y python3-pip
 
@@ -130,7 +134,7 @@ fi
 
 if is_laptop; then
   install_if_needed \
-    acpi pm-utils wireless-tools rfkill wpasupplicant \
+    acpi pm-utils wireless-tools rfkill iw wpasupplicant \
     nfs-common
 
   if lspci |grep -q 'Intel.*PRO/Wireless.*AGN'; then
