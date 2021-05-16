@@ -62,6 +62,8 @@ else
   spec = {HostPort: host_port.to_s}
   if host_bind_ip
     spec[:HostIp] = host_bind_ip
+  else
+    spec[:HostIp] = '127.0.0.1'
   end
   config = {
     PortBindings: {
