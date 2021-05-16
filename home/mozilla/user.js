@@ -211,7 +211,9 @@ user_pref('browser.urlbar.delay', 0);
 
 user_pref('browser.sessionstore.restore_tabs_lazily', false);
 
-// TODO disable dns over https
+// disable dns over https
+// https://wiki.mozilla.org/Trusted_Recursive_Resolver
+user_pref('network.trr.mode', 5);
 
 // https://www.maketecheasier.com/disable-video-autoplay-firefox-chrome/
 user_pref('media.autoplay.enabled', false);
