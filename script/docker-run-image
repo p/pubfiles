@@ -25,7 +25,7 @@ require 'docker'
 require 'yaml'
 require 'base64'
 
-Docker.validate_version!
+#Docker.validate_version!
 
 config = YAML.load(File.read(File.expand_path('~/.docker/config.json')))
 auth = config['auths']['https://index.docker.io/v1/']['auth']
