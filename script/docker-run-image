@@ -59,7 +59,7 @@ if status == 'running'
   puts "Container #{container.id} for #{image_name} is already running"
 else
   puts "Starting container for #{image_name}"
-  spec = {HostPort: host_port.to_s}
+  spec = {name: image_name.sub(/.*:/, ''), HostPort: host_port.to_s}
   if host_bind_ip
     spec[:HostIp] = host_bind_ip
   else
