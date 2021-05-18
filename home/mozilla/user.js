@@ -36,7 +36,7 @@ user_pref('browser.safebrowsing.remoteLookups', false);
 // start with blank page?
 user_pref('browser.startup.page', 0);
 // how many autocompletion results to show
-user_pref('browser.urlbar.maxRichResults', 100);
+user_pref('browser.urlbar.maxRichResults', 20);
 // search history only?
 user_pref('browser.urlbar.default.behavior', 1);
 // match only at word boundaries
@@ -183,7 +183,9 @@ user_pref('browser.search.defaultenginename', 'DuckDuckGo');
 
 // do not fill top search result into url bar
 // https://support.mozilla.org/en-US/questions/976885
-user_pref('browser.urlbar.autoFill', false);
+// this seems to reduce usability overall because the list is shown with
+// unacceptable lag for interactive use
+//user_pref('browser.urlbar.autoFill', false);
 
 // http://www.palemoon.org/faq.shtml#Preference:_I_prefer_the_old_Ctrl-Tab
 user_pref('browser.ctrlTab.previews', false);
@@ -207,7 +209,7 @@ user_pref("media.videocontrols.picture-in-picture.video-toggle.enabled", false);
 // Do not check whether browser is the default one because I have many browsers.
 user_pref('browser.shell.checkDefaultBrowser', false);
 
-user_pref('browser.urlbar.delay', 0);
+user_pref('browser.urlbar.delay', 1);
 
 user_pref('browser.sessionstore.restore_tabs_lazily', false);
 
