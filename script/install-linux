@@ -36,6 +36,8 @@ install_sources() {
     mv /etc/apt/sources.list $backup_path
     install -m 644 $sources_list_src $sources_list_dest
     apt-get update
+    apt-get upgrade
+    apt-get dist-upgrade
   fi
 }
 
