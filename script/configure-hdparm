@@ -18,5 +18,5 @@ if ! grep -q '^spindown_time = 255' /etc/hdparm.conf; then
 fi
 
 for dev in /dev/sd?; do
-  echo "/dev/$dev { }" |tee -a /etc/hdparm.conf
+  echo "$dev { }" |tee -a /etc/hdparm.conf
 done
