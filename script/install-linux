@@ -148,12 +148,7 @@ if is_laptop; then
     install_if_needed firmware-iwlwifi
   fi
 
-  if ! grep -q '^spindown_time = 255' /etc/hdparm.conf; then
-    sed -i -e s/'^spindown_time =/#spindown_time =/' /etc/hdparm.conf
-    echo spindown_time = 255 |tee -a /etc/hdparm.conf
-  fi
-  
-  echo '/dev/sda { }' |tee -a /etc/hdparm.conf
+  "$(dirname $0)"/configure-hdparm
 fi
 
 if false; then
