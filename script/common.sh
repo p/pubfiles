@@ -74,7 +74,19 @@ install_if_needed() {
 # MACHINES
 
 is_headful() {
-  laptop-detect || test `hostname` = sneak
+  if test -f /etc/setup.conf; then
+    value=`egrep '^\sheadful=' /etc/setup.conf |awk -F = '{print $2}' |sed -Ee 's/\s#.*//'`
+    if test "$value" = true; then
+      return 0
+    elif test "$value" = false; then
+      return 1
+    elif test -n "$value"; then
+      echo "Bogus headful value in /etc/setup.conf: $value" 1>&2
+      exit 4
+    fi
+  fi
+  
+  laptop-detect
 }
 
 is_aws() {

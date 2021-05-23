@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# /etc/setup.conf parameters:
+#
+# release=testing | stable - which release to use
+# headful=true | false
+
 set -e
 
 if test "`id -u`" != 0; then
