@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+
+require 'fileutils'
+require 'inifile'
+
+ROOT = '/home/cr-w'
+
+WF_ROOT = File.join(ROOT, '.waterfox')
+
+profiles = IniFile.new(filename: File.join(WF_ROOT, 'profiles.ini'))
+
+vars = profiles['managed-default']
+if vars.empty?
+  vars = {
+    'Name' => 'default',
+    'IsRelative' => 1,
+    'Path' => 'managed.default',
+  }
+  profiles['managed-default'] = vars
+  profiles.write
+end
