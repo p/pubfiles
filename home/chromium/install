@@ -60,6 +60,20 @@ experiments = content['browser']['enabled_labs_experiments'] || []
   end
 end
 content['browser']['enabled_labs_experiments'] = experiments
+
+=begin
+unless content['profile']
+  content['profile'] = {
+    'info_cache' => {
+      'Default' => {
+        'name' => 'Person',
+      }
+    }
+  }
+  content['last_active_profiles'] = %w(Default)
+end
+=end
+
 File.open(path, 'w') do |f|
   f << JSON.dump(content)
 end
