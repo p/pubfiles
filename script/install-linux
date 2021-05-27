@@ -185,7 +185,8 @@ for f in "$(dirname $0)"/../config/sudoers.d/*; do
 done
 
 for f in "$(dirname $0)"/../config/boot.d/*; do
-  install -m 400 "$f" /etc/boot.d
+  mkdir -p /etc/boot.d
+  install -m 400 "$f" /etc/boot.d/"$(basename "$f")"
 done
 
 # https://www.tecmint.com/set-system-locales-in-linux/
