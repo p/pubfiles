@@ -63,3 +63,26 @@ content['browser']['enabled_labs_experiments'] = experiments
 File.open(path, 'w') do |f|
   f << JSON.dump(content)
 end
+
+path = File.expand_path('~/.config/chromium/Default/Preferences')
+
+if File.exist?(path)
+  content = JSON.parse(File.read(path))
+else
+  FileUtils.mkdir_p(File.dirname(path))
+  content = {}
+end
+
+content['bookmark_bar'] ||= {}
+content['bookmark_bar']['show_on_all_tabs'] = false
+content['extensions'] ||= {}
+content['extensions']['ui'] ||= {}
+content['extensions']['ui']['developer_mode'] = true
+# This file has window placement
+
+File.open(path, 'w') do |f|
+  f << JSON.dump(content)
+end
+
+path = File.expand_path('~/.config/chromium/First Run')
+FileUtils.touch(path)
