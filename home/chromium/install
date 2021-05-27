@@ -1,10 +1,17 @@
 #!/usr/bin/env ruby
 
+autoload :FileUtils, 'fileutils'
 require 'json'
 
 path = File.expand_path('~/.config/chromium/Local State')
 
-content = JSON.parse(File.read(path))
+if File.exist?(path)
+  content = JSON.parse(File.read(path))
+else
+  FileUtils.mkdir_p(File.dirname(path))
+  content = {}
+end
+
 unless content.key?('browser')
   content['browser'] = {}
 end
