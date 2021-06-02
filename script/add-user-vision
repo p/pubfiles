@@ -2,6 +2,8 @@
 
 set -e
 
+apt install sudo
+
 groupmod wheel || groupadd -g 2500 wheel
 groupmod power || groupadd -g 2590 power
 groups=wheel,power
