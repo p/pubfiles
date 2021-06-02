@@ -218,6 +218,10 @@ if is_laptop; then
   fi
 fi
 
+if ! id marker >/dev/null 2>&1; then
+  useradd -s "`which nologin`" -u 3000 marker
+fi
+
 # sensors
 # echo level 4 > /proc/acpi/ibm/fan
 
