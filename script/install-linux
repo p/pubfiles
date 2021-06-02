@@ -222,6 +222,8 @@ if ! id marker >/dev/null 2>&1; then
   useradd -s "`which nologin`" -u 3000 marker
 fi
 
+apt-mark hold scite
+
 # sensors
 # echo level 4 > /proc/acpi/ibm/fan
 
