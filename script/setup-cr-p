@@ -1,0 +1,25 @@
+#!/bin/sh
+
+set -e
+
+if test "`id -u`" != 0; then
+  if which sudo 2>/dev/null 1>&2; then
+    echo "This needs to be run as root, trying sudo" 1>&2
+    exec sudo sh -x "$0" "$@"
+  else
+    echo "This needs to be run as root" 1>&2
+    exit 2
+  fi
+fi
+
+xauthority_path=/home/cr-p/.Xauthority
+
+if ! id cr-p; then
+  useradd -m -s /usr/bin/zsh -u 2519 cr-p
+  echo 'export XAUTHORITY=$HOME/.Xauthority' |sudo -u cr-p tee /home/cr-p/.zshrc
+fi
+
+if id me; then
+  echo 'me ALL = (cr-p) NOPASSWD: ALL' >/etc/sudoers.d/me-cr-p
+  sudo -u me xauth list | sed -e 's/^/add /' | sudo -u cr-p env HOME=/home/cr-p XAUTHORITY=$xauthority_path xauth
+fi
