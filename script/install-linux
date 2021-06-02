@@ -195,7 +195,7 @@ done
 
 for f in "$(dirname $0)"/../config/boot.d/*; do
   mkdir -p /etc/boot.d
-  install -m 400 "$f" /etc/boot.d/"$(basename "$f")"
+  install -m 550 -o root -g root "$f" /etc/boot.d/"$(basename "$f")"
 done
 
 # https://www.tecmint.com/set-system-locales-in-linux/
