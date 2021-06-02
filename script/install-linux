@@ -1,10 +1,5 @@
 #!/bin/sh
 
-# /etc/setup.conf parameters:
-#
-# release=testing | stable - which release to use
-# headful=true | false
-
 set -e
 
 if test "`id -u`" != 0; then
@@ -15,6 +10,20 @@ if test "`id -u`" != 0; then
     echo "This needs to be run as root" 1>&2
     exit 2
   fi
+fi
+
+echo 'Recognized /etc/setup.conf parameters:'
+echo
+echo 'release=testing | stable - which release to use'
+echo 'headful=true | false'
+echo 'mm=true | false'
+echo
+
+if test -f /etc/setup.conf; then
+  echo 'Current /etc/setup.conf contents:'
+  echo
+  cat /etc/setup.conf
+  echo
 fi
 
 if echo "$0" |grep -q /; then

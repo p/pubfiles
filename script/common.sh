@@ -81,7 +81,7 @@ is_headful() {
     elif test "$value" = false; then
       return 1
     elif test -n "$value"; then
-      echo "Bogus headful value in /etc/setup.conf: $value" 1>&2
+      echo "Bogus \`headful' value in /etc/setup.conf: $value" 1>&2
       exit 4
     fi
   fi
@@ -94,5 +94,17 @@ is_aws() {
 }
 
 install_mm() {
-  ! hostname |grep -q special && ! is_aws && ! hostname |grep -q bsdpower.com && ! grep -q 'AMD E-350' /proc/cpuinfo
+  if test -f /etc/setup.conf; then
+    value=`egrep '^\smm=' /etc/setup.conf |awk -F = '{print $2}' |sed -Ee 's/\s#.*//'`
+    if test "$value" = true; then
+      return 0
+    elif test "$value" = false; then
+      return 1
+    elif test -n "$value"; then
+      echo "Bogus \`mm' value in /etc/setup.conf: $value" 1>&2
+      exit 4
+    fi
+  fi
+  
+  is_headful
 }
