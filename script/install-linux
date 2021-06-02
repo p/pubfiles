@@ -132,6 +132,10 @@ elif test "`id -u`" != 0; then
   chsh -s /bin/zsh `id -un`
 fi
 
+if have_user bootstrap; then
+  chsh -s /bin/zsh bootstrap
+fi
+
 if have_user me; then
   chsh -s /bin/zsh me
   usermod -a -G sudo me
