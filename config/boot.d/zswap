@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # https://www.kernel.org/doc/html/latest/vm/zswap.html
 # https://medium.com/for-linux-users/linux-tip-higher-performance-with-zswap-2a4654b935de
 echo 1 |tee /sys/module/zswap/parameters/enabled
