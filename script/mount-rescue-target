@@ -1,0 +1,21 @@
+#!/bin/sh
+
+set -e
+
+dev="$1"
+
+
+if blkid $dev |grep -q crypto_LUKS; then
+  cryptsetup open $dev target-root
+  dev=/dev/mapper/target-root
+fi
+
+mkdir -p /target
+
+mount $dev /target
+mount -t devtmpfs udev /target/dev
+mount -t proc proc /target/proc
+mount -t sysfs sys /target/sys
+
+chroot /target bash -c 'if egrep " *[a-zA-Z].*/boot" /etc/fstab; then mount /boot; fi && if egrep " *[a-zA-Z].*/boot/efi" /etc/fstab; then mount /boot/efi; fi'
+
