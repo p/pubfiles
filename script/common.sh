@@ -75,7 +75,7 @@ install_if_needed() {
 
 is_headful() {
   if test -f /etc/setup.conf; then
-    value=`egrep '^\sheadful=' /etc/setup.conf |awk -F = '{print $2}' |sed -Ee 's/\s#.*//'`
+    value=`egrep '^[[:space:]]*headful=' /etc/setup.conf |awk -F = '{print $2}' |sed -Ee 's/\s#.*//'`
     if test "$value" = true; then
       return 0
     elif test "$value" = false; then
