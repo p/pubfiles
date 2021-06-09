@@ -196,6 +196,7 @@ if test -f /usr/bin/gtkterm2; then
 fi
 
 $BASE/configure-password-delay
+$BASE/configure-service-restart
 
 mkdir -p /etc/sudoers.d
 for f in $BASE/../config/sudoers.d/*; do
