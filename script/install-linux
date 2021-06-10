@@ -243,6 +243,7 @@ if test -f /etc/setup.conf; then
   if test -n "$value"; then
     install_if_needed xfsprogs
     cat $BASE/../config/boot.d.template/tmp-zram |sed -Ee "s,^SIZE=.*,SIZE=$value," |tee /etc/boot.d/tmp-zram
+    chmod +x /etc/boot.d/tmp-zram
   fi
 fi
 
