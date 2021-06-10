@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os.path, sys, subprocess, re
+import os.path, sys, subprocess, re, getpass
 
 pub_root = os.path.dirname(__file__)
 sys.path.append(os.path.join(pub_root, 'home/openbox/lib'))
@@ -84,21 +84,25 @@ mkdir_p(os.path.join(abs_pub_root, 'home/config'))
 mkdir_p(os.path.expanduser('~/.config'))
 
 if is_headful():
-    template = pyratemp.Template(filename=os.path.join(abs_pub_root, 'home/xinitrc.tpl'))
-    gen = template(pub_root=abs_pub_root)
-
-    home_xinitrc = os.path.expanduser('~/.xinitrc')
-    print('Writing %s' % home_xinitrc)
-    if os.path.islink(home_xinitrc):
-        os.unlink(home_xinitrc)
-
-    with open(home_xinitrc, 'w') as f:
-        f.write(gen)
-
-    if have('xscreensaver'):
-        ln_sf(os.path.join(abs_pub_root, 'home/xscreensaver'), os.path.expanduser('~/.xscreensaver'))
-
-    ln_sf(os.path.join(abs_pub_root, 'home/SciTEUser.properties'), os.path.expanduser('~/.SciTEUser.properties'))
-    ln_sf(os.path.join(abs_pub_root, 'home/gtkterm2rc'), os.path.expanduser('~/.gtkterm2rc'))
-
     ln_sf(os.path.join(abs_pub_root, 'home/config/user-dirs.dirs'), os.path.expanduser('~/.config/user-dirs.dirs'))
+
+    if getpass.getuser() in ['me', 'w']:
+        template = pyratemp.Template(filename=os.path.join(abs_pub_root, 'home/xinitrc.tpl'))
+        gen = template(pub_root=abs_pub_root)
+
+        home_xinitrc = os.path.expanduser('~/.xinitrc')
+        print('Writing %s' % home_xinitrc)
+        if os.path.islink(home_xinitrc):
+            os.unlink(home_xinitrc)
+
+        with open(home_xinitrc, 'w') as f:
+            f.write(gen)
+
+        if have('xscreensaver'):
+            ln_sf(os.path.join(abs_pub_root, 'home/xscreensaver'), os.path.expanduser('~/.xscreensaver'))
+
+        ln_sf(os.path.join(abs_pub_root, 'home/SciTEUser.properties'), os.path.expanduser('~/.SciTEUser.properties'))
+        ln_sf(os.path.join(abs_pub_root, 'home/gtkterm2rc'), os.path.expanduser('~/.gtkterm2rc'))
+        
+        if os.path.exists('/usr/sbin/pm-suspend'):
+            ln_sf('/usr/sbin/pm-suspend', os.path.expanduser('~/bin/pm-suspend'))
