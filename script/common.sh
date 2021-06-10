@@ -95,7 +95,7 @@ is_aws() {
 
 install_mm() {
   if test -f /etc/setup.conf; then
-    value=`egrep '^\smm=' /etc/setup.conf |awk -F = '{print $2}' |sed -Ee 's/\s#.*//'`
+    value=`egrep '^[[:space:]]*mm=' /etc/setup.conf |awk -F = '{print $2}' |sed -Ee 's/[[:space:]]*#.*//'`
     if test "$value" = true; then
       return 0
     elif test "$value" = false; then
