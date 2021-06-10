@@ -17,6 +17,7 @@ echo
 echo 'release=testing | stable - which release to use'
 echo 'headful=true | false'
 echo 'mm=true | false'
+echo 'tmp-zram=<size>'
 echo
 
 if test -f /etc/setup.conf; then
@@ -94,10 +95,14 @@ install_if_needed \
 # chromium is no longer here - use ungoogled-chromium
 if is_headful; then
   install_if_needed \
-    gitk libvte9 scite feh \
+    gitk libvte9 feh \
     xpdf evince gimp \
     xinit xauth openbox xscreensaver x11-xserver-utils \
     xfonts-terminus
+
+  if ! dpkg -L scite >/dev/null 2>&1; then
+    install_if_needed scite
+  fi
 
   if install_mm; then
     install_if_needed mplayer alsa-utils youtube-dl
@@ -145,7 +150,7 @@ if have_user w; then
   chsh -s /bin/zsh w
 fi
 
-install_if_needed hdparm lm-sensors sysstat usbutils pciutils
+install_if_needed hdparm lm-sensors sysstat iotop usbutils pciutils
 
 if ! grep -q '^apm = 255' /etc/hdparm.conf; then
   sed -i -e s/'^apm =/#apm =/' /etc/hdparm.conf
@@ -161,7 +166,7 @@ if is_laptop; then
     install_if_needed firmware-iwlwifi
   fi
 
-  "$(dirname $0)"/configure-hdparm
+  $BASE/configure-hdparm
 fi
 
 if false; then
@@ -183,21 +188,21 @@ done
 echo 'blacklist pcspkr' >> /etc/modprobe.d/blacklist.conf
 
 if is_laptop; then
-  "$(dirname $0)"/disable-lid-suspend
+  $BASE/disable-lid-suspend
 fi
 
 if test -f /usr/bin/gtkterm2; then
   update-alternatives --set x-terminal-emulator /usr/bin/gtkterm2
 fi
 
-"$(dirname $0)"/configure-password-delay
+$BASE/configure-password-delay
 
 mkdir -p /etc/sudoers.d
-for f in "$(dirname $0)"/../config/sudoers.d/*; do
+for f in $BASE/../config/sudoers.d/*; do
   install -m 400 "$f" /etc/sudoers.d
 done
 
-for f in "$(dirname $0)"/../config/boot.d/*; do
+for f in "$BASE"/../config/boot.d/*; do
   mkdir -p /etc/boot.d
   install -m 550 -o root -g root "$f" /etc/boot.d/"$(basename "$f")"
 done
@@ -222,8 +227,6 @@ if ! id marker >/dev/null 2>&1; then
   useradd -s "`which nologin`" -u 3000 marker
 fi
 
-apt-mark hold scite
-
 # sensors
 # echo level 4 > /proc/acpi/ibm/fan
 
@@ -234,5 +237,13 @@ apt-mark hold scite
 # https://bbs.archlinux.org/viewtopic.php?id=122412
 
 openntpd -ss
+
+if test -f /etc/setup.conf; then
+  value=`egrep '^[[:space:]]*tmp-zram=' /etc/setup.conf |awk -F = '{print $2}' |sed -Ee 's/[[:space:]]*#.*//'`
+  if test -n "$value"; then
+    install_if_needed xfsprogs
+    cat $BASE/../config/boot.d.template/tmp-zram |sed -Ee "s,^SIZE=.*,SIZE=$value," |tee /etc/boot.d/tmp-zram
+  fi
+fi
 
 echo 'Run sensors-detect if you haven'"'"'t to load kernel modules for hardware sersors.'

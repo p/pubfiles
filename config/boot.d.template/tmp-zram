@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -e
+
+SIZE=1
+
+modprobe zram
+
+num=`cat /sys/class/zram-control/hot_add`
+dev=/dev/zram$num
+devbn=zram$num
+
+echo $((2000*1024*1024)) > /sys/block/$devbn/disksize
+mkfs.xfs $dev
+mount -o noatime,nodiratime $dev /tmp
+chmod 01777 /tmp
