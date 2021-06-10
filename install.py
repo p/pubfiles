@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os.path, sys
+import os.path, sys, subprocess, re
 
 pub_root = os.path.dirname(__file__)
 sys.path.append(os.path.join(pub_root, 'home/openbox/lib'))
@@ -26,20 +26,39 @@ def have(binary):
             return True
     return False
 
+def is_laptop():
+    if have('laptop-detect'):
+        cp = subprocess.run(['laptop-detect'])
+        if cp.returncode == 0:
+            return True
+        elif cp.returncode == 1:
+            return False
+        else:
+            raise "Unexpected return code %s from laptop-detect" % cp.returncode
+    
+    return False
+
+config = {}
+
+if os.path.exists('/etc/setup.conf'):
+    with open('/etc/setup.conf') as f:
+        for line in f:
+            if re.match(r'\s*#', line):
+                continue
+            k, v = line.strip().split('=', 1)
+            if v == 'true':
+                v = True
+            elif v == 'false':
+                v = False
+            config[k] = v
+
+def is_headful():
+    try:
+        return config['headful']
+    except KeyError:
+        return is_laptop()
+
 abs_pub_root = os.path.abspath(pub_root)
-template = pyratemp.Template(filename=os.path.join(abs_pub_root, 'home/xinitrc.tpl'))
-gen = template(pub_root=abs_pub_root)
-
-home_xinitrc = os.path.expanduser('~/.xinitrc')
-print('Writing %s' % home_xinitrc)
-if os.path.islink(home_xinitrc):
-    os.unlink(home_xinitrc)
-
-with open(home_xinitrc, 'w') as f:
-    f.write(gen)
-
-if have('xscreensaver'):
-    ln_sf(os.path.join(abs_pub_root, 'home/xscreensaver'), os.path.expanduser('~/.xscreensaver'))
 
 if have('zsh'):
     ln_sf(os.path.join(abs_pub_root, 'home/zshenv'), os.path.expanduser('~/.zshenv'))
@@ -55,11 +74,27 @@ if have('git'):
 ln_sf(os.path.join(abs_pub_root, 'home/irbrc'), os.path.expanduser('~/.irbrc'))
 ln_sf(os.path.join(abs_pub_root, 'home/gemrc'), os.path.expanduser('~/.gemrc'))
 
-ln_sf(os.path.join(abs_pub_root, 'home/SciTEUser.properties'), os.path.expanduser('~/.SciTEUser.properties'))
-ln_sf(os.path.join(abs_pub_root, 'home/gtkterm2rc'), os.path.expanduser('~/.gtkterm2rc'))
-
 if not os.path.exists(os.path.join(abs_pub_root, 'home/config')):
     os.mkdir(os.path.join(abs_pub_root, 'home/config'))
 if not os.path.exists(os.path.expanduser('~/.config')):
     os.mkdir(os.path.expanduser('~/.config'))
-ln_sf(os.path.join(abs_pub_root, 'home/config/user-dirs.dirs'), os.path.expanduser('~/.config/user-dirs.dirs'))
+
+if is_headful():
+    template = pyratemp.Template(filename=os.path.join(abs_pub_root, 'home/xinitrc.tpl'))
+    gen = template(pub_root=abs_pub_root)
+
+    home_xinitrc = os.path.expanduser('~/.xinitrc')
+    print('Writing %s' % home_xinitrc)
+    if os.path.islink(home_xinitrc):
+        os.unlink(home_xinitrc)
+
+    with open(home_xinitrc, 'w') as f:
+        f.write(gen)
+
+    if have('xscreensaver'):
+        ln_sf(os.path.join(abs_pub_root, 'home/xscreensaver'), os.path.expanduser('~/.xscreensaver'))
+
+    ln_sf(os.path.join(abs_pub_root, 'home/SciTEUser.properties'), os.path.expanduser('~/.SciTEUser.properties'))
+    ln_sf(os.path.join(abs_pub_root, 'home/gtkterm2rc'), os.path.expanduser('~/.gtkterm2rc'))
+
+    ln_sf(os.path.join(abs_pub_root, 'home/config/user-dirs.dirs'), os.path.expanduser('~/.config/user-dirs.dirs'))
