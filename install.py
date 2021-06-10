@@ -7,6 +7,10 @@ sys.path.append(os.path.join(pub_root, 'home/openbox/lib'))
 
 import pyratemp
 
+def mkdir_p(path):
+    if not os.path.exists(path):
+        os.mkdir(path)
+
 def ln_sf(src, dest):
     print('Link %s to %s' % (src, dest))
     if os.path.exists(dest) or os.path.islink(dest):
@@ -60,6 +64,8 @@ def is_headful():
 
 abs_pub_root = os.path.abspath(pub_root)
 
+mkdir_p(os.path.expanduser('~/.bin'))
+
 if have('zsh'):
     ln_sf(os.path.join(abs_pub_root, 'home/zshenv'), os.path.expanduser('~/.zshenv'))
     
@@ -74,10 +80,8 @@ if have('git'):
 ln_sf(os.path.join(abs_pub_root, 'home/irbrc'), os.path.expanduser('~/.irbrc'))
 ln_sf(os.path.join(abs_pub_root, 'home/gemrc'), os.path.expanduser('~/.gemrc'))
 
-if not os.path.exists(os.path.join(abs_pub_root, 'home/config')):
-    os.mkdir(os.path.join(abs_pub_root, 'home/config'))
-if not os.path.exists(os.path.expanduser('~/.config')):
-    os.mkdir(os.path.expanduser('~/.config'))
+mkdir_p(os.path.join(abs_pub_root, 'home/config'))
+mkdir_p(os.path.expanduser('~/.config'))
 
 if is_headful():
     template = pyratemp.Template(filename=os.path.join(abs_pub_root, 'home/xinitrc.tpl'))
