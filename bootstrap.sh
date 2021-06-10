@@ -25,11 +25,11 @@ if $headful; then
 fi
 
 if ! $headful; then
-  curl https://github.com/p/pubfiles/blob/master/script/configure-apt-no-recommends |sh
+  curl https://raw.githubusercontent.com/p/pubfiles/master/script/configure-apt-no-recommends |sh
 fi
 
 apt-get install git
 
-mkdir -p $HOME/apps
-cd $HOME/apps
-git clone https://github.com/p/pubfiles
+#mkdir -p $HOME/apps
+#cd $HOME/apps
+#git clone https://github.com/p/pubfiles
