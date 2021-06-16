@@ -2,6 +2,8 @@
 
 set -e
 
+base="`dirname $0`"
+
 target=/home/browser
 
 while getopts t: opt; do
@@ -74,7 +76,6 @@ if $USE_SUDO; then
   as_browser chmod -R g+rwX ${MOZ_HOME} || true
 fi
 
-cwd=`pwd`
 for dir in .mozilla/firefox ".moonchild productions/pale moon" .waterfox; do
   if ! test -d "${MOZ_HOME}/$dir"; then
     continue
@@ -90,9 +91,9 @@ for dir in .mozilla/firefox ".moonchild productions/pale moon" .waterfox; do
       as_browser chmod g+rwX "`pwd`/chrome" &&
       for file in gm_scripts user.js chrome/userContent.css chrome/userChrome.css; do
         if test -L $file; then rm $file; fi &&
-        ln -s $cwd/`basename $file` $file;
+        ln -s "$base"//`basename $file` $file;
       done &&
-      cat $cwd/user.js >>prefs.js
+      cat "$base"//user.js >>prefs.js
     )
   done
 done
