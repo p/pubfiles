@@ -1,0 +1,29 @@
+#!/bin/sh
+
+set -e
+
+if test "`id -u`" != 0; then
+  if which sudo 2>/dev/null 1>&2; then
+    echo "This needs to be run as root, trying sudo" 1>&2
+    exec sudo sh -x "$0" "$@"
+  else
+    echo "This needs to be run as root" 1>&2
+    exit 2
+  fi
+fi
+
+if id tw >/dev/null 2>&1; then
+  usermod -s /bin/zsh tw
+else
+  useradd -m -s /bin/zsh -u 3003 tw
+  echo 'export XAUTHORITY=$HOME/.Xauthority' |sudo -u tw tee /home/tw/.zshrc
+fi
+
+xauthority_path=/home/tw/.Xauthority
+
+if id w; then
+  echo 'w ALL = (tw) NOPASSWD: ALL' >/etc/sudoers.d/w-tw
+  sudo -u w xauth list | sed -e 's/^/add /' | sudo -u tw env HOME=/home/tw XAUTHORITY=$xauthority_path xauth
+fi
+
+usermod -G tw w
