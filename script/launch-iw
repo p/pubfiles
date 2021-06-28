@@ -1,0 +1,58 @@
+#!/usr/bin/env ruby
+
+binary, profile = ARGV
+
+if profile.nil?
+  raise "Usage: launch-iw binary proflie"
+end
+
+catalog_dir = File.expand_path('~/.waterfox')
+
+catalog_path = File.join(catalog_dir, 'profiles.ini')
+profile_basename = "gen.#{profile}"
+profile_path = File.join(catalog_dir, profile_basename)
+
+require 'inifile'
+require 'fileutils'
+
+if File.exist?(catalog_path)
+  ini = IniFile.new(filename: catalog_path, separator: '')
+else
+  ini = IniFile.new(separator: '')
+end
+
+ini['Profile0'] = {
+  Name: profile,
+  IsRelative: 1,
+  Path: profile_basename,
+}
+
+FileUtils.mkdir_p(catalog_dir)
+ini.write(filename: catalog_path)
+
+FileUtils.mkdir_p(profile_path)
+
+src = File.join(File.dirname(__FILE__), '../home/mozilla')
+
+chrome_path = File.join(profile_path, 'chrome')
+FileUtils.mkdir_p(chrome_path)
+FileUtils.ln_sf(File.join(src, 'userChrome.css'), File.join(chrome_path, 'userChrome.css'))
+FileUtils.ln_sf(File.join(src, 'userContent.css'), File.join(chrome_path, 'userContent.css'))
+FileUtils.ln_sf(File.join(src, 'user.js'), File.join(profile_path, 'user.js'))
+unless File.exist?(File.join(profile_path, 'system'))
+  FileUtils.ln_sf(File.join(src, 'system'), File.join(profile_path, 'system'))
+end
+
+search = File.read(File.join(File.dirname(__FILE__), 'search.json'))
+# https://github.com/dearblue/ruby-extlz4
+# https://gist.github.com/Tblue/62ff47bef7f894e92ed5
+# https://gist.github.com/kaefer3000/73febe1eec898cd50ce4de1af79a332a
+# use lz4jsoncat in lz4json debian package to verify
+require 'extlz4'
+File.open(File.join(profile_path, 'search.json.mozlz4'), 'wb') do |f|
+  f << "mozLz40\0"
+  f << [search.length].pack('l<')
+  f << LZ4.block_encode(search)
+end
+
+exec(binary, '-P', profile)
