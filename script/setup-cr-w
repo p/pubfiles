@@ -26,3 +26,5 @@ elif id me; then
   echo 'me ALL = (cr-w) NOPASSWD: ALL' >/etc/sudoers.d/me-cr-w
   sudo -u me xauth list | sed -e 's/^/add /' | sudo -u cr-w env HOME=/home/cr-w XAUTHORITY=$xauthority_path xauth
 fi
+
+usermod -G cr-w w
