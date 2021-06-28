@@ -14,6 +14,8 @@ profile_path = File.join(catalog_dir, profile_basename)
 
 require 'inifile'
 require 'fileutils'
+require 'json'
+require 'firefox_hash_generator'
 
 if File.exist?(catalog_path)
   ini = IniFile.new(filename: catalog_path, separator: '')
@@ -43,7 +45,13 @@ unless File.exist?(File.join(profile_path, 'system'))
   FileUtils.ln_sf(File.join(src, 'system'), File.join(profile_path, 'system'))
 end
 
-search = File.read(File.join(File.dirname(__FILE__), 'search.json'))
+search = JSON.load(File.read(File.join(src, 'search.json.in')))
+hash = FirefoxHashGenerator.generate(:waterfox, profile_basename, 'DuckDuckGo')
+search['metaData'] = {
+  current: 'DuckDuckGo',
+  hash: hash,
+}
+search = JSON.dump(search)
 # https://github.com/dearblue/ruby-extlz4
 # https://gist.github.com/Tblue/62ff47bef7f894e92ed5
 # https://gist.github.com/kaefer3000/73febe1eec898cd50ce4de1af79a332a
