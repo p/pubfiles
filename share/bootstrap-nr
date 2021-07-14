@@ -8,6 +8,6 @@ curl https://raw.githubusercontent.com/p/pubfiles/master/script/configure-apt-no
 
 apt-get install git
 
-mkdir -p $HOME/apps
+#mkdir -p $HOME/apps
 
-git clone https://github.com/p/pubfiles $HOME/apps
+#git clone https://github.com/p/pubfiles $HOME/apps
