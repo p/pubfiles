@@ -1,0 +1,79 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'time'
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: dump-dhcp-leases [-s|-e|-a|-h]"
+
+  opts.on("-s", "Sort by start time") do |v|
+    options[:sort] = :start
+  end
+
+  opts.on("-e", "Sort by end time") do |v|
+    options[:sort] = :end
+  end
+
+  opts.on("-a", "Sort by address") do |v|
+    options[:sort] = :address
+  end
+
+  opts.on("-h", "Sort by host name") do |v|
+    options[:sort] = :host
+  end
+end.parse!
+
+db = []
+
+contents = File.read(ARGV.shift)
+contents.scan(/^lease (.+) \{((?:.|\n)+?)\}/) do |match|
+  entry = {'ip' => $1}
+  $2.strip.split("\n").each do |line|
+    line = line.strip
+    next if line.empty?
+    key, value = line.split(' ', 2)
+    if value
+      value = value.sub(/;$/, '').gsub('"', '')
+    else
+      value = true
+    end
+    if %w(starts ends).include?(key)
+      value = Time.parse(value.split(' ', 2).last)
+    end
+    if key == 'hardware'
+      value = value.sub('ethernet ', '').strip
+    end
+    entry[key] = value
+  end
+  db << entry
+end
+
+sort_key = case options[:sort]
+when :start
+  'starts'
+when :end
+  'ends'
+when :address
+  'ip'
+when :host
+  'client-hostname'
+else
+  'starts'
+end
+
+entries = db.sort_by do |v|
+  v[sort_key]
+end
+
+hostname_width = entries.map { |entry| entry['client-hostname'] }.compact.map(&:length).max
+
+entries.each do |entry|
+  puts "%-#{hostname_width}s   %-15s %-19s %s   %s" % [
+    entry['client-hostname'],
+    entry['ip'],
+    entry['hardware'],
+    entry['starts'],
+    entry['ends'],
+  ]
+end
