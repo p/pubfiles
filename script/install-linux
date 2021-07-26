@@ -209,6 +209,8 @@ for f in "$BASE"/../config/boot.d/*; do
   install -m 550 -o root -g root "$f" /etc/boot.d/"$(basename "$f")"
 done
 
+install -m 444 -o root -g root "$BASE"/../config/ssh/ssh_config.d/known_hosts.conf /etc/ssh/ssh_config.d/known_hosts.conf
+
 # https://www.tecmint.com/set-system-locales-in-linux/
 if have update-locale; then
   update-locale LC_ALL=C.UTF-8
