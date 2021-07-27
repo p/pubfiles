@@ -64,7 +64,7 @@ def is_headful():
 
 abs_pub_root = os.path.abspath(pub_root)
 
-mkdir_p(os.path.expanduser('~/.bin'))
+mkdir_p(os.path.expanduser('~/bin'))
 
 if have('zsh'):
     ln_sf(os.path.join(abs_pub_root, 'home/zshenv'), os.path.expanduser('~/.zshenv'))
