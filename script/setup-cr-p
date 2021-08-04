@@ -12,12 +12,28 @@ if test "`id -u`" != 0; then
   fi
 fi
 
+SIZE=1g
+
+if ! df /home/cr-p |tail +2 |awk '{print $1}' |fgrep -q zram; then
+  modprobe zram
+
+  num=`cat /sys/class/zram-control/hot_add`
+  dev=/dev/zram$num
+  devbn=zram$num
+
+  echo $SIZE > /sys/block/$devbn/disksize
+  mkfs.xfs $dev
+  mount -o noatime,nodiratime $dev /home/cr-p
+fi
+
 xauthority_path=/home/cr-p/.Xauthority
 
 if ! id cr-p; then
-  useradd -m -s /usr/bin/zsh -u 2519 cr-p
-  echo 'export XAUTHORITY=$HOME/.Xauthority' |sudo -u cr-p tee /home/cr-p/.zshrc
+  useradd -s /usr/bin/zsh -u 2519 cr-p
 fi
+
+chown cr-p:cr-p /home/cr-p
+echo 'export XAUTHORITY=$HOME/.Xauthority' |sudo -u cr-p tee /home/cr-p/.zshrc
 
 if id me; then
   echo 'me ALL = (cr-p) NOPASSWD: ALL' >/etc/sudoers.d/me-cr-p

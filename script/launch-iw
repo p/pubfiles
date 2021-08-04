@@ -34,7 +34,7 @@ ini.write(filename: catalog_path)
 
 FileUtils.mkdir_p(profile_path)
 
-src = File.join(File.dirname(__FILE__), '../home/mozilla')
+src = File.expand_path(File.join(File.dirname(__FILE__), '../home/mozilla'))
 
 chrome_path = File.join(profile_path, 'chrome')
 FileUtils.mkdir_p(chrome_path)
