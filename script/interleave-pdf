@@ -2,8 +2,11 @@
 
 require 'combine_pdf'
 
-files = Dir['*.pdf'].sort
-p files
+if ARGV.empty?
+  files = Dir['*.pdf'].sort
+else
+  files = ARGV
+end
 
 out = CombinePDF.new
 front = CombinePDF.load(files.first)
@@ -16,7 +19,7 @@ end
 # Interleave pages assuming the back pages are in reverse order
 front.pages.each_with_index do |f, i|
   b = back.pages[back.pages.length-1-i]
-  
+
   out << f
   out << b
 end
