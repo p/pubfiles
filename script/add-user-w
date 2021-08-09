@@ -2,7 +2,9 @@
 
 set -e
 
-groups=
+groupmod power || groupadd -g 2590 power
+
+groups=power
 for group in cdrom floppy audio dip video plugdev netdev bluetooth docker; do
   if groupmod $group; then
     if test -n "$groups"; then
@@ -16,4 +18,8 @@ if id w >/dev/null 2>&1; then
   usermod -s /bin/zsh -G $groups w
 else
   useradd -m -s /bin/zsh -u 2515 -G $groups w
+fi
+
+if test -d /etc/sudoers.d; then
+  install -m 444 `dirname $0`/../config/sudoers.d/power-mgmt /etc/sudoers.d
 fi
