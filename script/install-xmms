@@ -5,8 +5,8 @@
 set -e
 
 (
-  echo 'deb http://www.pvv.ntnu.no/~knuta/xmms/squeeze ./'
-  echo 'deb-src http://www.pvv.ntnu.no/~knuta/xmms/squeeze ./'
+  echo 'deb [allow-insecure=yes] http://www.pvv.ntnu.no/~knuta/xmms/squeeze ./'
+  echo 'deb-src [allow-insecure=yes] http://www.pvv.ntnu.no/~knuta/xmms/squeeze ./'
 ) |sudo tee /etc/apt/sources.list.d/xmms.list
 
 sudo apt-get update
