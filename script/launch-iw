@@ -6,7 +6,16 @@ if profile.nil?
   raise "Usage: launch-iw binary proflie"
 end
 
-catalog_dir = File.expand_path('~/.waterfox')
+profile_dir = case File.basename(binary)
+when 'waterfox'
+  '.waterfox'
+when 'firefox'
+  '.mozilla/firefox'
+else
+  raise "Unknown browser #{binary}"
+end
+
+catalog_dir = File.join(File.expand_path('~'), profile_dir)
 
 catalog_path = File.join(catalog_dir, 'profiles.ini')
 profile_basename = "gen.#{profile}"
