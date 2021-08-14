@@ -17,7 +17,7 @@ echo
 echo 'release=testing | stable - which release to use'
 echo 'headful=true | false'
 echo 'mm=true | false'
-echo 'tmp-zram=<size>'
+echo 'tmp_zram=<size>'
 echo
 
 if test -f /etc/setup.conf; then
@@ -243,7 +243,7 @@ fi
 openntpd -ss
 
 if test -f /etc/setup.conf; then
-  value=`egrep '^[[:space:]]*tmp-zram=' /etc/setup.conf |awk -F = '{print $2}' |sed -Ee 's/[[:space:]]*#.*//'`
+  value=`egrep '^[[:space:]]*tmp_zram=' /etc/setup.conf |awk -F = '{print $2}' |sed -Ee 's/[[:space:]]*#.*//'`
   if test -n "$value"; then
     install_if_needed xfsprogs
     cat $BASE/../config/boot.d.template/tmp-zram |sed -Ee "s,^SIZE=.*,SIZE=$value," |tee /etc/boot.d/tmp-zram
