@@ -1,0 +1,58 @@
+#!/bin/bash
+
+set -e
+
+if test "`id -u`" != 0; then
+  if which sudo 2>/dev/null 1>&2; then
+    echo "This needs to be run as root, trying sudo" 1>&2
+    exec sudo sh -x "$0" "$@"
+  else
+    echo "This needs to be run as root" 1>&2
+    exit 2
+  fi
+fi
+
+user_suffix="$1"
+uid="$2"
+from_user="$3"
+if test -z "$from_user"; then
+  echo "Usage: setup-cr user-suffix uid from-user" 1>&2
+  exit 1
+fi
+
+id "$from_user"
+
+user="cr-$user_suffix"
+
+-f /etc/setup.conf && . /etc/setup.conf
+
+if ! id "$user"; then
+  which zsh
+  useradd -s `which zsh` -u "$uid" "$user"
+fi
+
+mkdir -p /home/"$user"
+
+var=cr_"$user"_zram
+zram_size=${!var}
+
+if test -n "$zram_size" && ! df /home/"$user" |tail +2 |awk '{print $1}' |fgrep -q zram; then
+  modprobe zram
+  which mkfs.xfs
+
+  num=`cat /sys/class/zram-control/hot_add`
+  dev=/dev/zram$num
+  devbn=zram$num
+
+  echo $SIZE > /sys/block/$devbn/disksize
+  mkfs.xfs $dev
+  mount -o noatime,nodiratime $dev /home/"$user"
+fi
+
+xauthority_path=/home/"$user"/.Xauthority
+
+chown "$user":"$user" /home/"$user"
+echo 'export XAUTHORITY=$HOME/.Xauthority' |sudo -u "$user" tee /home/"$user"/.zshrc
+
+echo "$from_user ALL = ($user) NOPASSWD: ALL" >/etc/sudoers.d/"$from_user"-"$user"
+sudo -u "$from_user" xauth list | sed -e 's/^/add /' | sudo -u "$user" env HOME=/home/"$user" XAUTHORITY=$xauthority_path xauth
