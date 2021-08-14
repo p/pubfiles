@@ -24,7 +24,7 @@ id "$from_user"
 
 user="cr-$user_suffix"
 
--f /etc/setup.conf && . /etc/setup.conf
+test -f /etc/setup.conf && . /etc/setup.conf
 
 if ! id "$user"; then
   which zsh
@@ -33,7 +33,7 @@ fi
 
 mkdir -p /home/"$user"
 
-var=cr_"$user"_zram
+var=cr_"$user_suffix"_zram
 zram_size=${!var}
 
 if test -n "$zram_size" && ! df /home/"$user" |tail +2 |awk '{print $1}' |fgrep -q zram; then
@@ -44,7 +44,7 @@ if test -n "$zram_size" && ! df /home/"$user" |tail +2 |awk '{print $1}' |fgrep 
   dev=/dev/zram$num
   devbn=zram$num
 
-  echo $SIZE > /sys/block/$devbn/disksize
+  echo "$zram_size" > /sys/block/$devbn/disksize
   mkfs.xfs $dev
   mount -o noatime,nodiratime $dev /home/"$user"
 fi

@@ -1,0 +1,3 @@
+#!/bin/sh
+
+exec sudo -u cr-fb env DISPLAY=$DISPLAY XAUTHORITY=/home/cr-fb/.Xauthority chromium "$@"
