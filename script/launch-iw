@@ -11,6 +11,8 @@ when 'waterfox'
   '.waterfox'
 when 'firefox'
   '.mozilla/firefox'
+when 'palemoon'
+  '.moonchild productions/pale moon'
 else
   raise "Unknown browser #{binary}"
 end
