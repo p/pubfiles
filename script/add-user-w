@@ -23,3 +23,6 @@ fi
 if test -d /etc/sudoers.d; then
   install -m 444 `dirname $0`/../config/sudoers.d/power-mgmt /etc/sudoers.d
 fi
+
+mkdir -p /home/w/bin
+chown w:w /home/w/bin
