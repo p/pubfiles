@@ -4,6 +4,14 @@ set -e
 
 if id sandbox >/dev/null 2>&1; then
   usermod -s /bin/zsh sandbox
+  
+  if ! test -d /home/sandbox; then
+    mkdir /home/sandbox
+    chown -R sandbox:sandbox /home/sandbox
+  fi
 else
   useradd -m -s /bin/zsh -u 2508 sandbox
 fi
+
+touch /home/sandbox/.zshrc
+chown sandbox:sandbox /home/sandbox/.zshrc
