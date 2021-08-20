@@ -55,4 +55,4 @@ chown "$user":"$user" /home/"$user"
 echo 'export XAUTHORITY=$HOME/.Xauthority' |sudo -u "$user" tee /home/"$user"/.zshrc
 
 echo "$from_user ALL = ($user) NOPASSWD: ALL" >/etc/sudoers.d/"$from_user"-"$user"
-sudo -u "$from_user" xauth list | sed -e 's/^/add /' | sudo -u "$user" env HOME=/home/"$user" XAUTHORITY=$xauthority_path xauth
+#sudo -u "$from_user" xauth list | sed -e 's/^/add /' | sudo -u "$user" env HOME=/home/"$user" XAUTHORITY=$xauthority_path xauth

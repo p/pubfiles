@@ -2,29 +2,13 @@
 
 set -e
 
-if test "`id -u`" != 0; then
-  if which sudo 2>/dev/null 1>&2; then
-    echo "This needs to be run as root, trying sudo" 1>&2
-    exec sudo sh -x "$0" "$@"
-  else
-    echo "This needs to be run as root" 1>&2
-    exit 2
-  fi
-fi
-
-xauthority_path=/home/cr-w/.Xauthority
-
-if ! id cr-w; then
-  useradd -m -s /usr/bin/zsh -u 2516 cr-w
-  echo 'export XAUTHORITY=$HOME/.Xauthority' |sudo -u cr-w tee /home/cr-w/.zshrc
-fi
+exec `dirname "$0"`/setup-cr w 2516 w
 
 if id w; then
-  echo 'w ALL = (cr-w) NOPASSWD: ALL' >/etc/sudoers.d/w-cr-w
-  sudo -u w xauth list | sed -e 's/^/add /' | sudo -u cr-w env HOME=/home/cr-w XAUTHORITY=$xauthority_path xauth
-elif id me; then
-  echo 'me ALL = (cr-w) NOPASSWD: ALL' >/etc/sudoers.d/me-cr-w
-  sudo -u me xauth list | sed -e 's/^/add /' | sudo -u cr-w env HOME=/home/cr-w XAUTHORITY=$xauthority_path xauth
+  usermod -G cr-w w
 fi
 
-usermod -G cr-w w
+if id me; then
+  echo 'me ALL = (cr-w) NOPASSWD: ALL' >/etc/sudoers.d/me-cr-w
+  #sudo -u me xauth list | sed -e 's/^/add /' | sudo -u cr-w env HOME=/home/cr-w XAUTHORITY=$xauthority_path xauth
+fi
