@@ -11,8 +11,7 @@ echo $cookie >"$tmpdir"/cookie
 docker run --rm -itu w -e DISPLAY=$DISPLAY -e XAUTHORITY -e COOKIE=$cookie \
   -v /tmp/.X11-unix/X4:/tmp/.X11-unix/X4:ro \
   -v "$tmpdir":/tmp/.xauth \
-  -v `pwd`/dot.zoom:/home/w/.zoom:ro \
-  -v `pwd`/dot.config:/home/w/.config:rw \
+  -v `pwd`/2:/home/w:rw \
   --device /dev/snd --device /dev/video0 \
   zoom /usr/bin/zoom
 
