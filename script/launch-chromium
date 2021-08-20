@@ -1,0 +1,18 @@
+#!/bin/sh
+
+set -e
+
+user="$1"
+if test -z "$user"; then
+  echo "Usage: launch-cr user" 1>&2
+  exit 1
+fi
+
+if ! echo $user |grep ^cr-; then
+  user=cr-$user
+fi
+
+xauthority_path=/home/$user/.Xauthority
+xauth list | sed -e 's/^/add /' | sudo -u "$user" env HOME=/home/"$user" XAUTHORITY=$xauthority_path xauth
+
+exec sudo -u $user env DISPLAY=$DISPLAY XAUTHORITY=$xauthority_path chromium "$@"
