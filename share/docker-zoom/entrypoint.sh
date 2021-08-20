@@ -2,21 +2,15 @@
 
 set -ex
 
-env
-xauth list
-hostname
+export XAUTHORITY=$HOME/.Xauthority
 
 cookie=`cat /tmp/.xauth/cookie`
 echo add `hostname`/unix$DISPLAY . $cookie |xauth
 
-echo
-xauth list
-
 cd $HOME
 
-pwd
-ls -al
+export XDG_CONFIG_HOME=$HOME
 
-export XDG_CONFIG_HOME=/home/w
+rsync -av /tmp/.zoom-tpl/ $HOME
 
 eval "$@"

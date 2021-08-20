@@ -15,7 +15,7 @@ for group in cdrom floppy audio dip video plugdev netdev bluetooth docker; do
   fi
 done
 if id w >/dev/null 2>&1; then
-  usermod -s /bin/zsh -G $groups w
+  usermod -s /bin/zsh -aG $groups w
 else
   useradd -m -s /bin/zsh -u 2515 -G $groups w
 fi

@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e
+
+if id zoom-d >/dev/null 2>&1; then
+  usermod -s /usr/sbin/nologin zoom-d
+else
+  useradd -m -s /usr/sbin/nologin -u 2701 zoom-d
+fi
+
+if id w; then
+  usermod -aG zoom-d w
+fi

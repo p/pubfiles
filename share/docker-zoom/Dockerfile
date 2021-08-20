@@ -13,7 +13,9 @@ RUN apt-get update && \
 
 RUN apt-get install -y xterm mplayer wget firefox
 
-RUN useradd -G audio,video -m -u 2515 w
+RUN apt-get install -y rsync
+
+RUN useradd -G audio,video -m -u 2701 zoom-d
 
 COPY entrypoint.sh /entrypoint.sh
 

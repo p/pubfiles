@@ -2,16 +2,24 @@
 
 set -e
 
+if ! test -e /dev/video0; then
+  echo "Error: /dev/video0 missing - webcam not attached? Zoom won't work" 1>&2
+  echo Exiting 1>&2
+  exit 1
+fi
+
 cookie=`xauth list | awk '{print $3}' |head -1`
 
 tmpdir=`mktemp -dt docker-zoom.XXXXXXX`
+chgrp zoom-d "$tmpdir"
+chmod g+rx "$tmpdir"
 
 echo $cookie >"$tmpdir"/cookie
 
-docker run --rm -itu w -e DISPLAY=$DISPLAY -e XAUTHORITY -e COOKIE=$cookie \
+docker run --rm -itu zoom-d -e DISPLAY=$DISPLAY -e COOKIE=$cookie \
   -v /tmp/.X11-unix/X4:/tmp/.X11-unix/X4:ro \
   -v "$tmpdir":/tmp/.xauth \
-  -v `pwd`/2:/home/w:rw \
+  -v `pwd`/3:/tmp/.zoom-tpl:ro \
   --device /dev/snd --device /dev/video0 \
   zoom /usr/bin/zoom
 
