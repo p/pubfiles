@@ -1,0 +1,19 @@
+#!/bin/sh
+
+set -e
+
+cookie=`xauth list | awk '{print $3}' |head -1`
+
+tmpdir=`mktemp -dt docker-zoom.XXXXXXX`
+
+echo $cookie >"$tmpdir"/cookie
+
+docker run --rm -itu w -e DISPLAY=$DISPLAY -e XAUTHORITY -e COOKIE=$cookie \
+  -v /tmp/.X11-unix/X4:/tmp/.X11-unix/X4:ro \
+  -v "$tmpdir":/tmp/.xauth \
+  -v `pwd`/dot.zoom:/home/w/.zoom:ro \
+  -v `pwd`/dot.config:/home/w/.config:rw \
+  --device /dev/snd --device /dev/video0 \
+  zoom /usr/bin/zoom
+
+rm -rf "$tmpdir"
