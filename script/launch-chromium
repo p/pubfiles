@@ -8,8 +8,8 @@ if test -z "$user"; then
   exit 1
 fi
 
-if ! echo $user |grep ^cr-; then
-  user=cr-$user
+if ! echo $user |grep ^br-; then
+  user=br-$user
 fi
 
 xauthority_path=/home/$user/.Xauthority
