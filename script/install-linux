@@ -158,6 +158,10 @@ if ! grep -q '^apm = 255' /etc/hdparm.conf; then
   echo apm = 255 |tee -a /etc/hdparm.conf
 fi
 
+# This contains the scripts needed for machine to turn off when
+# the power button is pressed.
+install_if_needed acpi-support
+
 if is_laptop; then
   install_if_needed \
     acpi pm-utils wireless-tools rfkill iw wpasupplicant \
