@@ -37,7 +37,7 @@ var=cr_"$user_suffix"_zram
 zram_size="$br_zram"
 
 if test -z "$zram_size"; then
-  echo "Warning: br_zram not set in /setup.conf - profiles will be written to disk" 1>&2
+  echo "Warning: br_zram not set in /etc/setup.conf - profiles will be written to disk" 1>&2
 fi
 
 if ! test -d /mnt/browsers; then

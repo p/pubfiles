@@ -7,6 +7,7 @@ if test -z "$user"; then
   echo "Usage: launch-cr user" 1>&2
   exit 1
 fi
+shift
 
 if ! echo $user |grep ^br-; then
   user=br-$user
