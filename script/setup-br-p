@@ -1,0 +1,3 @@
+#!/bin/sh
+
+exec `dirname "$0"`/setup-br p 2519 me
