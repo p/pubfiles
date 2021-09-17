@@ -151,7 +151,7 @@ if have_user w; then
   chsh -s /bin/zsh w
 fi
 
-install_if_needed hdparm lm-sensors sysstat iotop usbutils pciutils
+install_if_needed hdparm lm-sensors sysstat iotop usbutils pciutils ethtool
 
 if ! grep -q '^apm = 255' /etc/hdparm.conf; then
   sed -i -e s/'^apm =/#apm =/' /etc/hdparm.conf
