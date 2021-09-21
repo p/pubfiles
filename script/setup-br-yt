@@ -1,3 +1,4 @@
 #!/bin/sh
 
-exec `dirname "$0"`/setup-br yt 2526 me
+`dirname "$0"`/setup-br yt 2526 me
+usermod -aG audio br-yt
