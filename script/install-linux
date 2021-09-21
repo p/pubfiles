@@ -97,7 +97,7 @@ if is_headful; then
   install_if_needed \
     gitk libvte9 feh \
     xpdf evince gimp \
-    xinit xauth openbox xsecurelock xss-lock x11-xserver-utils \
+    xinit xauth openbox xsecurelock xss-lock x11-xserver-utils xserver-xorg xserver-xorg-input-evdev xserver-xorg-input-kbd xserver-xorg-input-mouse \
     xfonts-terminus
 
   if ! dpkg -L scite >/dev/null 2>&1; then
