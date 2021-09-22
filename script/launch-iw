@@ -3,7 +3,18 @@
 binary, profile = ARGV
 
 if profile.nil?
-  raise "Usage: launch-iw binary proflie"
+  raise "Usage: launch-iw binary profile"
+end
+
+require 'etc'
+
+target_user = "br-#{profile}"
+if Etc.getlogin != target_user
+  if Etc.getpwnam(target_user)
+    cmd = %w(sudo -u) + [target_user, File.expand_path($0)] + ARGV
+    puts "Executing #{cmd.join(' ')}"
+    exec(*cmd)
+  end
 end
 
 profile_dir = case File.basename(binary)
