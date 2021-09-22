@@ -9,9 +9,18 @@ end
 require 'etc'
 
 target_user = "br-#{profile}"
-if Etc.getlogin != target_user
-  if Etc.getpwnam(target_user)
-    cmd = %w(sudo -u) + [target_user, File.expand_path($0)] + ARGV
+if Etc.getpwuid(Process.euid).name != target_user
+  begin
+    Etc.getpwnam(target_user)
+  rescue ArgumentError => e
+    if e.message =~ /can't find user/
+      # OK
+    else
+      raise
+    end
+  else
+    puts "Relaunching as #{target_user}"
+    cmd = %w(sudo -u) + [target_user, File.realpath(File.expand_path($0))] + ARGV
     puts "Executing #{cmd.join(' ')}"
     exec(*cmd)
   end
