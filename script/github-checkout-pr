@@ -42,5 +42,10 @@ else:
 
     subprocess.check_call(['git', 'checkout', 'master'])
     #import pdb;pdb.set_trace()
-    subprocess.check_call(['git', 'checkout', '-b', 'pr-%d' % pr_num,
-        '--track', '%s/%s' % (pr_owner_name, pr_branch)])
+    try:
+        subprocess.check_call(['git', 'checkout', '-b', 'pr-%d' % pr_num,
+            '--track', '%s/%s' % (pr_owner_name, pr_branch)])
+    except:
+        subprocess.check_call(['git', 'checkout', 'pr-%d' % pr_num])
+        subprocess.check_call(['git', 'pull', '--rebase'])
+        subprocess.check_call(['git', 'status'])
