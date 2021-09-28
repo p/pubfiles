@@ -1,0 +1,6 @@
+# https://wiki.debian.org/Teams/Ruby/Packaging/gem2deb
+export DEBEMAIL=code@olegp.name
+export DEBFULLNAME='Oleg Pudeyev'
+alias lintian='lintian -iIEcv --pedantic --color auto'
+alias git-import-dsc='git-import-dsc --author-is-committer --pristine-tar'
+alias clean='fakeroot debian/rules clean'
