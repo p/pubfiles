@@ -20,7 +20,17 @@ if Etc.getpwuid(Process.euid).name != target_user
     end
   else
     puts "Relaunching as #{target_user}"
-    cmd = %w(sudo -u) + [target_user, File.realpath(File.expand_path($0))] + ARGV
+    auths = `xauth list`.strip.split("\n")
+    auths.each do |auth|
+      cmd = %w(sudo -u) + [target_user] + %w(env) + ["XAUTHORITY=/home/#{target_user}/.Xauthority"] + %w(xauth add) + auth.split(/\s+/)
+      puts "Executing #{cmd.join(' ')}"
+      if fork
+        Process.wait
+      else
+        exec(*cmd)
+      end
+    end
+    cmd = %w(sudo -u) + [target_user, 'env', "XAUTHORITY=/home/#{target_user}/.Xauthority", File.realpath(File.expand_path($0))] + ARGV
     puts "Executing #{cmd.join(' ')}"
     exec(*cmd)
   end
