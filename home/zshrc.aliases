@@ -39,6 +39,8 @@ fi
 
 alias g=grep
 
-f() {
+ff() {
   find "$@" |sort
 }
+
+f() { for i in "$@"; do feh -dZF --cache-size 128 "$i"/*; done }
