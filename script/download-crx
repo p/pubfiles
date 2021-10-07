@@ -1,0 +1,69 @@
+#!/usr/bin/env ruby
+
+# CRX downloader
+#
+# CRX files prepend signatures/metadata to the zip archive.
+# See:
+# http://www.lyraphase.com/wp/projects/software/about-crx-files/
+# http://www.dre.vanderbilt.edu/~schmidt/android/android-4.0/external/chromium/chrome/common/extensions/docs/crx.html
+# https://gromnitsky.blogspot.com/2019/04/crx3.html
+# http://gromnitsky.blogspot.com/2017/03/bloatware-comes-when-nobodys-lookin.html
+# https://en.wikipedia.org/wiki/ZIP_(file_format)
+
+url = ARGV.shift
+
+if url.nil?
+  raise "Usage: download-crx url"
+end
+
+if url =~ %r,https://chrome.google.com/webstore/detail/([^/]+)/(\w+),
+  slug = $1
+  id = $2
+else
+  raise "Bogus URL: #{url}"
+end
+
+require 'zip'
+require 'open-uri'
+require 'json'
+
+dl_url = "https://clients2.google.com/service/update2/crx?response=redirect&prodversion=89.0&x=id%3D#{id}%26installsource%3Dondemand%26uc&acceptformat=crx2,crx3"
+
+contents = URI.parse(dl_url).open.read
+
+puts "Downloaded #{contents.length} bytes"
+
+if contents.length == 0
+  raise "Received a zero-length archive"
+end
+
+if contents =~ /(PK\x03\x04(?:.|\n)+)\z/
+  zip_contents = $1
+else
+  raise "Weird archive format"
+end
+
+io = StringIO.new(zip_contents)
+
+manifest = nil
+Zip::File.open_buffer(io) do |zip_file|
+  zip_file.each do |entry|
+    if entry.name == 'manifest.json'
+      manifest = JSON.load(entry.get_input_stream)
+    end
+  end
+end
+
+if manifest.nil?
+  raise "Couldn't read manifest"
+end
+
+name = manifest.fetch('name').gsub(/[^\w]/, '-').gsub(/--+/, '-').sub(/\A-/, '').sub(/-\z/, '')
+version = manifest.fetch('version')
+local_fn = "#{name}-#{version}.crx"
+
+puts "Saving to #{local_fn}"
+
+File.open(local_fn, 'w') do |io|
+  io << contents
+end
