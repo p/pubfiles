@@ -36,12 +36,27 @@
   </item>
 </menu>
 
+<menu id="kill-waterfox-menu" label="Kill">
+  <item label='Sandbox'>
+    <action name='Execute'><command>sudo pkill -9 -u br-sandbox waterfox</command></action>
+  </item>
+</menu>
+
+<menu id="waterfox-menu" label="Waterfox">
+  <item label='Sandbox'>
+    <action name='Execute'><command>~/apps/pubfiles/script/launch-iw /opt/waterfox-classic/waterfox sandbox</command></action>
+  </item>
+  <menu id="kill-waterfox-menu" />
+</menu>
+
 <menu id="root-menu" label="Openbox 3">
   <separator label="Openbox" />
   <item label="Terminal">
     <action name="Execute"><command>gtkterm2</command></action>
   </item>
-  
+
+  <menu id="waterfox-menu" />
+
   <item label="Auto Firefox">
     <action name="Execute"><command>sh -c "
       if test $(
