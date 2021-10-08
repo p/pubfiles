@@ -1,0 +1,5 @@
+deb http://sledjhamr.org/devuan/merged unstable main contrib non-free
+deb-src http://sledjhamr.org/devuan/merged unstable main contrib non-free
+
+#deb http://deb.devuan.org/merged unstable main contrib non-free
+#deb-src http://deb.devuan.org/merged unstable main contrib non-free
