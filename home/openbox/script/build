@@ -3,6 +3,16 @@
 require 'erb'
 require 'pathname'
 require 'tempfile'
+require 'optparse'
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: build [-r]"
+
+  opts.on("-r", "--reload", "Reload running openbox") do
+    options[:reload] = true
+  end
+end.parse!
 
 module Helpers
   def src_base
@@ -67,3 +77,11 @@ class Builder
 end
 
 Builder.new.build
+
+if options[:reload]
+  output = `openbox --reconfigure`
+  if $?.exitstatus != 0
+    puts output
+    raise "Failed to reconfigure openbox"
+  end
+end
