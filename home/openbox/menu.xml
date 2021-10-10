@@ -49,6 +49,19 @@
   <menu id="kill-waterfox-menu" />
 </menu>
 
+<menu id="kill-chromium-menu" label="Kill">
+  <item label='Sandbox'>
+    <action name='Execute'><command>sudo pkill -9 -u br-sandbox chromium</command></action>
+  </item>
+</menu>
+
+<menu id="chromium-menu" label="Chromium">
+  <item label='Sandbox'>
+    <action name='Execute'><command>~/apps/pubfiles/script/launch-chromium sandbox</command></action>
+  </item>
+  <menu id="kill-chromium-menu" />
+</menu>
+
 <menu id="root-menu" label="Openbox 3">
   <separator label="Openbox" />
   <item label="Terminal">
