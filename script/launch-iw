@@ -1,14 +1,28 @@
 #!/usr/bin/env ruby
 
+require 'optparse'
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: launch-iw [-u user] binary profile"
+
+  opts.on("-u", "--user USER", "Launch as given user") do |v|
+    options[:user] = v
+  end
+end.parse!
+
 binary, profile = ARGV
 
 if profile.nil?
-  raise "Usage: launch-iw binary profile"
+  raise "Usage: launch-iw [-u user] binary profile"
 end
 
 require 'etc'
 
-target_user = "br-#{profile}"
+target_user = options[:user] || profile
+unless target_user.start_with?('br-')
+  target_user = "br-#{target_user}"
+end
 if Etc.getpwuid(Process.euid).name != target_user
   begin
     Etc.getpwnam(target_user)
