@@ -70,7 +70,8 @@ class Builder
   def openbox_rc_root
     if path = ENV['XDG_CONFIG_HOME']
     else
-      raise "XDG_CONFIG_HOME not set"
+      path = File.expand_path('~/.config')
+      #raise "XDG_CONFIG_HOME not set"
     end
     Pathname.new(path).join('openbox')
   end
