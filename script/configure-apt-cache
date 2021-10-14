@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -e
+
+host="$1"
+
+if test -z "$host"; then
+  echo "Usage: configure-apt-cache host" 1>&2
+  exit 1
+fi
+
+url="http://$host:3142"
+
+cat <<-EOT >/etc/apt/apt.conf.d/41-apt-cache
+Acquire::http::Proxy "$url";
+EOT
