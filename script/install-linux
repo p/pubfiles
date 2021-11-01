@@ -162,10 +162,13 @@ fi
 # the power button is pressed.
 install_if_needed acpi-support
 
+if is_laptop || lspci |grep -q Wireless; then
+  install_if_needed wireless-tools rfkill iw wpasupplicant
+fi
+
 if is_laptop; then
   install_if_needed \
-    acpi pm-utils wireless-tools rfkill iw wpasupplicant \
-    nfs-common
+    acpi pm-utils nfs-common
 
   if lspci |grep -q 'Intel.*PRO/Wireless.*AGN'; then
     install_if_needed firmware-iwlwifi
