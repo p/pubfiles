@@ -49,7 +49,8 @@ else:
 with open('/etc/network/interfaces.d/%s' % wireless_interface, 'w') as f:
     f.write(contents)
 
-contents = 'network={\n  ssid="%s"' % spec[0]
+contents = "ctrl_interface=/run/wpa_supplicant\n"
+contents += 'network={\n  ssid="%s"' % spec[0]
 if len(spec) > 1:
     contents += '\n  key_mgmt=WPA-PSK\n  psk="%s"' % spec[1]
 contents += '\n}\n'
