@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -e
+
+card="$1"
+if test -z "$card"; then
+  echo "Usage: alsa-set-default-card card-index" 1>&2
+  exit 1
+fi
+
+cat <<EOT |tee /etc/asound.conf
+defaults.pcm.card $card
+defaults.ctl.card $card
+EOT
