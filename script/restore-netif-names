@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 
 # https://unix.stackexchange.com/questions/491754/why-is-my-wlan-device-being-renamed
+#
+# Manual renaming:
+# https://raspberrypi.stackexchange.com/questions/118411/reset-predictable-network-interface-names
+# https://lists.debian.org/debian-user/2016/05/msg00261.html
+# https://askubuntu.com/questions/826325/how-to-revert-usb-wifi-interface-name-from-wlxxxxxxxxxxxxx-to-wlanx
 
 CONFIG_FILE = '/etc/default/grub'
 
