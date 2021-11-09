@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# https://unix.stackexchange.com/questions/491754/why-is-my-wlan-device-being-renamed
+
 CONFIG_FILE = '/etc/default/grub'
 
 import re, subprocess
