@@ -10,10 +10,12 @@ with open(CONFIG_FILE) as f:
     with open(CONFIG_FILE + '.bak', 'w') as fb:
         fb.write(f.read())
 
+dirty = False
 with open(CONFIG_FILE) as f:
     for line in f.readlines():
         match = re.match(r'(\s*)GRUB_CMDLINE_LINUX="(.*)"$', line)
         if match:
+            orig_line = line
             args = re.split(r'\s+', match.group(2))
             # python silliness when splitting an empty string
             if args == ['']:
@@ -22,10 +24,19 @@ with open(CONFIG_FILE) as f:
                 args.append('net.ifnames=0')
             if 'biosdevname=0' not in args:
                 args.append('biosdevname=0')
+            # Remove quiet option while we are here
+            if 'quiet' in args:
+                args.remove('quiet')
             line = match.group(1) + 'GRUB_CMDLINE_LINUX="%s"\n' % ' '.join(args)
+            if line != orig_line:
+                out += '#' + orig_line
+                dirty = True
         out += line
-    
-with open(CONFIG_FILE, 'w') as f:
-    f.write(out)
+   
+if dirty: 
+    with open(CONFIG_FILE, 'w') as f:
+        f.write(out)
 
-subprocess.check_call(['update-grub'])
+    subprocess.check_call(['update-grub'])
+else:
+    print('No changes')
