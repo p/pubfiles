@@ -41,6 +41,14 @@ def get_if_ip(ifname):
         raise Exception('not found')
     return match.group(1)
 
+def get_default_gateway():
+    output = subprocess.check_output(['netstat', '-rn']).decode()
+    for line in output.split("\n"):
+        if line.startswith('0.0.0.0'):
+            gw = re.split(r'\s+', line)[1]
+            return gw
+    raise 'No default gateway'
+
 for process in ['ifdown', 'ifup', 'dhclient', 'wpa_supplicant']:
     subprocess.call(['pkill', '-9', process])
 
@@ -91,6 +99,7 @@ config = {
     'password': spec[1],
     'interface': wireless_interface,
     'ip': get_if_ip(wireless_interface),
+    'gateway': get_default_gateway(),
 }
     
 with open('/run/wireless/config.json', 'w') as f:
