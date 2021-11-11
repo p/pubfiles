@@ -34,6 +34,13 @@ def identify_interfaces():
                 wired.append(interface_name)
     return dict(wired=wired, wireless=wireless)
 
+def get_if_ip(ifname):
+    output = subprocess.check_output(['/sbin/ifconfig', ifname]).decode()
+    match = re.search(r'inet (\S+)', output)
+    if not match:
+        raise Exception('not found')
+    return match.group(1)
+
 for process in ['ifdown', 'ifup', 'dhclient', 'wpa_supplicant']:
     subprocess.call(['pkill', '-9', process])
 
@@ -82,6 +89,8 @@ if not os.path.exists('/run/wireless'):
 config = {
     'network': spec[0],
     'password': spec[1],
+    'interface': wireless_interface,
+    'ip': get_if_ip(wireless_interface),
 }
     
 with open('/run/wireless/config.json', 'w') as f:
