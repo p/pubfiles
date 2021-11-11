@@ -1,0 +1,24 @@
+--- debian/rules.orig	2021-11-11 17:25:50.282941909 -0500
++++ debian/rules	2021-11-11 17:26:10.493042459 -0500
+@@ -10,9 +10,9 @@
+ 	dh $@
+ 
+ override_dh_auto_build:
+-	dh_auto_build --sourcedirectory=scintilla/gtk -- GTK3=1 $(BUILD_LUA)
+-	dh_auto_build --sourcedirectory=lexilla/src -- GTK3=1 $(BUILD_LUA)
+-	dh_auto_build --sourcedirectory=scite/gtk -- gnomeprefix=/usr GTK3=1 $(BUILD_LUA)
++	dh_auto_build --sourcedirectory=scintilla/gtk -- $(BUILD_LUA)
++	dh_auto_build --sourcedirectory=lexilla/src -- $(BUILD_LUA)
++	dh_auto_build --sourcedirectory=scite/gtk -- gnomeprefix=/usr $(BUILD_LUA)
+ 
+ override_dh_auto_clean:
+ 	dh_auto_clean
+@@ -26,7 +26,7 @@
+ 
+ override_dh_auto_install:
+ 	dh_auto_install
+-	cd scite/gtk; $(MAKE) install GTK3=1 gnomeprefix=../../debian/scite/usr datadir=../../debian/scite/usr/share
++	cd scite/gtk; $(MAKE) install gnomeprefix=../../debian/scite/usr datadir=../../debian/scite/usr/share
+ 	#chmod -x $(CURDIR)/debian/scite/usr/share/scite/*
+ 	# install configuration files into the /etc directory
+ 	mv $(CURDIR)/debian/scite/usr/share/scite/*.properties $(CURDIR)/debian/scite/etc/scite

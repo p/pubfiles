@@ -28,8 +28,8 @@ cd "$tmpdir"
 apt-get source scite
 cd scite-*
 (cd scite &&
-patch -p1 <"$src"/patch-tab-width-4.0.0.diff)
-patch -p0 <"$src"/patch-debian-gtk2.diff
+patch -p1 <"$src"/patch-tab-width-5.1.3.diff)
+patch -p0 <"$src"/patch-debian-gtk2-5.1.3.diff
 sed -i -e s/libgtk-3-dev/libgtk2.0-dev/ debian/control
 
 # http://askubuntu.com/questions/226495/how-to-solve-dpkg-source-source-problem-when-building-a-package

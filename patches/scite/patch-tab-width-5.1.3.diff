@@ -1,0 +1,20 @@
+--- ../src/SciTEBuffers.cxx.orig	2021-11-11 17:18:23.971885752 -0500
++++ ../src/SciTEBuffers.cxx	2021-11-11 17:22:43.181432798 -0500
+@@ -1201,7 +1201,7 @@
+ 	GUI::gui_string title;
+ 
+ 	// Index
+-#if defined(_WIN32) || defined(GTK)
++#if 0
+ 	if (pos < 10) {
+ 		const GUI::gui_string sPos = GUI::StringFromInteger((pos + 1) % 10);
+ 		const GUI::gui_string sHotKey = GUI_TEXT("&") + sPos + GUI_TEXT(" ");
+@@ -1227,6 +1227,8 @@
+ 			title += AbbreviateWithTilde(EscapeFilePath(buffer.file, destination));
+ 		} else {
+ 			title += EscapeFilePath(buffer.file.Name(), destination);
++
++			title = title.substr(0, 9);
+ 		}
+ 	}
+ 
