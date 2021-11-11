@@ -258,4 +258,8 @@ if test -f /etc/setup.conf; then
   fi
 fi
 
+if dmidecode -t system |grep -q 'ThinkPad T550'; then
+  echo 'pm_suspend_args=--quirk-dpms-on' |tee -a /etc/system.conf
+fi
+
 echo 'Run sensors-detect if you haven'"'"'t to load kernel modules for hardware sersors.'

@@ -31,8 +31,16 @@ if test -n "$DISPLAY"; then
     done
   }
   
+  suspend() {
+    local suspend_args
+    suspend_args=`(cat /etc/system.conf || true) |grep ^pm_suspend_args= | cut -c 16-`
+    sudo pm-suspend $suspend_args
+  }
+  
   if have pm-suspend && have lock; then
-    locks() { lock && wait-for-lock && sudo pm-suspend }
+    locks() {
+      lock && wait-for-lock && suspend
+    }
   fi
 
 fi
