@@ -47,12 +47,19 @@ yesno() {
 }
 
 install_if_needed() {
+  local needed not_needed
   needed=
+  not_needed=
   for pkg in "$@"; do
-    if ! dpkg-query -l "$pkg" |sed -e '1,/^++/d' |grep -q ^i >/dev/null 2>&1; then
+    if dpkg-query -l "$pkg" |sed -e '1,/^++/d' |grep -q ^i >/dev/null 2>&1; then
+      not_needed="$not_needed $pkg"
+    else
       needed="$needed $pkg"
     fi
   done
+  if test -n "$not_needed"; then
+    apt-mark manual $not_needed
+  fi
   if test -n "$needed"; then
     echo "Installing packages: $needed"
     if ! $apt_updated; then
