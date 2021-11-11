@@ -106,3 +106,9 @@ if is_headful():
         
         if os.path.exists('/usr/sbin/pm-suspend'):
             ln_sf('/usr/sbin/pm-suspend', os.path.expanduser('~/bin/pm-suspend'))
+
+# Disable recent files.
+# https://alexcabal.com/disabling-gnomes-recently-used-file-list-the-better-way
+# See also: https://unix.stackexchange.com/questions/74031/disable-recently-used-in-gtk-file-directory-selector
+if subprocess.run(['which', 'gsettings']).returncode == 0:
+    subprocess.check_call(['gsettings', 'set', 'org.gnome.desktop.privacy', 'remember-recent-files', 'false'])
