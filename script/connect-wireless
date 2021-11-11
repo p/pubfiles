@@ -2,7 +2,7 @@
 
 # Inspiration: https://github.com/dmelo/vswm
 
-import sys, subprocess, re, os, os.path, time as _time
+import sys, subprocess, re, os, os.path, time as _time, json
 
 spec = sys.argv[1:]
 if len(spec) != 1 and len(spec) != 2:
@@ -75,3 +75,14 @@ subprocess.check_call(['wpa_supplicant', '-B',
 os.chmod('/tmp/wpa_supplicant.log', 0o644)
 print('Running dhclient')
 subprocess.check_call(['dhclient', '-v', wireless_interface])
+
+if not os.path.exists('/run/wireless'):
+    os.mkdir('/run/wireless')
+
+config = {
+    'network': spec[0],
+    'password': spec[1],
+}
+    
+with open('/run/wireless/config.json', 'w') as f:
+    json.dump(config, f)
