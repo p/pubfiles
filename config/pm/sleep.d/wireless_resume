@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e
+
+case $1 in
+  # suspend
+  suspend) : ;;
+  # resume
+  resume) /usr/libexec/pubfiles/connect-wireless -r ;;
+  *) exit 1 ;;
+esac
+
+exit 0
