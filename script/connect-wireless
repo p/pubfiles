@@ -2,12 +2,7 @@
 
 # Inspiration: https://github.com/dmelo/vswm
 
-import sys, subprocess, re, os, os.path, time as _time, json
-
-spec = sys.argv[1:]
-if len(spec) != 1 and len(spec) != 2:
-    print('Takes ssid or ssid & password')
-    exit(3)
+import sys, subprocess, re, os, os.path, time as _time, json, argparse
 
 def identify_interfaces():
     wireless = []
@@ -49,58 +44,106 @@ def get_default_gateway():
             return gw
     raise 'No default gateway'
 
-for process in ['ifdown', 'ifup', 'dhclient', 'wpa_supplicant']:
-    subprocess.call(['pkill', '-9', process])
+def start():
+    for process in ['ifdown', 'ifup', 'dhclient', 'wpa_supplicant']:
+        subprocess.call(['pkill', '-9', process])
 
-interfaces = identify_interfaces()
-wireless_interface = interfaces['wireless'][0]
+    interfaces = identify_interfaces()
+    wireless_interface = interfaces['wireless'][0]
 
-contents = 'iface %s inet dhcp\n' % wireless_interface
-if len(spec) == 1:
-    contents += '  wireless-essid %s' % spec[0]
+    for interface in interfaces['wired']:
+        subprocess.call(['ifdown', interface])
+    subprocess.call(['ifdown', wireless_interface])
+    _time.sleep(1)
+    start_wpa_supplicant(wireless_interface, args.ssid, args.password)
+    print('Running dhclient')
+    subprocess.check_call(['dhclient', '-v', wireless_interface])
+
+    if not os.path.exists('/run/wireless'):
+        os.mkdir('/run/wireless')
+
+    config = {
+        'network': args.ssid,
+        'password': args.password,
+        'interface': wireless_interface,
+        'ip': get_if_ip(wireless_interface),
+        'gateway': get_default_gateway(),
+    }
+        
+    with open('/run/wireless/config.json', 'w') as f:
+        json.dump(config, f)
+
+def read_config():
+    with open('/run/wireless/config.json') as f:
+        return json.load(f)
+
+def get_current_status(interface):
+    output = subprocess.check_output(['/sbin/iwconfig', interface]).decode()
+    status = {}
+    match = re.search(r'ESSID:"([^"]*)"', output)
+    if not match:
+        match = re.search(r'ESSID:([^\s]*)', output)
+    status['network'] = match.group(1)
+    return status
+
+def resume():
+    config = read_config()
+    interface = config['interface']
+    status = get_current_status(interface)
+    print(config)
+    print(status)
+    if status['network'] != config['network']:
+        print('Expected network %s, current network %s, reconnecting' % (config['network'], status['network']))
+        start_wpa_supplicant(config['interface'], config['network'], config['password'])
+
+def start_wpa_supplicant(interface, network, password):
+    contents = 'iface %s inet dhcp\n' % interface
+    if password:
+        contents += '  wpa-ssid "%s"\n  wpa-psk "%s"\n' % (network, password)
+    else:
+        contents += '  wireless-essid %s' % network
+
+    with open('/etc/network/interfaces.d/%s' % interface, 'w') as f:
+        f.write(contents)
+
+    contents = "ctrl_interface=/run/wpa_supplicant\n"
+    contents += 'network={\n  ssid="%s"' % network
+    if password:
+        contents += '\n  key_mgmt=WPA-PSK\n  psk="%s"' % password
+    contents += '\n}\n'
+
+    wpa_conf_path = '/etc/network/wpa_supplicant.conf.d/%s' % interface
+    if not os.path.exists('/etc/network/wpa_supplicant.conf.d'):
+        os.mkdir('/etc/network/wpa_supplicant.conf.d')
+    with open(wpa_conf_path, 'w') as f:
+        f.write(contents)
+
+    subprocess.check_call(['iwconfig', interface, 'essid', network])
+    print('Starting wpa_supplicant')
+    subprocess.check_call(['wpa_supplicant', '-B',
+        '-D', 'nl80211,wext',
+        '-i', interface,
+        '-f', '/tmp/wpa_supplicant.log',
+        '-c', wpa_conf_path])
+    os.chmod('/tmp/wpa_supplicant.log', 0o644)
+
+parser = argparse.ArgumentParser(description='Connect to a wireless network')
+parser.add_argument('ssid', type=str, nargs='?',
+                    help='Specify SSID')
+parser.add_argument('password', type=str, nargs='?',
+                    help='Specify password')
+parser.add_argument('-r', '--resume', action='store_const', const=True,
+                    help='Restore configuration after wake-up')
+
+args = parser.parse_args()
+
+if args.resume:
+    if args.ssid:
+        print('ssid/password input is not allowed when resuming')
+        exit(3)
+    resume()
+elif args.ssid:
+    start()
 else:
-    contents += '  wpa-ssid "%s"\n  wpa-psk "%s"\n' % tuple(spec)
-
-with open('/etc/network/interfaces.d/%s' % wireless_interface, 'w') as f:
-    f.write(contents)
-
-contents = "ctrl_interface=/run/wpa_supplicant\n"
-contents += 'network={\n  ssid="%s"' % spec[0]
-if len(spec) > 1:
-    contents += '\n  key_mgmt=WPA-PSK\n  psk="%s"' % spec[1]
-contents += '\n}\n'
-
-wpa_conf_path = '/etc/network/wpa_supplicant.conf.d/%s' % spec[0]
-if not os.path.exists('/etc/network/wpa_supplicant.conf.d'):
-    os.mkdir('/etc/network/wpa_supplicant.conf.d')
-with open(wpa_conf_path, 'w') as f:
-    f.write(contents)
-
-for interface in interfaces['wired']:
-    subprocess.call(['ifdown', interface])
-subprocess.call(['ifdown', wireless_interface])
-_time.sleep(1)
-subprocess.check_call(['iwconfig', wireless_interface, 'essid', spec[0]])
-print('Starting wpa_supplicant')
-subprocess.check_call(['wpa_supplicant', '-B',
-    '-D', 'nl80211,wext',
-    '-i', wireless_interface,
-    '-f', '/tmp/wpa_supplicant.log',
-    '-c', wpa_conf_path])
-os.chmod('/tmp/wpa_supplicant.log', 0o644)
-print('Running dhclient')
-subprocess.check_call(['dhclient', '-v', wireless_interface])
-
-if not os.path.exists('/run/wireless'):
-    os.mkdir('/run/wireless')
-
-config = {
-    'network': spec[0],
-    'password': spec[1],
-    'interface': wireless_interface,
-    'ip': get_if_ip(wireless_interface),
-    'gateway': get_default_gateway(),
-}
-    
-with open('/run/wireless/config.json', 'w') as f:
-    json.dump(config, f)
+    print('Takes ssid or ssid & password or the --resume option')
+    exit(3)
