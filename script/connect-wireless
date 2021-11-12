@@ -79,11 +79,13 @@ def read_config():
 
 def get_current_status(interface):
     output = subprocess.check_output(['/sbin/iwconfig', interface]).decode()
-    status = {}
+    status = {'associated': False}
     match = re.search(r'ESSID:"([^"]*)"', output)
     if not match:
         match = re.search(r'ESSID:([^\s]*)', output)
     status['network'] = match.group(1)
+    if re.search(r'Access Point: (?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}', output):
+        status['associated'] = True
     return status
 
 def resume():
@@ -94,6 +96,9 @@ def resume():
     print(status)
     if status['network'] != config['network']:
         print('Expected network %s, current network %s, reconnecting' % (config['network'], status['network']))
+        start_wpa_supplicant(config['interface'], config['network'], config['password'])
+    elif not status['associated']:
+        print('Not associated, restarting wpa supplicant')
         start_wpa_supplicant(config['interface'], config['network'], config['password'])
 
 def start_wpa_supplicant(interface, network, password):
@@ -118,6 +123,14 @@ def start_wpa_supplicant(interface, network, password):
     with open(wpa_conf_path, 'w') as f:
         f.write(contents)
 
+    try:
+        subprocess.check_call(['wpa_cli', 'status'])
+    except subprocess.CalledProcessError:
+        pass
+    else:
+        subprocess.check_call(['wpa_cli', 'terminate'])
+        _time.sleep(1)
+    
     subprocess.check_call(['iwconfig', interface, 'essid', network])
     print('Starting wpa_supplicant')
     subprocess.check_call(['wpa_supplicant', '-B',
@@ -126,6 +139,23 @@ def start_wpa_supplicant(interface, network, password):
         '-f', '/tmp/wpa_supplicant.log',
         '-c', wpa_conf_path])
     os.chmod('/tmp/wpa_supplicant.log', 0o644)
+    
+    start_time = _time.monotonic()
+    while True:
+        try:
+            output = subprocess.check_output(['wpa_cli', 'status']).decode()
+        except subprocess.CalledProcessError:
+            continue
+            
+        if 'wpa_state=COMPLETED' in output:
+            break
+        
+        #print(output)
+        
+        if _time.monotonic() - start_time > 10:
+            raise Exception('giving up on wpa association after 10 seconds')
+            
+        _time.sleep(1)
 
 parser = argparse.ArgumentParser(description='Connect to a wireless network')
 parser.add_argument('ssid', type=str, nargs='?',
