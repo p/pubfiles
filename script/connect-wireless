@@ -44,7 +44,7 @@ def get_default_gateway():
             return gw
     raise 'No default gateway'
 
-def start():
+def start(network, password):
     for process in ['ifdown', 'ifup', 'dhclient', 'wpa_supplicant']:
         subprocess.call(['pkill', '-9', process])
 
@@ -55,7 +55,7 @@ def start():
         subprocess.call(['ifdown', interface])
     subprocess.call(['ifdown', wireless_interface])
     _time.sleep(1)
-    start_wpa_supplicant(wireless_interface, args.ssid, args.password)
+    start_wpa_supplicant(wireless_interface, network, password)
     print('Running dhclient')
     subprocess.check_call(['dhclient', '-v', wireless_interface])
 
@@ -63,8 +63,8 @@ def start():
         os.mkdir('/run/wireless')
 
     config = {
-        'network': args.ssid,
-        'password': args.password,
+        'network': network,
+        'password': password,
         'interface': wireless_interface,
         'ip': get_if_ip(wireless_interface),
         'gateway': get_default_gateway(),
@@ -173,7 +173,7 @@ if args.resume:
         exit(3)
     resume()
 elif args.ssid:
-    start()
+    start(args.ssid, args.password)
 else:
     print('Takes ssid or ssid & password or the --resume option')
     exit(3)
