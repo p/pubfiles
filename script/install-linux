@@ -269,4 +269,10 @@ if dmidecode -t system |grep -q 'ThinkPad T550'; then
   echo 'pm_suspend_args=--quirk-dpms-on' |tee -a /etc/system.conf
 fi
 
+if install_mm; then
+  mkdir -p /etc/mplayer
+  install -m 444 -t /etc/mplayer $BASE/../config/mplayer/mplayer.conf
+  install -m 444 -t /etc/mplayer $BASE/../config/mplayer/input.conf
+fi
+
 echo 'Run sensors-detect if you haven'"'"'t to load kernel modules for hardware sersors.'
