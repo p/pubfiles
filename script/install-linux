@@ -163,7 +163,11 @@ fi
 
 # This contains the scripts needed for machine to turn off when
 # the power button is pressed.
-install_if_needed acpi-support
+# Laptops apparently don't need this package - power button must be handled
+# differently on them.
+if ! is_laptop; then
+  install_if_needed acpi-support
+fi
 
 if is_laptop || lspci |grep -q Wireless; then
   install_if_needed wireless-tools rfkill iw wpasupplicant
