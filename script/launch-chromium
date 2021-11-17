@@ -2,12 +2,18 @@
 
 set -e
 
-user="$1"
-if test -z "$user"; then
-  echo "Usage: launch-cr user" 1>&2
+if test -z "$1"; then
+  echo "Usage: launch-cr [profile] user" 1>&2
   exit 1
 fi
-shift
+
+if test -n "$2"; then
+  profile="$1"
+  user="$2"
+else
+  profile=
+  user="$1"
+fi
 
 if ! echo $user |grep ^br-; then
   user=br-$user
@@ -16,4 +22,10 @@ fi
 xauthority_path=/home/$user/.Xauthority
 xauth list | sed -e 's/^/add /' | sudo -u "$user" env HOME=/home/"$user" XAUTHORITY=$xauthority_path xauth
 
-exec sudo -u $user env DISPLAY=$DISPLAY XAUTHORITY=$xauthority_path chromium "$@"
+if test -n "$profile"; then
+  profile_arg="XDG_HOME=/home/$user/$profile"
+else
+  profile_arg=
+fi
+
+exec sudo -u $user env $profile_arg DISPLAY=$DISPLAY XAUTHORITY=$xauthority_path chromium
