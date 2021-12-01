@@ -10,10 +10,21 @@
 # http://gromnitsky.blogspot.com/2017/03/bloatware-comes-when-nobodys-lookin.html
 # https://en.wikipedia.org/wiki/ZIP_(file_format)
 
+require 'optparse'
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: download-crx [-u|--unpack] url"
+
+  opts.on("-u", "--unpack", "Unpack the extension") do
+    options[:unpack] = true
+  end
+end.parse!
+
 url = ARGV.shift
 
 if url.nil?
-  raise "Usage: download-crx url"
+  raise "Usage: download-crx [-u|--unpack] url"
 end
 
 if url =~ %r,https://chrome.google.com/webstore/detail/([^/]+)/(\w+),
@@ -66,4 +77,13 @@ puts "Saving to #{local_fn}"
 
 File.open(local_fn, 'w') do |io|
   io << contents
+end
+
+if options[:unpack]
+  dir = File.basename(local_fn).sub(/\.crx\z/, '')
+  FileUtils.mkdir_p(dir)
+  Dir.chdir(dir) do
+    puts `unzip ../#{local_fn}`
+    FileUtils.rm_rf('_metadata')
+  end
 end
