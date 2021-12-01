@@ -53,3 +53,5 @@ ff() {
 
 f() { for i in "$@"; do feh -dZF --cache-size 128 "$i"/*; done }
 gcou() { git checkout -b "$1" --track upstream/"$1" }
+
+alias pk='pkill -f'
