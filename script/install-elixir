@@ -59,7 +59,12 @@ ctmKvzuuerI6mVQjg/80PJ4fEV0=
 -----END PGP PUBLIC KEY BLOCK-----
 KEYDATA
 
-echo 'deb http://binaries.erlang-solutions.com/debian stretch contrib' |tee /etc/apt/sources.list.d/elixir.list
+echo 'deb http://binaries.erlang-solutions.com/debian buster contrib' |tee /etc/apt/sources.list.d/elixir.list
+
+echo >> /etc/apt/preferences
+echo "Package: *" >> /etc/apt/preferences
+echo "Pin: release o=Erlang Solutions Ltd." >> /etc/apt/preferences
+echo "Pin-Priority: 999" >> /etc/apt/preferences
 
 apt-get update
 apt-get install elixir
