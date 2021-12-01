@@ -28,7 +28,12 @@ if Etc.getpwuid(Process.euid).name != target_user
     Etc.getpwnam(target_user)
   rescue ArgumentError => e
     if e.message =~ /can't find user/
-      # OK
+      if options[:user]
+        # User was explicitly requested
+        raise
+      else
+        # Ignore
+      end
     else
       raise
     end
