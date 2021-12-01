@@ -1,31 +1,36 @@
-#!/bin/sh
+#!/usr/bin/env ruby
 
-set -e
+require 'optparse'
 
-if test -z "$1"; then
-  echo "Usage: launch-cr [profile] user" 1>&2
-  exit 1
-fi
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: launch-chromium [-u user] profile"
 
-if test -n "$2"; then
-  profile="$1"
-  user="$2"
+  opts.on("-u", "--user USER", "Launch as given user") do |v|
+    options[:user] = v
+  end
+end.parse!
+
+profile, = ARGV
+
+if profile.nil?
+  raise "Usage: launch-chromium [-u user] profile"
+end
+
+target_user_slug = options[:user] || profile
+target_user = if target_user_slug.start_with?('br-')
+  target_user_slug
 else
-  profile=
-  user="$1"
-fi
+  target_user = "br-#{target_user_slug}"
+end
 
-if ! echo $user |grep ^br-; then
-  user=br-$user
-fi
+target_xauthority_path = "/home/#{target_user}/.Xauthority"
+puts `xauth list | sed -e 's/^/add /' | sudo -u "#{target_user}" env HOME=/home/"#{target_user}" XAUTHORITY=#{target_xauthority_path} xauth`
 
-xauthority_path=/home/$user/.Xauthority
-xauth list | sed -e 's/^/add /' | sudo -u "$user" env HOME=/home/"$user" XAUTHORITY=$xauthority_path xauth
-
-if test -n "$profile"; then
-  profile_arg="XDG_HOME=/home/$user/$profile"
+profile_arg = if profile == target_user_slug
+  ''
 else
-  profile_arg=
-fi
+  "XDG_HOME=/home/#{target_user}/#{profile}"
+end
 
-exec sudo -u $user env $profile_arg DISPLAY=$DISPLAY XAUTHORITY=$xauthority_path chromium
+exec("sudo -u #{target_user} env #{profile_arg} DISPLAY=#{ENV.fetch('DISPLAY')} XAUTHORITY=#{target_xauthority_path} chromium")
