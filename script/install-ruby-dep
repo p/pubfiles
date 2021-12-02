@@ -12,4 +12,4 @@ if test "`id -u`" != 0; then
   fi
 fi
 
-apt-get install libssl-dev
+apt-get install libssl-dev zlib1g-dev
