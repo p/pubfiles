@@ -19,6 +19,7 @@ echo 'headful=true | false'
 echo 'mm=true | false'
 echo 'tmp_zram=<size>'
 echo 'br_zram=<size>'
+echo 'main_user=<username>'
 echo
 
 if test -f /etc/setup.conf; then
