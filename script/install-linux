@@ -18,6 +18,7 @@ echo 'release=testing | stable - which release to use'
 echo 'headful=true | false'
 echo 'mm=true | false'
 echo 'tmp_zram=<size>'
+echo 'br_zram=<size>'
 echo
 
 if test -f /etc/setup.conf; then
@@ -90,7 +91,7 @@ install_if_needed \
   openntpd openssh-server \
   zsh sudo man-db dnsutils \
   git curl wget make gcc \
-  zip unzip net-tools rsync tmux
+  zip unzip net-tools rsync tmux python-is-python3
 
 # chromium is no longer here - use ungoogled-chromium
 if is_headful; then
