@@ -9,6 +9,11 @@ OptionParser.new do |opts|
   opts.on("-u", "--user USER", "Launch as given user") do |v|
     options[:user] = v
   end
+
+  opts.on("-e", "--ext PATH", "Load unpacked extension at PATH") do |v|
+    options[:extensions] ||= []
+    options[:extensions] << v
+  end
 end.parse!
 
 profile, = ARGV
@@ -33,4 +38,10 @@ else
   "XDG_HOME=/home/#{target_user}/#{profile}"
 end
 
-exec("sudo -u #{target_user} env #{profile_arg} DISPLAY=#{ENV.fetch('DISPLAY')} XAUTHORITY=#{target_xauthority_path} chromium")
+extension_arg = if options[:extensions]
+  "--load-extension=#{options[:extensions].join(',')}"
+else
+  ''
+end
+
+exec("sudo -u #{target_user} env #{profile_arg} DISPLAY=#{ENV.fetch('DISPLAY')} XAUTHORITY=#{target_xauthority_path} chromium #{extension_arg}")
