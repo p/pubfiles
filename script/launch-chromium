@@ -33,9 +33,11 @@ target_xauthority_path = "/home/#{target_user}/.Xauthority"
 puts `xauth list | sed -e 's/^/add /' | sudo -u "#{target_user}" env HOME=/home/"#{target_user}" XAUTHORITY=#{target_xauthority_path} xauth`
 
 profile_arg = if profile == target_user_slug
+  profile_base = "/home/#{target_user}"
   ''
 else
-  "XDG_HOME=/home/#{target_user}/#{profile}"
+  profile_base = "/home/#{target_user}/#{profile}"
+  "XDG_HOME=#{profile_path}"
 end
 
 extension_arg = if options[:extensions]
@@ -43,5 +45,7 @@ extension_arg = if options[:extensions]
 else
   ''
 end
+
+puts `sudo -u #{target_user} #{File.dirname(File.realpath($0))}/../home/chromium/install #{profile_base}`
 
 exec("sudo -u #{target_user} env #{profile_arg} DISPLAY=#{ENV.fetch('DISPLAY')} XAUTHORITY=#{target_xauthority_path} chromium #{extension_arg}")

@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby
 
-$: << File.join(File.expand_path(__FILE__), '../../lib/ruby')
+$: << File.join(File.dirname(__FILE__), '../../lib/ruby')
 
 require 'chromium_configurator'
 
-path = ARGV.shift || File.expand_path('~/.config')
+path = ARGV.shift || File.expand_path('~')
 
 ChromiumConfigurator.new(path).configure
