@@ -20,6 +20,7 @@ echo 'mm=true | false'
 echo 'tmp_zram=<size>'
 echo 'br_zram=<size>'
 echo 'main_user=<username>'
+echo 'br_users="<username> <username> ..."'
 echo
 
 if test -f /etc/setup.conf; then
