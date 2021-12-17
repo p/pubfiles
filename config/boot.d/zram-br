@@ -1,0 +1,45 @@
+#!/bin/sh
+
+set -e
+
+if ! test -f /etc/setup.conf; then
+  echo "/etc/setup.conf missing, exiting." 1>&2
+  exit
+fi
+
+. /etc/setup.conf
+
+zram_size="$br_zram"
+
+if test -z "$zram_size" || test -z "$br_users"; then
+  echo "Warning: br_zram or br_users not set in /etc/setup.conf - exiting." 1>&2
+  exit
+fi
+
+if ! test -d /mnt/browsers; then
+  mkdir /mnt/browsers
+fi
+
+if test -n "$zram_size" && ! df /mnt/browsers |tail +2 |awk '{print $1}' |fgrep -q zram; then
+  modprobe zram
+  which mkfs.xfs
+
+  num=`cat /sys/class/zram-control/hot_add`
+  dev=/dev/zram$num
+  devbn=zram$num
+
+  echo "$zram_size" > /sys/block/$devbn/disksize
+  mkfs.xfs $dev
+  mount -o noatime,nodiratime $dev /mnt/browsers
+fi
+
+for user_spec in $br_users; do
+  user=br-$user_spec
+  if ! mount |grep -q "on /home/$user "; then
+    mkdir -p /mnt/browsers/"$user"
+    chown "$user:$user" /mnt/browsers/"$user"
+    chmod 0750 /mnt/browsers/"$user"
+    mkdir -p /home/"$user"
+    mount -o bind /mnt/browsers/"$user" /home/"$user"
+  fi
+done
