@@ -45,6 +45,8 @@ def get_default_gateway():
     raise 'No default gateway'
 
 def start(network, password):
+    global config
+    
     for process in ['ifdown', 'ifup', 'dhclient', 'wpa_supplicant']:
         subprocess.call(['pkill', '-9', process])
 
@@ -88,8 +90,7 @@ def get_current_status(interface):
         status['associated'] = True
     return status
 
-def resume():
-    config = read_config()
+def check_and_resume(config):
     interface = config['interface']
     status = get_current_status(interface)
     print(config)
@@ -100,6 +101,11 @@ def resume():
     elif not status['associated']:
         print('Not associated, restarting wpa supplicant')
         start_wpa_supplicant(config['interface'], config['network'], config['password'])
+
+def resume():
+    global config
+    config = read_config()
+    check_and_resume(config)
 
 def start_wpa_supplicant(interface, network, password):
     contents = 'iface %s inet dhcp\n' % interface
@@ -157,6 +163,14 @@ def start_wpa_supplicant(interface, network, password):
             
         _time.sleep(1)
 
+def keep():
+    global config
+    config = read_config()
+    interface = config['interface']
+    while True:
+        check_and_resume(config)
+        _time.sleep(5)
+
 parser = argparse.ArgumentParser(description='Connect to a wireless network')
 parser.add_argument('ssid', type=str, nargs='?',
                     help='Specify SSID')
@@ -164,6 +178,8 @@ parser.add_argument('password', type=str, nargs='?',
                     help='Specify password')
 parser.add_argument('-r', '--resume', action='store_const', const=True,
                     help='Restore configuration after wake-up')
+parser.add_argument('-k', '--keep', action='store_const', const=True,
+                    help='Stay running to maintain specified configuration')
 
 args = parser.parse_args()
 
@@ -177,3 +193,6 @@ elif args.ssid:
 else:
     print('Takes ssid or ssid & password or the --resume option')
     exit(3)
+
+if args.keep:
+    keep()
