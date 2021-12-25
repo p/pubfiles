@@ -90,6 +90,23 @@ def get_current_status(interface):
         status['associated'] = True
     return status
 
+def default_gw_ok():
+    rt = subprocess.check_output(['netstat', '-rn']).decode()
+    lines = [line for line in rt.split("\n") if line.startswith('0.0.0.0')]
+    if len(lines) > 1:
+        print('Multiple default gateways??')
+        return False
+    elif len(lines) == 0:
+        print('No default gateway')
+        return False
+    gw = re.split(r'\s+', lines[0])[1]
+    print('Default gateway: %s' % gw)
+    return True
+
+def start_dhclient(interface):
+    subprocess.call(['pkill', 'dhclient'])
+    subprocess.check_call(['dhclient', '-v', interface])
+
 def check_and_resume(config):
     interface = config['interface']
     status = get_current_status(interface)
@@ -101,6 +118,12 @@ def check_and_resume(config):
     elif not status['associated']:
         print('Not associated, restarting wpa supplicant')
         start_wpa_supplicant(config['interface'], config['network'], config['password'])
+    
+    if not default_gw_ok():
+        print('Starting dhclient')
+        start_dhclient(config['interface'])
+        if not default_gw_ok():
+            print('Still no default gateway after dhclient was started')
 
 def resume():
     global config
