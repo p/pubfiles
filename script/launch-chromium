@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+# https://peter.sh/experiments/chromium-command-line-switches/
+
 require 'optparse'
 
 options = {}
@@ -48,4 +50,4 @@ end
 
 puts `sudo -u #{target_user} #{File.dirname(File.realpath($0))}/../home/chromium/install #{profile_base}`
 
-exec("sudo -u #{target_user} env #{profile_arg} DISPLAY=#{ENV.fetch('DISPLAY')} XAUTHORITY=#{target_xauthority_path} chromium #{extension_arg}")
+exec("sudo -u #{target_user} env #{profile_arg} DISPLAY=#{ENV.fetch('DISPLAY')} XAUTHORITY=#{target_xauthority_path} chromium --disable-notifications --disable-smooth-scrolling --disable-sync #{extension_arg}")
