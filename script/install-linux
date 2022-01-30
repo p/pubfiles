@@ -90,7 +90,7 @@ if ! is_aws; then
 fi
 
 install_if_needed \
-  openntpd openssh-server \
+  console-setup-linux openntpd openssh-server \
   zsh sudo man-db dnsutils \
   git curl wget make gcc \
   zip unzip net-tools rsync tmux python-is-python3
