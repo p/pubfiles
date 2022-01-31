@@ -37,7 +37,7 @@ profile_arg = if profile == target_user_slug
   ''
 else
   profile_base = "/home/#{target_user}/#{profile}"
-  "XDG_HOME=#{profile_path}"
+  "XDG_HOME=#{profile_base}"
 end
 
 extension_arg = if options[:extensions]
