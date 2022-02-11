@@ -13,6 +13,12 @@ class InterfaceNotFound(Exception):
 class NoDefaultGateway(Exception):
     pass
 
+def have(basename):
+    for dir in os.environ['PATH'].split(':'):
+        if os.path.exists(os.path.join(dir, basename)):
+            return True
+    return False
+
 def identify_interfaces():
     wireless = []
     dev_null = open('/dev/null', 'w')
@@ -62,10 +68,14 @@ def start(network, password):
     interfaces = identify_interfaces()
     wireless_interface = interfaces['wireless'][0]
 
+    have_ifdown = have('ifdown')
+
     for interface in interfaces['wired']:
-        subprocess.call(['ifdown', interface])
-    subprocess.call(['ifdown', wireless_interface])
-    _time.sleep(1)
+        if have_ifdown:
+            subprocess.call(['ifdown', interface])
+    if have_ifdown:
+        subprocess.call(['ifdown', wireless_interface])
+        _time.sleep(1)
     start_wpa_supplicant(wireless_interface, network, password)
     print('Running dhclient')
     subprocess.check_call(['dhclient', '-v', wireless_interface])
@@ -140,60 +150,64 @@ def resume():
     check_and_resume(config)
 
 def start_wpa_supplicant(interface, network, password):
-    contents = 'iface %s inet dhcp\n' % interface
-    if password:
-        contents += '  wpa-ssid "%s"\n  wpa-psk "%s"\n' % (network, password)
-    else:
-        contents += '  wireless-essid %s' % network
+    if os.path.exists('/etc/network/interfaces.d'):
+        contents = 'iface %s inet dhcp\n' % interface
+        if password:
+            contents += '  wpa-ssid "%s"\n  wpa-psk "%s"\n' % (network, password)
+        else:
+            contents += '  wireless-essid %s' % network
 
-    with open('/etc/network/interfaces.d/%s' % interface, 'w') as f:
-        f.write(contents)
-
-    contents = "ctrl_interface=/run/wpa_supplicant\n"
-    contents += 'network={\n  ssid="%s"' % network
-    if password:
-        contents += '\n  key_mgmt=WPA-PSK\n  psk="%s"' % password
-    contents += '\n}\n'
-
-    wpa_conf_path = '/etc/network/wpa_supplicant.conf.d/%s' % interface
-    if not os.path.exists('/etc/network/wpa_supplicant.conf.d'):
-        os.mkdir('/etc/network/wpa_supplicant.conf.d')
-    with open(wpa_conf_path, 'w') as f:
-        f.write(contents)
-
-    try:
-        subprocess.check_call(['wpa_cli', 'status'])
-    except subprocess.CalledProcessError:
-        pass
-    else:
-        subprocess.check_call(['wpa_cli', 'terminate'])
-        _time.sleep(1)
+        with open('/etc/network/interfaces.d/%s' % interface, 'w') as f:
+            f.write(contents)
     
     subprocess.check_call(['iwconfig', interface, 'essid', network])
-    print('Starting wpa_supplicant')
-    subprocess.check_call(['wpa_supplicant', '-B',
-        '-D', 'nl80211,wext',
-        '-i', interface,
-        '-f', '/tmp/wpa_supplicant.log',
-        '-c', wpa_conf_path])
-    os.chmod('/tmp/wpa_supplicant.log', 0o644)
-    
-    start_time = _time.monotonic()
-    while True:
+    subprocess.check_call(['iwconfig', interface])
+
+    if password:
+        contents = "ctrl_interface=/run/wpa_supplicant\n"
+        contents += 'network={\n  ssid="%s"' % network
+        if password:
+            contents += '\n  key_mgmt=WPA-PSK\n  psk="%s"' % password
+        contents += '\n}\n'
+
+        wpa_conf_path = '/etc/network/wpa_supplicant.conf.d/%s' % interface
+        if not os.path.exists('/etc/network/wpa_supplicant.conf.d'):
+            os.mkdir('/etc/network/wpa_supplicant.conf.d')
+        with open(wpa_conf_path, 'w') as f:
+            f.write(contents)
+
         try:
-            output = subprocess.check_output(['wpa_cli', 'status']).decode()
+            subprocess.check_call(['wpa_cli', 'status'])
         except subprocess.CalledProcessError:
-            continue
+            pass
+        else:
+            subprocess.check_call(['wpa_cli', 'terminate'])
+            _time.sleep(1)
             
-        if 'wpa_state=COMPLETED' in output:
-            break
+        print('Starting wpa_supplicant')
+        subprocess.check_call(['wpa_supplicant', '-B',
+            '-D', 'nl80211,wext',
+            '-i', interface,
+            '-f', '/tmp/wpa_supplicant.log',
+            '-c', wpa_conf_path])
+        os.chmod('/tmp/wpa_supplicant.log', 0o644)
         
-        #print(output)
-        
-        if _time.monotonic() - start_time > 10:
-            raise WpaSupplicantFailed('giving up on wpa association after 10 seconds')
+        start_time = _time.monotonic()
+        while True:
+            try:
+                output = subprocess.check_output(['wpa_cli', 'status']).decode()
+            except subprocess.CalledProcessError:
+                continue
+                
+            if 'wpa_state=COMPLETED' in output:
+                break
             
-        _time.sleep(1)
+            #print(output)
+            
+            if _time.monotonic() - start_time > 10:
+                raise Exception('giving up on wpa association after 10 seconds')
+                
+            _time.sleep(1)
 
 def keep():
     global config
