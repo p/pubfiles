@@ -232,20 +232,43 @@ parser.add_argument('-k', '--keep', action='store_const', const=True,
                     help='Stay running to maintain specified configuration')
 parser.add_argument('-l', '--log', type=str, nargs='?',
                     help='Log to specified path instead of standard output. Append if file already exists')
+parser.add_argument('-d', '--daemon', action='store_const', const=True,
+                    help='Daemonize')
+parser.add_argument('-p', '--pidfile', type=str, nargs='?',
+                    help='Path to pidfile when daemonizing')
 
 args = parser.parse_args()
 
-if args.log:
-    with open(args.log, 'a') as f:
-        os.dup2(f.fileno(), 1)
-        os.dup2(f.fileno(), 2)
+if args.daemon and not args.log:
+    print('Log destination must be specified when daemonizing')
+    exit(3)
+
+if args.daemon and not args.pidfile:
+    print('Pidfile path must be specified when daemonizing')
+    exit(3)
+
+def setup_log():
+    if args.log:
+        with open(args.log, 'a') as f:
+            os.dup2(f.fileno(), 1)
+            os.dup2(f.fileno(), 2)
+
+def maybe_daemonize():
+    if args.daemon:
+        import daemonize
+        d = daemonize.Daemonize('connect-wireless', args.pidfile, lambda: 1, keep_fds=[1, 2])
+        d.start()
 
 if args.resume:
     if args.ssid:
         print('ssid/password input is not allowed when resuming')
         exit(3)
+    setup_log()
+    maybe_daemonize()
     resume()
 elif args.ssid:
+    setup_log()
+    maybe_daemonize()
     start(args.ssid, args.password)
 else:
     print('Takes ssid or ssid & password or the --resume option')
