@@ -230,8 +230,15 @@ parser.add_argument('-r', '--resume', action='store_const', const=True,
                     help='Restore configuration after wake-up')
 parser.add_argument('-k', '--keep', action='store_const', const=True,
                     help='Stay running to maintain specified configuration')
+parser.add_argument('-l', '--log', type=str, nargs='?',
+                    help='Log to specified path instead of standard output. Append if file already exists')
 
 args = parser.parse_args()
+
+if args.log:
+    with open(args.log, 'a') as f:
+        os.dup2(f.fileno(), 1)
+        os.dup2(f.fileno(), 2)
 
 if args.resume:
     if args.ssid:
