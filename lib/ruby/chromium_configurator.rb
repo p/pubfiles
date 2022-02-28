@@ -27,6 +27,8 @@ class ChromiumConfigurator
       content['browser'] = {}
     end
     experiments = content['browser']['enabled_labs_experiments'] || []
+    # in-product-help-demo-mode-choice@19: the "19" option is "disabled",
+    # if these geniuses add more modes the number will likely go up?
     %w(
       allow-insecure-localhost
       allow-popups-during-page-unload@2
@@ -65,6 +67,7 @@ class ChromiumConfigurator
       smooth-scrolling@2
       tab-hover-cards@4
       username-first-flow@1
+      in-product-help-demo-mode-choice@19
     ).each do |exp|
       unless experiments.include?(exp)
         experiments << exp
