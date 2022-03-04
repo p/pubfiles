@@ -60,7 +60,7 @@ fi
 if ! mount |grep -q "on /home/$user "; then
   mkdir -p /mnt/browsers/"$user"
   chown "$user:$user" /mnt/browsers/"$user"
-  chmod 0700 /mnt/browsers/"$user"
+  chmod 0750 /mnt/browsers/"$user"
   mkdir -p /home/"$user"
   mount -o bind /mnt/browsers/"$user" /home/"$user"
 fi
