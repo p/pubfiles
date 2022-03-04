@@ -1,0 +1,28 @@
+#!/bin/sh
+
+set -e
+
+if ! test -f /etc/setup.conf; then
+  echo 'No setup.conf - nothing to do' 1>&2
+  exit 0
+fi
+
+. /etc/setup.conf
+base=/opt/pubfiles
+
+if test -n "$br_users"; then
+  for user in $br_users; do
+    "$base"/script/setup-br-$user
+  done
+  
+  if test -d /home/br-$user; then
+    mkdir -p /home/br-$user/Downloads
+    chmod g+rwX /home/br-$user/Downloads
+  else
+    user=`echo $user |sed -e 's/-.*//'`
+    if test -d /home/br-$user; then
+      mkdir -p /home/br-$user/Downloads
+      chmod g+rwX /home/br-$user/Downloads
+    fi
+  fi
+fi
