@@ -41,5 +41,8 @@ for user_spec in $br_users; do
     chmod 0750 /mnt/browsers/"$user"
     mkdir -p /home/"$user"
     mount -o bind /mnt/browsers/"$user" /home/"$user"
+    
+    mkdir /home/"$user"/Downloads
+    chmod 0770 /home/"$user"/Downloads
   fi
 done
