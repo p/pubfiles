@@ -320,3 +320,7 @@ fi
 $BASE/generate-setup-key
 
 echo 'Run sensors-detect if you haven'"'"'t to load kernel modules for hardware sersors.'
+
+if test -d /opt/pubfiles; then
+  install -m 555 -t /etc/boot.d -o root -g root $BASE/boot-as-configured
+fi
