@@ -121,6 +121,9 @@ if is_headful; then
   fi
 fi
 
+# USB wifi dongles need firmware
+install_if_needed firmware-realtek
+
 if lspci -v|grep -q iwlwifi && ! is_ubuntu; then
   install_if_needed firmware-iwlwifi
 fi
