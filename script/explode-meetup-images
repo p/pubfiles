@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+
+# Meetup images use 1.78:1 aspect ratio
+
+require 'mini_magick'
+
+ARGV.each do |path|
+  image = MiniMagick::Image.open(path)
+
+  alt_dimensions = [(image.dimensions.last * 1.78).to_i, (image.dimensions.first / 1.78).to_i]
+  exploded_dimensions = [
+    [image.dimensions.first, alt_dimensions.first].max,
+    [image.dimensions.last, alt_dimensions.last].max,
+  ]
+
+  puts "Resizing #{path} from #{image.dimensions.first}x#{image.dimensions.last} to #{exploded_dimensions.first}x#{exploded_dimensions.last}"
+
+  image.combine_options do |b|
+    b.gravity('center')
+    b.extent("#{exploded_dimensions.first}x#{exploded_dimensions.last}")
+    b.resize("#{exploded_dimensions.first}x#{exploded_dimensions.last}")
+  end
+  image.write("#{path}.exploded.png")
+end
