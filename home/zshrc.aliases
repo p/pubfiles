@@ -52,6 +52,7 @@ ff() {
 }
 
 f() { for i in "$@"; do feh -dZF --cache-size 128 "$i"/*; done }
+fa() { for i in "$@"; do feh -dZF --cache-size 128 --auto-rotate "$i"/*; done }
 
 gcou() { git checkout -b "$1" --track upstream/"$1" }
 
