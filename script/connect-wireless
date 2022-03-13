@@ -205,7 +205,7 @@ def start_wpa_supplicant(interface, network, password):
             #print(output)
             
             if _time.monotonic() - start_time > 10:
-                raise Exception('giving up on wpa association after 10 seconds')
+                raise WpaSupplicantFailed('giving up on wpa association after 10 seconds')
                 
             _time.sleep(1)
 
