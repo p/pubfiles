@@ -124,8 +124,10 @@ fi
 # USB wifi dongles need firmware
 install_if_needed firmware-realtek
 
+need_wireless=false
 if lspci -v|grep -q iwlwifi && ! is_ubuntu; then
   install_if_needed firmware-iwlwifi
+  need_wireless=true
 fi
 
 if lspci |grep -q Radeon; then
@@ -175,7 +177,7 @@ if ! is_laptop; then
   install_if_needed acpi-support
 fi
 
-if is_laptop || lspci |grep -q Wireless; then
+if is_laptop || lspci |grep -q Wireless || $need_wireless; then
   install_if_needed wireless-tools rfkill iw wpasupplicant
 fi
 
