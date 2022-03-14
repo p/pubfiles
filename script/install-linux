@@ -83,7 +83,7 @@ fi
 
 apt-get remove tasksel
 
-apt-get install -y python-pip || apt-get install -y python3-pip
+apt-get install -y python3-pip || apt-get install -y python-pip
 
 if ! is_aws; then
   install_if_needed smartmontools
