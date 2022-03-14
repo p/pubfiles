@@ -134,8 +134,9 @@ if lspci |grep -q Radeon; then
   install_if_needed firmware-amd-graphics
 fi
 
-echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' > /etc/sudoers.d/sudo-group
-chmod 0400 /etc/sudoers.d/sudo-group
+# This should only be done on scratch machines.
+#echo '%sudo ALL=(ALL:ALL) NOPASSWD:ALL' > /etc/sudoers.d/sudo-group
+#chmod 0400 /etc/sudoers.d/sudo-group
 
 install_if_needed nvi
 apt-get remove vim-common nano
