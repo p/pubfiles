@@ -3,3 +3,10 @@ if test -d $NVM_DIR; then
   export NVM_DIR
   [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
 fi
+
+if which n 1>/dev/null 2>&1; then
+  version=`n ls |tail -1`
+  if test -n "$version"; then
+    export PATH=/usr/local/n/versions/$version/bin:$PATH
+  fi
+fi
