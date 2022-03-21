@@ -14,6 +14,7 @@ compinit
 . ~/apps/pubfiles/home/zshrc.aliases
 . ~/apps/pubfiles/home/zshrc.git
 . ~/apps/pubfiles/home/zshrc.ruby
+. ~/apps/pubfiles/home/zshrc.node
 
 test -f ~/apps/pubfiles/home/zshrc.user.$USER && . ~/apps/pubfiles/home/zshrc.user.$USER
 
