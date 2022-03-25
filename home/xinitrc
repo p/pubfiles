@@ -78,4 +78,9 @@ init_as_configured() {
 	esac
 }
 
-have xscreensaver && xscreensaver -no-splash &
+#have xscreensaver && xscreensaver -no-splash &
+
+if have xss-lock && have xsecurelock; then
+  xset s 600
+  xss-lock env XSECURELOCK_PASSWORD_PROMPT=asterisks XSECURELOCK_SHOW_HOSTNAME=1 XSECURELOCK_SHOW_USERNAME=1 xsecurelock &
+fi
