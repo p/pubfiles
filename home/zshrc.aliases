@@ -16,7 +16,11 @@ if test -n "$DISPLAY"; then
     iw() { firefox -no-remote --ProfileManager & }
   fi
   
-  if have xscreensaver-command; then
+  if have xsecurelock; then
+    lock() {
+      env XSECURELOCK_PASSWORD_PROMPT=asterisks XSECURELOCK_SHOW_HOSTNAME=1 XSECURELOCK_SHOW_USERNAME=1 xsecurelock
+    }
+  elif have xscreensaver-command; then
     lock() { xscreensaver-command -l }
   elif have gnome-screensaver-command; then
     lock() { gnome-screensaver-command -l }
@@ -31,16 +35,24 @@ if test -n "$DISPLAY"; then
     done
   }
   
+  get_suspend_args() {
+    (cat /etc/system.conf || true) |grep ^pm_suspend_args= | cut -c 16-
+  }
+  
   suspend() {
-    local suspend_args
-    suspend_args=`(cat /etc/system.conf || true) |grep ^pm_suspend_args= | cut -c 16-`
-    sudo pm-suspend $suspend_args
+    sudo pm-suspend `get_suspend_args`
   }
   
   if have pm-suspend && have lock; then
-    locks() {
-      lock && wait-for-lock && suspend
-    }
+    if have xsecurelock; then
+      locks() {
+        env XSECURELOCK_PASSWORD_PROMPT=asterisks XSECURELOCK_SHOW_HOSTNAME=1 XSECURELOCK_SHOW_USERNAME=1 xsecurelock -- sudo pm-suspend `get_suspend_args`
+      }
+    else
+      locks() {
+        lock && wait-for-lock && suspend
+      }
+    fi
   fi
 
 fi
