@@ -165,7 +165,7 @@ def start_wpa_supplicant(interface, network, password):
 
     if password:
         contents = "ctrl_interface=/run/wpa_supplicant\n"
-        contents += 'network={\n  ssid="%s"' % network
+        contents += 'network={\n  scan_ssid=1\n  ssid="%s"' % network
         if password:
             contents += '\n  key_mgmt=WPA-PSK\n  psk="%s"' % password
         contents += '\n}\n'
