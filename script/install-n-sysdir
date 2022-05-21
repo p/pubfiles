@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -e
+
+user="$1"
+
+if test -z "$user"; then
+  echo "Usage: `basename $0` user-to-own" 1>&2
+  exit 1
+fi
+
+mkdir -p /usr/local/n/versions
+
+chown "$user":"$user" /usr/local/n/versions
