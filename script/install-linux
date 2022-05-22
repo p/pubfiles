@@ -93,7 +93,7 @@ install_if_needed \
   console-setup console-setup-linux openntpd openssh-server \
   zsh sudo man-db dnsutils \
   git curl wget make gcc \
-  zip unzip net-tools rsync tmux python-is-python3
+  zip unzip net-tools rsync tmux python-is-python3 zstd
 
 # chromium is no longer here - use ungoogled-chromium
 if is_headful; then
