@@ -7,3 +7,5 @@ if test -n "$DISPLAY"; then
     ga() { (if test -n "$1"; then cd "$1"; fi && gitk --all) & }
   fi
 fi
+
+gcop() { git checkout -b "$1" --track p/"$1" }
