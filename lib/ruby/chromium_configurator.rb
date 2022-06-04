@@ -74,6 +74,9 @@ class ChromiumConfigurator
       end
     end
     content['browser']['enabled_labs_experiments'] = experiments
+    # Show title bar:
+    # https://stackoverflow.com/questions/11505767/how-can-i-set-chrome-to-use-system-titlebars-and-border-in-preferences-file
+    content['browser']['custom_chrome_frame'] = false
 
 =begin
     unless content['profile']
