@@ -74,7 +74,7 @@ def get_remote_url(remote_name, kind):
 def split_github_url(remote_url):
     match = re.match(r'git@github.com:([\w-]+)/([\w-]+?)(.git)?$', remote_url)
     if match is None:
-        match = re.match(r'https://github.com/([\w-]+)/([\w-]+?)(.git)?$', remote_url)
+        match = re.match(r'https://github.com/([\w-]+)/([\w-]+?)(.git|/)?$', remote_url)
         if match is None:
             raise UnexpectedRemoteUrl("Weird url: %s" % remote_url)
     
