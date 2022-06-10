@@ -14,7 +14,11 @@ require 'optparse'
 
 options = {}
 OptionParser.new do |opts|
-  opts.banner = "Usage: download-crx [-u|--unpack] url"
+  opts.banner = "Usage: download-crx [-n|--name NAME] [-u|--unpack] url"
+
+  opts.on("-n", "--name NAME", "Rename to NAME") do |v|
+    options[:name] = v
+  end
 
   opts.on("-u", "--unpack", "Unpack the extension") do
     options[:unpack] = true
@@ -69,7 +73,9 @@ if manifest.nil?
   raise "Couldn't read manifest"
 end
 
-name = manifest.fetch('name').gsub(/[^\w]/, '-').gsub(/--+/, '-').sub(/\A-/, '').sub(/-\z/, '')
+unless name = options[:name]
+  name = manifest.fetch('name').gsub(/[^\w]/, '-').gsub(/--+/, '-').sub(/\A-/, '').sub(/-\z/, '')
+end
 version = manifest.fetch('version')
 local_fn = "#{name}-#{version}.crx"
 
