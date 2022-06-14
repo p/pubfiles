@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -x
+
+if test -z "$1"; then
+  echo "Usage: wg url" 1>&2
+  exit 2
+fi
+
+url="$1"
+bn="`basename $url`"
+
+curl -kLH User-Agent:Mozilla/5.0 -Haccept-language:en -o "$bn" "$url"
