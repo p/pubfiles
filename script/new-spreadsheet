@@ -1,0 +1,18 @@
+#!/bin/sh
+
+set -x
+
+if test -z "$1"; then
+  echo "Usage: `basename $0` path" 1>&2
+  exit 2
+fi
+
+name="$1"
+
+if ! basename "$name" |fgrep .; then
+  echo "Adjusting $name to $name.ods"
+  name="$name.ods"
+fi
+
+touch "$name"
+soffice --calc --norestore "$name"
