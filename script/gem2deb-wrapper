@@ -1,0 +1,36 @@
+#!/bin/sh
+
+set -e
+
+revision=
+
+while getopts r: opt; do
+  case $opt in
+  r)
+    revision="$OPTARG"
+    ;;
+  *)
+    echo "Bogus option $opt" 1>&2
+    exit 10
+    ;;
+  esac
+done
+shift $((OPTIND-1))
+
+name="$1"
+
+if test -z "$name"; then
+  echo "Usage: `basename $0` [-r revision] gem-name" 1>&2
+  exit 2
+fi
+
+gem2deb "$name"
+
+if test -n "$revision"; then
+  version=`ls -d ruby-$name-*/ |sed -e "s/ruby-$name-//" |tr -d /`
+  #export EDITOR=/bin/true VISUAL=/bin/true
+  (cd ruby-$name-*/ &&
+    dch -v $version-$revision "revision $revision" &&
+    dpkg-buildpackage
+  )
+fi
