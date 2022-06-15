@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -e
+
+if id me; then
+  `dirname "$0"`/setup-br-sandbox-me
+else
+  echo 'Not handled' 1>&2
+  exit 2
+fi
