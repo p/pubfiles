@@ -4,6 +4,8 @@
 
 import sys, subprocess, re, os, os.path, time as _time, json, argparse
 
+WPA_SUPPLICANT_TIMEOUT = 30
+
 class WpaSupplicantFailed(Exception):
     pass
 
@@ -105,6 +107,7 @@ def get_current_status(interface):
     if not match:
         match = re.search(r'ESSID:([^\s]*)', output)
     status['network'] = match.group(1)
+    status['no_network'] = status['network'] == 'off/any'
     if re.search(r'Access Point: (?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}', output):
         status['associated'] = True
     return status
@@ -194,6 +197,10 @@ def start_wpa_supplicant(interface, network, password):
         
         start_time = _time.monotonic()
         while True:
+            status = get_current_status(interface)
+            if status['no_network']:
+                raise WpaSupplicantFailed('ssid is off/any, bad auth to wpa supplicant?')
+            
             try:
                 output = subprocess.check_output(['wpa_cli', 'status']).decode()
             except subprocess.CalledProcessError:
@@ -204,8 +211,8 @@ def start_wpa_supplicant(interface, network, password):
             
             #print(output)
             
-            if _time.monotonic() - start_time > 10:
-                raise WpaSupplicantFailed('giving up on wpa association after 10 seconds')
+            if _time.monotonic() - start_time > WPA_SUPPLICANT_TIMEOUT:
+                raise WpaSupplicantFailed('giving up on wpa association after %d seconds' % WPA_SUPPLICANT_TIMEOUT)
                 
             _time.sleep(1)
 
