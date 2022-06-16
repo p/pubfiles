@@ -270,9 +270,11 @@ def setup_log():
 
 def maybe_daemonize():
     if args.daemon:
-        import daemonize
         d = daemonize.Daemonize('connect-wireless', args.pidfile, lambda: 1, keep_fds=[1, 2])
         d.start()
+
+if args.daemon:
+    import daemonize
 
 if args.resume:
     if args.ssid:
