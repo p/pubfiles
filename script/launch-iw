@@ -57,7 +57,11 @@ end
 
 profile_dir = case File.basename(binary)
 when 'waterfox'
-  '.waterfox'
+  if binary =~ /waterfox-classic/
+    '.waterfox-classic'
+  else
+    '.waterfox'
+  end
 when 'firefox'
   '.mozilla/firefox'
 when 'palemoon'
@@ -123,4 +127,6 @@ File.open(File.join(profile_path, 'search.json.mozlz4'), 'wb') do |f|
   f << LZ4.block_encode(search)
 end
 
-exec(binary, '-P', profile)
+# Waterfox and waterfox classic put profiles in the same place, ugh.
+#exec(binary, '-P', profile)
+exec(binary, '--profile', profile_path)
