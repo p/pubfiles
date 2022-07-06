@@ -1,0 +1,48 @@
+#!/usr/bin/env ruby
+
+# https://stackoverflow.com/questions/37728865/install-webextensions-on-firefox-from-the-command-line
+# https://support.mozilla.org/en-US/kb/deploying-firefox-with-extensions
+
+require 'optparse'
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: install-firefox-extension -e ext-path -b browser-path"
+
+  opts.on("-b", "--browser-path PATH", "Path to browser installation") do |v|
+    options[:browser_path] = v
+  end
+
+  opts.on("-e", "--ext-path PATH", "Path to extension .xpi file") do |v|
+    options[:ext_path] = v
+  end
+end.parse!
+
+unless options[:browser_path] && options[:ext_path]
+  raise 'Both paths must be given'
+end
+
+require 'tempfile'
+require 'fileutils'
+
+ext_path = File.absolute_path(options[:ext_path])
+browser_path = File.absolute_path(options[:browser_path])
+
+Dir.mktmpdir do |tmp|
+  Dir.chdir(tmp) do
+    `unzip "#{ext_path}"`
+
+    conf = File.read('install.rdf')
+    unless conf =~ %r,<em:id>([^<]+)</em:id,
+      raise "id not found in rdf"
+    end
+
+    id = $1
+
+    dest_dir = File.join(browser_path, 'distribution', 'extensions')
+    FileUtils.mkdir_p(dest_dir)
+    dest = File.join(dest_dir, "#{id}.xpi")
+    puts "Installing as #{dest}"
+    FileUtils.cp(ext_path, dest)
+  end
+end
