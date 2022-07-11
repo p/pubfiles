@@ -7,3 +7,4 @@ node_modules
 .*.swp
 # openoffice lock files
 .~lock.*
+.bundle
