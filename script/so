@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -x
+
+if test -z "$1"; then
+  echo "Usage: `basename $0` path" 1>&2
+  exit 2
+fi
+
+name="$1"
+
+soffice --norestore "$name"
