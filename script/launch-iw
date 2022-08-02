@@ -129,4 +129,4 @@ end
 
 # Waterfox and waterfox classic put profiles in the same place, ugh.
 #exec(binary, '-P', profile)
-exec(binary, '--profile', profile_path)
+exec(binary, '--profile', '-no-remote', profile_path)
