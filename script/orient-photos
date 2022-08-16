@@ -1,0 +1,23 @@
+#!/bin/sh
+
+set -e
+
+orient_one() {
+  #echo "$1"
+  o=`gm identify -format '%[EXIF:Orientation]' "$1"`
+  if test -z "$o"; then
+    echo "Failed to identify: $1" 1>&2
+    return 1
+  fi
+  
+  if test "$o" != 1; then
+    echo "$1" "$o"
+    mogrify -auto-orient "$1"
+  fi
+}
+
+if test -f "$1"; then
+  orient_one "$1"
+else
+  find "$1" -type f -exec "$0" {} \;
+fi
