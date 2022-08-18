@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+bn=`pwd |sha1sum |awk '{print $1}'`
+path=$HOME/.node_modules/$bn
+
+mkdir -p $path
+ln -fs $path node_modules
