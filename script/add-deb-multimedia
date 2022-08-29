@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -e
+
+bn=deb-multimedia-keyring_2016.8.1_all.deb
+tmpdir=`mktemp -d`
+curl -o $tmpdir/$bn https://www.deb-multimedia.org/pool/main/d/deb-multimedia-keyring/$bn
+dpkg -i $tmpdir/$bn
+
+echo 'deb http://www.deb-multimedia.org bullseye main non-free' |tee /etc/apt/sources.list.d/deb-multimedia.list
+
+rm -rf $tmpdir
+
+apt-get update
