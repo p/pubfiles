@@ -99,10 +99,15 @@ install_if_needed \
 if is_headful; then
   install_if_needed \
     gitk libvte9 feh \
-    xpdf evince gimp \
+    evince gimp \
     xinit xauth openbox xsecurelock xss-lock x11-xserver-utils xserver-xorg \
     xfonts-terminus
-    
+
+  if ! is_ubuntu; then
+    # Does not exist in ubuntu 20.04
+    install_if_needed xpdf
+  fi
+
   # Do not need:
   # xserver-xorg-input-evdev xserver-xorg-input-kbd xserver-xorg-input-mouse
 
@@ -122,7 +127,10 @@ if is_headful; then
 fi
 
 # USB wifi dongles need firmware
-install_if_needed firmware-realtek
+if ! is_ubuntu; then
+  # Does not exist in ubuntu 20.04
+  install_if_needed firmware-realtek
+fi
 
 need_wireless=false
 if lspci -v|grep -q iwlwifi && ! is_ubuntu; then
