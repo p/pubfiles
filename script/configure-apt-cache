@@ -5,12 +5,21 @@ set -e
 host="$1"
 
 if test -z "$host"; then
-  echo "Usage: configure-apt-cache host" 1>&2
+  echo "Usage: configure-apt-cache host [direct-host ...]" 1>&2
   exit 1
 fi
 
 url="http://$host:3142"
 
 cat <<-EOT >/etc/apt/apt.conf.d/41-apt-cache
-Acquire::http::Proxy "$url";
+Acquire::HTTP::Proxy "$url";
 EOT
+
+shift
+
+while test -n "$1"; do
+  cat <<-EOT >>/etc/apt/apt.conf.d/41-apt-cache
+Acquire::HTTP::Proxy::$1 "DIRECT";
+EOT
+  shift
+done
