@@ -26,7 +26,7 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-profile, = ARGV
+profile, *args = ARGV
 
 if profile.nil?
   raise "Usage: launch-chromium [-u user] profile"
@@ -76,4 +76,7 @@ end
 # Resolve local symlinks so that the binary can be spawned via sudo.
 chromium_bin = File.realpath(chromium_bin)
 
-exec("sudo -u #{target_user} env #{profile_arg} DISPLAY=#{ENV.fetch('DISPLAY')} XAUTHORITY=#{target_xauthority_path} #{chromium_bin} --disable-notifications --disable-smooth-scrolling --disable-sync --disable-session-crashed-bubble #{extension_arg}")
+# TODO properly escape args or redo this entire invocation
+cmd = "sudo -u #{target_user} env #{profile_arg} DISPLAY=#{ENV.fetch('DISPLAY')} XAUTHORITY=#{target_xauthority_path} #{chromium_bin} --disable-notifications --disable-smooth-scrolling --disable-sync --disable-session-crashed-bubble --disable-gaia-services #{extension_arg} #{args.join(' ')}"
+puts cmd
+exec(cmd)
