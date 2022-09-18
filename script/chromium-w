@@ -1,11 +1,4 @@
 #!/bin/sh
 
-args=
-
-for d in /usr/lib/chrome-ext-ua-switcher /usr/share/chrome-ext-dotjs; do
-  if test -d $d; then
-    args="$args -e $d"
-  fi
-done
-
-exec `dirname "$0"`/launch-chromium w $args
+exec `dirname "$0"`/launch-chromium \
+  -E /usr/lib/chrome-ext-ua-switcher -E /usr/share/chrome-ext-dotjs w "$@"

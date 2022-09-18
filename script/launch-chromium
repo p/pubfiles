@@ -17,6 +17,13 @@ OptionParser.new do |opts|
     options[:extensions] ||= []
     options[:extensions] << v
   end
+
+  opts.on("-E", "--exist-ext PATH", "Load unpacked extension at PATH if it exists") do |v|
+    if File.directory?(v)
+      options[:extensions] ||= []
+      options[:extensions] << v
+    end
+  end
 end.parse!
 
 profile, = ARGV
