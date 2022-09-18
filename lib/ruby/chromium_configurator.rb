@@ -109,6 +109,10 @@ class ChromiumConfigurator
     content['extensions'] ||= {}
     content['extensions']['ui'] ||= {}
     content['extensions']['ui']['developer_mode'] = true
+    # https://unix.stackexchange.com/questions/110613/how-can-i-make-chrome-stop-asking-to-be-the-default-browser
+    content['browser'] ||= {}
+    content['browser']['check_default_browser'] = false
+    content['browser']['default_browser_infobar_last_declined'] = '13236762067983049'
     # This file has window placement
 
     File.open(path, 'w') do |f|
