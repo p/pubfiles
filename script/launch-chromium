@@ -58,4 +58,22 @@ end
 
 puts `sudo -u #{target_user} #{File.dirname(File.realpath($0))}/../home/chromium/install #{profile_base}`
 
-exec("sudo -u #{target_user} env #{profile_arg} DISPLAY=#{ENV.fetch('DISPLAY')} XAUTHORITY=#{target_xauthority_path} chromium --disable-notifications --disable-smooth-scrolling --disable-sync --disable-session-crashed-bubble #{extension_arg}")
+chromium_bin = nil
+%w(chromium chrome).each do |bn|
+  ENV.fetch('PATH').split(':').each do |dn|
+    if File.exist?(path = File.join(dn, bn))
+      chromium_bin = path
+      break
+    end
+  end
+  break if chromium_bin
+end
+
+if chromium_bin.nil?
+  raise "chromium or chrome not found in PATH"
+end
+
+# Resolve local symlinks so that the binary can be spawned via sudo.
+chromium_bin = File.realpath(chromium_bin)
+
+exec("sudo -u #{target_user} env #{profile_arg} DISPLAY=#{ENV.fetch('DISPLAY')} XAUTHORITY=#{target_xauthority_path} #{chromium_bin} --disable-notifications --disable-smooth-scrolling --disable-sync --disable-session-crashed-bubble #{extension_arg}")
