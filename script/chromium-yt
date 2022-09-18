@@ -7,4 +7,4 @@ if test -d /usr/share/chrome-ext-adblock-for-youtube; then
   args="$args -e /usr/share/chrome-ext-adblock-for-youtube"
 fi
 
-exec `dirname "$0"`/launch-chromium yt $args "$@" --disable-gaia-services
+exec `dirname "$0"`/launch-chromium yt $args "$@"
