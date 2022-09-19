@@ -9,6 +9,10 @@ options = {}
 OptionParser.new do |opts|
   opts.banner = "Usage: launch-chromium [-u user] profile"
 
+  opts.on("-n", "--new", "Assume a fresh launch") do
+    options[:new] = true
+  end
+
   opts.on("-u", "--user USER", "Launch as given user") do |v|
     options[:user] = v
   end
@@ -56,7 +60,11 @@ else
   ''
 end
 
-puts `sudo -u #{target_user} #{File.dirname(File.realpath($0))}/../home/chromium/install #{profile_base}`
+install_args = ''
+if options[:new]
+  install_args << " -n"
+end
+puts `sudo -u #{target_user} #{File.dirname(File.realpath($0))}/../home/chromium/install #{profile_base} #{install_args}`
 
 chromium_bin = nil
 %w(chromium chrome).each do |bn|

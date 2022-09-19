@@ -3,11 +3,13 @@ require 'fileutils'
 require 'json'
 
 class ChromiumConfigurator
-  def initialize(home_path)
+  def initialize(home_path, **opts)
     @home_path = home_path
+    @options = opts
   end
 
   attr_reader :home_path
+  attr_reader :options
 
   def profile_pathname
     Pathname.new(File.join(home_path, '.config', 'chromium'))
@@ -102,6 +104,12 @@ class ChromiumConfigurator
     else
       FileUtils.mkdir_p(File.dirname(path))
       content = {}
+    end
+
+    if options[:new]
+      #content.delete('sessions')
+      content.delete('profile')
+      #content.delete('protection')
     end
 
     content['bookmark_bar'] ||= {}
