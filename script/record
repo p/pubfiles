@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e
+
+# https://www.reddit.com/r/openbsd/comments/ived5q/solved_a_few_issues_recording_sound_audio_using/
+
+ffmpeg  -video_size `xdpyinfo|grep dimensions:|head -1 |awk '{print $2}'` \
+  -framerate 30 \
+  -f x11grab -i :0.0+0,0 \
+  -f alsa -ac 2 -i hw:0 \
+  -c:v libx264rgb -crf 0 -preset ultrafast -color_range 2 \
+  -c:a pcm_s16le \
+  "$@"
