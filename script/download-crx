@@ -10,86 +10,127 @@
 # http://gromnitsky.blogspot.com/2017/03/bloatware-comes-when-nobodys-lookin.html
 # https://en.wikipedia.org/wiki/ZIP_(file_format)
 
-require 'optparse'
-
-options = {}
-OptionParser.new do |opts|
-  opts.banner = "Usage: download-crx [-n|--name NAME] [-u|--unpack] url"
-
-  opts.on("-n", "--name NAME", "Rename to NAME") do |v|
-    options[:name] = v
-  end
-
-  opts.on("-u", "--unpack", "Unpack the extension") do
-    options[:unpack] = true
-  end
-end.parse!
-
-url = ARGV.shift
-
-if url.nil?
-  raise "Usage: download-crx [-u|--unpack] url"
-end
-
-if url =~ %r,https://chrome.google.com/webstore/detail/([^/]+)/(\w+),
-  slug = $1
-  id = $2
-else
-  raise "Bogus URL: #{url}"
-end
-
-require 'zip'
+autoload :JSON, 'json'
+autoload :Zip, 'zip'
 require 'open-uri'
-require 'json'
 
-dl_url = "https://clients2.google.com/service/update2/crx?response=redirect&prodversion=89.0&x=id%3D#{id}%26installsource%3Dondemand%26uc&acceptformat=crx2,crx3"
+class Downloader
+  def initialize(id_or_url)
+    case id_or_url
+    when %r,\Ahttps://chrome.google.com/webstore/detail/([^/]+)/([a-z0-9]+)\z,
+      @slug = $1
+      @id = $2
+    when %r,\A([a-z0-9]+)\z,
+      @slug = nil
+      @id = $1
+    else
+      raise ArgumentError, "Bogus id or URL: #{id_or_url}"
+    end
+  end
 
-contents = URI.parse(dl_url).open.read
+  attr_reader :id
 
-puts "Downloaded #{contents.length} bytes"
+  def download_url
+    "https://clients2.google.com/service/update2/crx?response=redirect&prodversion=89.0&x=id%3D#{id}%26installsource%3Dondemand%26uc&acceptformat=crx2,crx3"
+  end
 
-if contents.length == 0
-  raise "Received a zero-length archive"
-end
+  def contents
+    @contents ||= URI.parse(download_url).open.read.tap do |contents|
+      if contents.length == 0
+        raise "Received a zero-length archive"
+      end
+    end
+  end
 
-if contents =~ /(PK\x03\x04(?:.|\n)+)\z/
-  zip_contents = $1
-else
-  raise "Weird archive format"
-end
+  def zip_contents
+    # Not anchored to the beginning of input to ignore garbage before
+    # the zip archive.
+    @zip_contents ||= if contents =~ /(PK\x03\x04(?:.|\n)+)\z/
+      $1
+    else
+      raise "Weird archive format"
+    end
+  end
 
-io = StringIO.new(zip_contents)
+  def manifest_data
+    @manifest_data ||= begin
+      io = StringIO.new(zip_contents)
 
-manifest = nil
-Zip::File.open_buffer(io) do |zip_file|
-  zip_file.each do |entry|
-    if entry.name == 'manifest.json'
-      manifest = JSON.load(entry.get_input_stream)
+      manifest = nil
+      Zip::File.open_buffer(io) do |zip_file|
+        zip_file.each do |entry|
+          if entry.name == 'manifest.json'
+            manifest = JSON.load(entry.get_input_stream)
+            break
+          end
+        end
+      end
+
+      if manifest.nil?
+        raise "Couldn't read manifest"
+      end
+
+      manifest
+    end
+  end
+
+  def name_from_package
+    manifest_data.fetch('name').gsub(/[^\w]/, '-').gsub(/--+/, '-').sub(/\A-/, '').sub(/-\z/, '')
+  end
+
+  def version
+    manifest_data.fetch('version')
+  end
+
+  def save(local_path)
+    File.open(local_path, 'w') do |io|
+      io << contents
+    end
+  end
+
+  def unpack(local_path)
+    dir = local_path.sub(/\.crx\z/, '')
+    FileUtils.mkdir_p(dir)
+    p dir
+    Dir.chdir(dir) do
+      puts `unzip ../#{File.basename(local_path)}`
+      FileUtils.rm_rf('_metadata')
     end
   end
 end
 
-if manifest.nil?
-  raise "Couldn't read manifest"
-end
+if __FILE__ == $0
+  require 'optparse'
 
-unless name = options[:name]
-  name = manifest.fetch('name').gsub(/[^\w]/, '-').gsub(/--+/, '-').sub(/\A-/, '').sub(/-\z/, '')
-end
-version = manifest.fetch('version')
-local_fn = "#{name}-#{version}.crx"
+  options = {}
+  OptionParser.new do |opts|
+    opts.banner = "Usage: download-crx [-n|--name NAME] [-u|--unpack] url"
 
-puts "Saving to #{local_fn}"
+    opts.on("-n", "--name NAME", "Rename to NAME") do |v|
+      options[:name] = v
+    end
 
-File.open(local_fn, 'w') do |io|
-  io << contents
-end
+    opts.on("-u", "--unpack", "Unpack the extension") do
+      options[:unpack] = true
+    end
+  end.parse!
 
-if options[:unpack]
-  dir = File.basename(local_fn).sub(/\.crx\z/, '')
-  FileUtils.mkdir_p(dir)
-  Dir.chdir(dir) do
-    puts `unzip ../#{local_fn}`
-    FileUtils.rm_rf('_metadata')
+  url_or_id = ARGV.shift
+
+  if url_or_id.nil?
+    raise "Usage: download-crx [-u|--unpack] <url | id>"
+  end
+
+  downloader = Downloader.new(url_or_id)
+  puts "Downloaded #{downloader.contents.length} bytes"
+
+  local_name = options[:name] || downloader.name_from_package
+  local_fn = "#{local_name}-#{downloader.version}.crx"
+
+  puts "Saving to #{local_fn}"
+  downloader.save(local_fn, 'w')
+
+  if options[:unpack]
+    downloader.unpack(local_fn)
   end
 end
