@@ -18,3 +18,5 @@ export LC_ALL=C.UTF-8
 export LANG=C.UTF-8
 
 export FILTER_BRANCH_SQUELCH_WARNING=1
+
+export PATH=~/.local/share/gem/ruby/3.0.0/bin:$PATH
