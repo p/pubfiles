@@ -1,22 +1,23 @@
-if test -d "$HOME/bin"; then
-  export PATH="$HOME/bin:$PATH"
+_maybe_add_to_path() {
+  dir="$1"
+  if test -d "$dir"; then
+    export PATH="$dir:$PATH"
+  fi
 fi
+
+_maybe_add_to_path "$HOME/bin"
+_maybe_add_to_path "$HOME/.local/bin"
 
 if test -f /etc/debian_version; then
   export DEBEMAIL=oleg@bsdpower.com
   export DEBFULLNAME='Oleg Pudeyev'
 fi
 
-if test -d "$HOME/.rbenv/bin"; then
-  export PATH="$HOME/.rbenv/bin:$PATH"
-fi
-
-export PATH=$PATH:~/.local/bin
+_maybe_add_to_path "$HOME/.rbenv/bin"
+_maybe_add_to_path "$HOME/.local/share/gem/ruby/3.0.0/bin"
 
 # Recent linuxes botch date format, get the old one back
 export LC_ALL=C.UTF-8
 export LANG=C.UTF-8
 
 export FILTER_BRANCH_SQUELCH_WARNING=1
-
-export PATH=~/.local/share/gem/ruby/3.0.0/bin:$PATH
