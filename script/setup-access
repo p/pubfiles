@@ -1,0 +1,26 @@
+#!/bin/sh
+
+set -e
+
+target="$1"
+
+if test -z "$target"; then
+  echo "Usage: setup-access target" 1>&2
+  exit 1
+fi
+
+found=false
+for key_type in ed25519; do
+  key_path="$HOME/.ssh/id_${key_type}.pub"
+  if test -f "$key_path"; then
+    found=true
+  fi
+done
+
+if ! $found; then
+  echo "No public key found to use for access granting" 1>&2
+  exit 2
+fi
+
+# TODO do not add the same key multiple times
+cat "$key_path" |ssh "$target" "test -d .ssh || (mkdir -p .ssh && chmod 0700 .ssh) && tee -a .ssh/authorized_keys"
