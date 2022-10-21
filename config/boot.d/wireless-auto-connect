@@ -1,0 +1,21 @@
+#!/bin/sh
+
+set -e
+
+if ! test -f /etc/setup.conf; then
+  echo "/etc/setup.conf missing, exiting." 1>&2
+  exit
+fi
+
+. /etc/setup.conf
+
+if test -z "$wireless_ssid"; then
+  echo "Warning: wireless_ssid not set in /etc/setup.conf - exiting." 1>&2
+  exit
+fi
+
+if test -n "$wireless_psk"; then
+  wireless_psk=`setup_decrypt "$wireless_psk"`
+fi
+
+/usr/libexec/pubfiles/connect-wireless -kd $wireless_ssid $wireless_psk
