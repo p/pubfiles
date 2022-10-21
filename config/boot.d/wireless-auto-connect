@@ -19,4 +19,6 @@ if test -n "$wireless_psk"; then
   wireless_psk=`setup_decrypt "$wireless_psk"`
 fi
 
-/usr/libexec/pubfiles/connect-wireless -kdl /var/log/wireless.log $wireless_ssid $wireless_psk
+/usr/libexec/pubfiles/connect-wireless -kd \
+  -l /var/log/wireless.log -p /var/run/wireless.pid \
+  $wireless_ssid $wireless_psk
