@@ -19,6 +19,8 @@ else
   exit 2
 fi
 
+. $BASE/common.sh
+
 install_if_needed python3-daemonize
 
 mkdir -p /usr/libexec/pubfiles
