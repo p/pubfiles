@@ -15,6 +15,7 @@ if test -z "$wireless_ssid"; then
 fi
 
 if test -n "$wireless_psk"; then
+  . /usr/libexec/pubfiles/common.sh
   wireless_psk=`setup_decrypt "$wireless_psk"`
 fi
 
