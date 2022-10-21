@@ -22,5 +22,9 @@ fi
 mkdir -p /usr/libexec/pubfiles
 
 install -m 555 -t /usr/libexec/pubfiles -o root -g root "$BASE"/script/connect-wireless
-install -m 555 -t /etc/pm/sleep.d -o root -g root "$BASE"/config/pm/sleep.d/wireless_resume
+if test -d /etc/pm/sleep.d; then
+  install -m 555 -t /etc/pm/sleep.d -o root -g root "$BASE"/config/pm/sleep.d/wireless_resume
+else
+  echo /etc/pm/sleep.d missing - not a laptop? - skipping resume configuration
+fi
 install -m 555 -t /etc/boot.d -o root -g root "$BASE"/config/boot.d/wireless-auto-connect
