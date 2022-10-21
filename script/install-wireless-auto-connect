@@ -19,6 +19,8 @@ else
   exit 2
 fi
 
+install_if_needed python3-daemonize
+
 mkdir -p /usr/libexec/pubfiles
 
 install -m 555 -t /usr/libexec/pubfiles -o root -g root "$BASE"/script/connect-wireless
