@@ -1,0 +1,38 @@
+#!/bin/sh
+
+set -e
+
+if test "`id -u`" != 0; then
+  if which sudo 2>/dev/null 1>&2; then
+    echo "This needs to be run as root, trying sudo" 1>&2
+    exec sudo sh -x "$0" "$@"
+  else
+    echo "This needs to be run as root" 1>&2
+    exit 2
+  fi
+fi
+
+force=false
+
+while getopts f opt; do
+  case $opt in
+  f)
+    force=true
+    ;;
+  *)
+    echo "Bogus option $opt" 1>&2
+    exit 10
+    ;;
+  esac
+done
+shift $((OPTIND-1))
+
+if ! $force && test -f /etc/setup.secret; then
+  echo /etc/setup.secret already exists, use -f to overwrite
+  exit
+fi
+
+:>/etc/setup.secret
+chmod 0600 /etc/setup.secret
+
+openssl rand -base64 20 |tee -a /etc/setup.secret

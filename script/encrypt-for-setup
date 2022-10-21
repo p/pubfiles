@@ -1,0 +1,19 @@
+#!/bin/sh
+
+set -e
+
+if echo "$0" |grep -q /; then
+  BASE=`dirname "$0"`
+else
+  echo "Cannot determine base directory" 1>&2
+  exit 2
+fi
+
+. $BASE/common.sh
+
+if test -z "$1"; then
+  echo "Usage: encrypt-for-setup text" 1>&2
+  exit 1
+fi
+
+setup_encrypt "$1"

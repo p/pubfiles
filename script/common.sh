@@ -115,3 +115,11 @@ install_mm() {
   
   is_headful
 }
+
+setup_encrypt() {
+  echo "$1" |openssl aes-256-cbc -a -salt -pass pass:`cat /etc/setup.secret` -pbkdf2
+}
+
+setup_decrypt() {
+  echo "$1" |openssl aes-256-cbc -d -a -pass pass:`cat /etc/setup.secret` -pbkdf2
+}
