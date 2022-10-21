@@ -300,4 +300,6 @@ if install_mm; then
   install -m 444 -t /etc/mplayer $BASE/../config/mplayer/input.conf
 fi
 
+$BASE/generate-setup-key
+
 echo 'Run sensors-detect if you haven'"'"'t to load kernel modules for hardware sersors.'
