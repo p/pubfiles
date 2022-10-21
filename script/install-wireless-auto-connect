@@ -19,7 +19,7 @@ else
   exit 2
 fi
 
-. $BASE/common.sh
+. $BASE/script/common.sh
 
 install_if_needed python3-daemonize
 
