@@ -8,6 +8,9 @@ curl https://raw.githubusercontent.com/p/pubfiles/master/script/configure-apt-no
 
 apt-get install git python-is-python3 console-setup console-setup-linux
 
-#mkdir -p $HOME/apps
+mkdir -p /usr/libexec/pubfiles
 
-#git clone https://github.com/p/pubfiles $HOME/apps
+curl -o /usr/libexec/pubfiles/connect-wireless \
+  https://raw.githubusercontent.com/p/pubfiles/master/script/connect-wireless
+
+chmod 0555 /usr/libexec/pubfiles/connect-wireless
