@@ -3,7 +3,7 @@ _maybe_add_to_path() {
   if test -d "$dir"; then
     export PATH="$dir:$PATH"
   fi
-fi
+}
 
 _maybe_add_to_path "$HOME/bin"
 _maybe_add_to_path "$HOME/.local/bin"
