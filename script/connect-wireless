@@ -61,6 +61,22 @@ def get_default_gateway():
             return gw
     raise NoDefaultGateway('No default gateway')
 
+def have_program(basename):
+    for path in os.environ['PATH'].split(':'):
+        if os.path.exists(os.path.join(path, basename)):
+            return True
+    return False
+
+def unblock_rfkill():
+    if have_program('rfkill'):
+        output = subprocess.check_output(['rfkill']).decode()
+        for line in output.split("\n"):
+            if line:
+                id, type, device, soft, hard = re.split(r'\s+', line.strip())
+                if type == 'wlan' and soft == 'blocked':
+                    print("Unblocking rfkill")
+                    subprocess.check_call(['rfkill', 'unblock', id])
+
 def start(network, password):
     global config
     
@@ -78,6 +94,9 @@ def start(network, password):
     if have_ifdown:
         subprocess.call(['ifdown', wireless_interface])
         _time.sleep(1)
+    
+    unblock_rfkill()
+    
     start_wpa_supplicant(wireless_interface, network, password)
     print('Running dhclient')
     subprocess.check_call(['dhclient', '-v', wireless_interface])
