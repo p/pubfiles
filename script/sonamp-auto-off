@@ -1,0 +1,118 @@
+#!/usr/bin/env ruby
+
+require 'logger'
+require 'optparse'
+require 'yamaha'
+require 'sonamp'
+
+class Runner
+  def run
+    options = {}
+    OptionParser.new do |opts|
+      opts.banner = "Usage: sonamp-auto-off [-l log-path] [-D]"
+
+      opts.on("--daemonize", "-D", "Daemonize") do
+        options[:daemonize] = true
+      end
+
+      opts.on("--log=PATH", "-l", "Path to log file") do |path|
+        options[:log_path] = path
+      end
+
+    end.parse!
+
+    @options = options.freeze
+
+    if options[:daemonize]
+      Process.daemonize
+    end
+
+    bump('application start')
+
+    # If amplifier is not detectable, it normally would be off
+    prev_sonamp_power = false
+    handle_exceptions do
+      prev_sonamp_power = sonamp_client.get_zone_power.values.any? { |v| v == true }
+    end
+
+    loop do
+      handle_exceptions do
+        sonamp_power = sonamp_client.get_zone_power.values.any? { |v| v == true }
+        if sonamp_power && !prev_sonamp_power
+          bump('amplifier turned on')
+        end
+        prev_sonamp_power = sonamp_power
+      end
+
+      # If we cannot query the receiver, assume it is on to prevent unintended
+      # turn-offs.
+      receiver_power = 1
+      handle_exceptions do
+        receiver_power = yamaha_client.last_status.fetch(:main_power)
+      end
+      case receiver_power
+      when true
+        bump('receiver is on')
+      when 1
+        bump('failed to communicate with receiver - assuming it is on')
+      end
+
+      if @alive_through < monotonic_time
+        logger.info("Turning amplifier off")
+        handle_exceptions do
+          sonamp.power_off
+        end
+      else
+        delta = (@alive_through - monotonic_time).to_i
+        puts "TTL: #{delta / 60}:#{'%02d' % (delta % 60)}"
+      end
+
+      sleep 20
+    end
+  end
+
+  attr_reader :options
+
+  private
+
+  def handle_exceptions
+    yield
+  rescue Interrupt, SystemExit, NoMemoryError
+    raise
+  rescue => exc
+    logger.warn("Unhandled exception: #{exc.class}: #{exc}")
+  end
+
+  def bump(reason)
+    logger.debug("Bumping 7 minutes: #{reason}")
+    @alive_through = monotonic_time + 7*60
+  end
+
+  def sonamp_client
+    @sonamp_client ||= Sonamp::Client.new(logger: Logger.new(log_stream, progname: 'sonamp'))
+  end
+
+  def yamaha_client
+    @yamaha_client ||= Yamaha::Client.new(logger: Logger.new(log_stream, progname: 'yamaha'))
+  end
+
+  def log_stream
+    @log_stream ||= if path = options[:log_path]
+      File.open(path, 'a')
+    else
+      STDERR
+    end
+  end
+
+  def logger
+    @logger ||= begin
+      Logger.new(log_stream, progname: 'main')
+    end
+  end
+
+  def monotonic_time
+    Process.clock_gettime(Process::CLOCK_MONOTONIC)
+  end
+end
+
+Runner.new.run
