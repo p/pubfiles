@@ -1,0 +1,2 @@
+event=button/mute
+action=/etc/acpi/sleep-key.sh
