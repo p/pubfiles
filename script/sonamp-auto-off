@@ -3,7 +3,7 @@
 require 'logger'
 require 'optparse'
 require 'yamaha'
-require 'sonamp'
+require 'seriamp'
 
 class Runner
   def run
@@ -29,16 +29,16 @@ class Runner
 
     bump('application start')
 
-    # If amplifier is not detectable, it normally would be off
-    prev_sonamp_power = false
+    prev_sonamp_power = nil
     handle_exceptions do
       prev_sonamp_power = sonamp_client.get_zone_power.values.any? { |v| v == true }
     end
 
     loop do
+      sonamp_power = nil
       handle_exceptions do
         sonamp_power = sonamp_client.get_zone_power.values.any? { |v| v == true }
-        if sonamp_power && !prev_sonamp_power
+        if sonamp_power && prev_sonamp_power == false
           bump('amplifier turned on')
         end
         prev_sonamp_power = sonamp_power
@@ -46,21 +46,28 @@ class Runner
 
       # If we cannot query the receiver, assume it is on to prevent unintended
       # turn-offs.
-      receiver_power = 1
+      receiver_power = nil
       handle_exceptions do
-        receiver_power = yamaha_client.last_status.fetch(:main_power)
+        receiver_power = yamaha_client.main_power
       end
+      p receiver_power
       case receiver_power
       when true
         bump('receiver is on')
-      when 1
+        if sonamp_power == false
+          puts("turning on amplifier")
+          sonamp_client.set_zone_power(1, true)
+          sonamp_client.set_zone_power(2, true)
+          sonamp_client.set_zone_power(3, true)
+        end
+      when nil
         bump('failed to communicate with receiver - assuming it is on')
       end
 
       if @alive_through < monotonic_time
         logger.info("Turning amplifier off")
         handle_exceptions do
-          sonamp.power_off
+          sonamp_client.power_off
         end
       else
         delta = (@alive_through - monotonic_time).to_i
@@ -89,11 +96,11 @@ class Runner
   end
 
   def sonamp_client
-    @sonamp_client ||= Sonamp::Client.new(logger: Logger.new(log_stream, progname: 'sonamp'))
+    @sonamp_client ||= Seriamp::Sonamp::AutoClient.new(logger: Logger.new(log_stream, progname: 'sonamp'))
   end
 
   def yamaha_client
-    @yamaha_client ||= Yamaha::Client.new(logger: Logger.new(log_stream, progname: 'yamaha'))
+    @yamaha_client ||= Seriamp::Yamaha::AutoClient.new(logger: Logger.new(log_stream, progname: 'yamaha'))
   end
 
   def log_stream
