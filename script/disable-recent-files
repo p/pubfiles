@@ -6,4 +6,14 @@
 
 set -e
 
+# Method 1
+
 gsettings set org.gnome.desktop.privacy remember-recent-files false
+
+# Method 2
+
+: > ~/.local/share/recently-used.xbel
+# Requires root
+#chattr +i ~/.local/share/recently-used.xbel
+# Doesn't work because the file is rewritten
+#chmod 000 ~/.local/share/recently-used.xbel

@@ -82,9 +82,12 @@ ln_sf(os.path.join(abs_pub_root, 'home/gemrc'), os.path.expanduser('~/.gemrc'))
 
 mkdir_p(os.path.join(abs_pub_root, 'home/config'))
 mkdir_p(os.path.expanduser('~/.config'))
+mkdir_p(os.path.expanduser('~/.config/gtk-2.0'))
 
 if is_headful():
     ln_sf(os.path.join(abs_pub_root, 'home/config/user-dirs.dirs'), os.path.expanduser('~/.config/user-dirs.dirs'))
+    # This file is mutated in operation, in particular comments are trashed.
+    cp(os.path.join(abs_pub_root, 'home/config/gtk-2.0/gtkfilechooser.ini'), os.path.expanduser('~/.config/gtk-2.0/gtkfilechooser.ini'))
 
     if getpass.getuser() in ['me', 'w']:
         template = pyratemp.Template(filename=os.path.join(abs_pub_root, 'home/xinitrc.tpl'))
@@ -103,6 +106,7 @@ if is_headful():
 
         ln_sf(os.path.join(abs_pub_root, 'home/SciTEUser.properties'), os.path.expanduser('~/.SciTEUser.properties'))
         ln_sf(os.path.join(abs_pub_root, 'home/gtkterm2rc'), os.path.expanduser('~/.gtkterm2rc'))
+        ln_sf(os.path.join(abs_pub_root, 'home/gtkrc-2.0'), os.path.expanduser('~/.gtkrc-2.0'))
         
         if os.path.exists('/usr/sbin/pm-suspend'):
             ln_sf('/usr/sbin/pm-suspend', os.path.expanduser('~/bin/pm-suspend'))

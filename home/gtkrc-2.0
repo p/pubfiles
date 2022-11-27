@@ -1,0 +1,25 @@
+/* http://www.limofoundation.org/api/R1/aui/gtk/fnd/group___gtk_rc.html */
+
+/* http://pastebin.ch/5314 */
+
+binding "filechooser-ctrl-quick-bookmark" {
+  bind "<ctrl>1" { "quick-bookmark" (0) }
+  bind "<ctrl>2" { "quick-bookmark" (1) }
+  bind "<ctrl>3" { "quick-bookmark" (2) }
+  bind "<ctrl>4" { "quick-bookmark" (3) }
+  bind "<ctrl>5" { "quick-bookmark" (4) }
+  bind "<ctrl>6" { "quick-bookmark" (5) }
+  bind "<ctrl>7" { "quick-bookmark" (6) }
+  bind "<ctrl>8" { "quick-bookmark" (7) }
+  bind "<ctrl>9" { "quick-bookmark" (8) }
+  bind "<ctrl>0" { "quick-bookmark" (9) }
+}
+
+class "GtkFileChooserDefault" binding "filechooser-ctrl-quick-bookmark"
+
+# https://alexcabal.com/disabling-gnomes-recently-used-file-list-the-better-way
+
+# This prevents the files from being added to the recent list, but does not
+# prevent scite from opening the dialog on recent file list (even if the list
+# is always empty).
+gtk-recent-files-max-age=0
