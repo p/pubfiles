@@ -7,7 +7,7 @@ tmpdir=`mktemp -d`
 curl -o $tmpdir/$bn https://www.deb-multimedia.org/pool/main/d/deb-multimedia-keyring/$bn
 dpkg -i $tmpdir/$bn
 
-echo 'deb http://www.deb-multimedia.org bullseye main non-free' |tee /etc/apt/sources.list.d/deb-multimedia.list
+echo 'deb http://www.deb-multimedia.org testing main non-free' |tee /etc/apt/sources.list.d/deb-multimedia.list
 
 rm -rf $tmpdir
 
