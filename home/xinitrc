@@ -64,7 +64,8 @@ init_dual_head() {
 }
 
 init_single_head() {
-	XDG_CONFIG_HOME=$HOME/.center-screen exec openbox-session
+	exec openbox-session
+	#XDG_CONFIG_HOME=$HOME/.center-screen exec openbox-session
 }
 
 init_as_configured() {

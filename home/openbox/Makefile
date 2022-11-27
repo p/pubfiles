@@ -12,7 +12,8 @@ else
 ifdef triple
 screens=3
 else
-screens := $(shell if test "`hostname -s`" = reactor; then echo 1; else echo 3; fi)
+#screens := $(shell if test "`hostname -s`" = reactor; then echo 1; else echo 3; fi)
+screens := 1
 endif
 endif
 endif
