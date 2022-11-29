@@ -250,7 +250,8 @@ def keep():
     while True:
         try:
             check_and_resume(config)
-        except WpaSupplicantFailed as e:
+        # CalledProcessError: usb wireless interface went away
+        except (WpaSupplicantFailed, subprocess.CalledProcessError) as e:
             print(e)
             # and retry
         _time.sleep(5)
