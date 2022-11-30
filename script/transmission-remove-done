@@ -1,0 +1,7 @@
+#!/bin/sh
+
+set -e
+
+for t in `transmission-remote -l |grep 100% |awk '{print $1}' `; do
+  transmission-remote -t $t -r
+done
