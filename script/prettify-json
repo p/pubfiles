@@ -1,0 +1,32 @@
+#!/usr/bin/env ruby
+
+autoload :FileUtils, 'fileutils'
+autoload :JSON, 'json'
+require 'optparse'
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: prettify-json [-i] path..."
+
+  opts.on("--inplace", "-i", "Modify files in place") do
+    options[:inplace] = true
+  end
+end.parse!
+
+ARGV.each do |path|
+  content = File.open(path, 'rb') do |f|
+    JSON.load(f)
+  end
+  
+  result = JSON.pretty_generate(content)
+  
+  if options[:inplace]
+    File.open(path + '.tmp', 'wb') do |f|
+      f << result
+    end
+    
+    FileUtils.mv(path + '.tmp', path)
+  else
+    puts result
+  end
+end
