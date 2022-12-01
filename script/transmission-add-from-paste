@@ -1,0 +1,7 @@
+#!/bin/sh
+
+set -e
+
+for url in `curl -k https://p.here/recent.txt`; do
+  transmission-remote -a "$url" -s
+done
