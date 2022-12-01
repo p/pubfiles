@@ -123,6 +123,10 @@ class ChromiumConfigurator
     content['browser']['default_browser_infobar_last_declined'] = '13236762067983049'
     # This file has window placement
 
+    content['profile'] ||= {}
+    # https://www.howtogeek.com/725208/how-to-turn-off-pop-up-notifications-in-google-chrome/
+    content['profile']['default_content_setting_values'] = {'notifications' => 2}
+
     File.open(path, 'w') do |f|
       f << JSON.dump(content)
     end
