@@ -6,6 +6,11 @@ options = {}
 OptionParser.new do |opts|
   opts.banner = "Usage: install [-n] [path]"
 
+  opts.on("-c", "--ca=PATH", "Add a CA certificate to trust store") do |value|
+    options[:ca_certs] ||= []
+    options[:ca_certs] << value
+  end
+
   opts.on("-n", "--new", "Assume a fresh launch") do
     options[:new] = true
   end
@@ -17,4 +22,4 @@ require 'chromium_configurator'
 
 path = ARGV.shift || File.expand_path('~')
 
-ChromiumConfigurator.new(path, new: options[:new]).configure
+ChromiumConfigurator.new(path, new: options[:new], ca_certs: options[:ca_certs]).configure

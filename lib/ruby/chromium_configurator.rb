@@ -133,5 +133,29 @@ class ChromiumConfigurator
 
     path = profile_pathname.join('First Run')
     FileUtils.touch(path)
+
+    if options[:ca_certs]
+      create_nss_db
+    end
+  end
+
+  private
+
+  def create_nss_db
+    # https://serverfault.com/questions/414578/certutil-function-failed-security-library-bad-database
+    # https://stackoverflow.com/questions/19692787/how-to-install-certificate-in-browser-settings-using-command-prompt
+    # certutil is in libnss3-tools
+
+    db_dir = File.expand_path('~/.pki/nssdb')
+    FileUtils.mkdir_p(db_dir)
+
+    unless File.exist?(File.join(db_dir, 'pkcs11.txt'))
+      system("certutil -d sql:#{db_dir} -N --empty-password")
+    end
+
+    options.fetch(:ca_certs).each do |ca_path|
+      puts "Adding #{ca_path}"
+      system("certutil -d sql:#{db_dir} -A -n '#{File.basename(ca_path)}' -t 'TCu,Cu,Tu' -i '#{ca_path}'")
+    end
   end
 end

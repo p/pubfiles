@@ -9,6 +9,11 @@ options = {}
 OptionParser.new do |opts|
   opts.banner = "Usage: launch-chromium [-u user] profile"
 
+  opts.on("-c", "--ca=PATH", "Add a CA certificate to trust store") do |value|
+    options[:ca_certs] ||= []
+    options[:ca_certs] << value
+  end
+
   opts.on("-n", "--new", "Assume a fresh launch") do
     options[:new] = true
   end
@@ -63,6 +68,11 @@ end
 install_args = ''
 if options[:new]
   install_args << " -n"
+end
+if options[:ca_certs]
+  options[:ca_certs].each do |path|
+    install_args << " -c #{path}"
+  end
 end
 puts `sudo -u #{target_user} #{File.dirname(File.realpath($0))}/../home/chromium/install #{profile_base} #{install_args}`
 
