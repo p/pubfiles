@@ -101,7 +101,7 @@ if is_headful; then
     gitk libvte9 feh \
     evince gimp \
     xinit xauth openbox xsecurelock xss-lock x11-xserver-utils xserver-xorg \
-    xfonts-terminus
+    xfonts-terminus libnss3-tools
 
   if ! is_ubuntu; then
     # Does not exist in ubuntu 20.04
