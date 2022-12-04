@@ -4,7 +4,12 @@ require 'optparse'
 
 options = {}
 OptionParser.new do |opts|
-  opts.banner = "Usage: launch-iw [-u user] binary profile"
+  opts.banner = "Usage: launch-iw [-c cert] [-u user] binary profile"
+
+  opts.on("-c", "--ca=PATH", "Add a CA certificate to trust store") do |value|
+    options[:ca_certs] ||= []
+    options[:ca_certs] << value
+  end
 
   opts.on("-u", "--user USER", "Launch as given user") do |v|
     options[:user] = v
@@ -47,6 +52,11 @@ if Etc.getpwuid(Process.euid).name != target_user
         Process.wait
       else
         exec(*cmd)
+      end
+    end
+    if certs = options[:ca_certs]
+      certs.each do |ca_path|
+        ARGV << '-c' << ca_path
       end
     end
     cmd = %w(sudo -u) + [target_user, 'env', "XAUTHORITY=/home/#{target_user}/.Xauthority", File.realpath(File.expand_path($0))] + ARGV
@@ -125,6 +135,20 @@ File.open(File.join(profile_path, 'search.json.mozlz4'), 'wb') do |f|
   f << "mozLz40\0"
   f << [search.length].pack('l<')
   f << LZ4.block_encode(search)
+end
+
+if certs = options[:ca_certs]
+  db_dir = profile_path
+  FileUtils.mkdir_p(db_dir)
+
+  unless File.exist?(File.join(db_dir, 'pkcs11.txt'))
+    #system("certutil -d dbm:#{db_dir} -N --empty-password")
+  end
+
+  certs.each do |ca_path|
+    puts "Adding #{ca_path}"
+    system("certutil -d dbm:#{db_dir} -A -n '#{File.basename(ca_path)}' -t 'TCu,Cu,Tu' -i '#{ca_path}'")
+  end
 end
 
 # Waterfox and waterfox classic put profiles in the same place, ugh.
