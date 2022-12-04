@@ -74,7 +74,7 @@ if options[:ca_certs]
     install_args << " -c #{path}"
   end
 end
-puts `sudo -u #{target_user} #{File.dirname(File.realpath($0))}/../home/chromium/install #{profile_base} #{install_args}`
+puts `sudo -u #{target_user} env #{profile_arg} #{File.dirname(File.realpath($0))}/../home/chromium/install #{profile_base} #{install_args}`
 
 chromium_bin = nil
 %w(chromium chrome).each do |bn|
