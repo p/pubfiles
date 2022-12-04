@@ -7,19 +7,11 @@ require 'optparse'
 
 options = {}
 OptionParser.new do |opts|
-  opts.banner = "Usage: launch-chromium [-u user] profile"
+  opts.banner = "Usage: launch-chromium [-c cert] [-e ext] [-E ext] [-n] [-u user] profile"
 
   opts.on("-c", "--ca=PATH", "Add a CA certificate to trust store") do |value|
     options[:ca_certs] ||= []
     options[:ca_certs] << value
-  end
-
-  opts.on("-n", "--new", "Assume a fresh launch") do
-    options[:new] = true
-  end
-
-  opts.on("-u", "--user USER", "Launch as given user") do |v|
-    options[:user] = v
   end
 
   opts.on("-e", "--ext PATH", "Load unpacked extension at PATH") do |v|
@@ -32,6 +24,14 @@ OptionParser.new do |opts|
       options[:extensions] ||= []
       options[:extensions] << v
     end
+  end
+
+  opts.on("-n", "--new", "Assume a fresh launch") do
+    options[:new] = true
+  end
+
+  opts.on("-u", "--user USER", "Launch as given user") do |v|
+    options[:user] = v
   end
 end.parse!
 
