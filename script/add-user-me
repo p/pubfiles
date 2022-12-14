@@ -6,7 +6,9 @@ groupmod wheel || groupadd -g 2500 wheel
 groupmod power || groupadd -g 2590 power
 groups=wheel,power
 # dialout: serial port access
-for group in input cdrom floppy audio dip video plugdev netdev bluetooth docker dialout; do
+for group in input cdrom floppy audio dip video \
+	plugdev netdev bluetooth docker dialout \
+	br-acc br-sandbox; do
   if groupmod $group; then
     groups="$groups,$group"
   fi
