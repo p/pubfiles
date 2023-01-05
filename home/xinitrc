@@ -90,3 +90,7 @@ if have xss-lock && have xsecurelock; then
     XSECURELOCK_AUTH_FOREGROUND_COLOR=rgb:aa/aa/aa \
     xsecurelock &
 fi
+
+if have xautolock && have xsecurelock; then
+  xautolock -time 15 -locker 'env XSECURELOCK_PASSWORD_PROMPT=asterisks XSECURELOCK_SHOW_HOSTNAME=1 XSECURELOCK_SHOW_USERNAME=1 xsecurelock' &
+fi
