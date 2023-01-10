@@ -1,0 +1,31 @@
+#!/bin/sh
+
+set -e
+
+src="$1"
+
+if test -z "$src"; then
+  echo "Usage: `basename $0` src" 1>&2
+  exit 1
+fi
+
+dest_root=/home/transcode/out
+
+mkdir -p "$dest_root"
+
+index=`cat $dest_root/.index || true`
+
+if test -n "$index"; then
+  index=`expr $index + 1`
+else
+  index=1
+fi
+
+echo $index >$dest_root/.index
+
+index_fmt=`printf %03d $index`
+
+out_path=$dest_root/$index_fmt-$(basename "$src" |sed -e 's/[^a-zA-Z0-9.-_]/_/')
+
+# add -crf?
+ffmpeg -i "$src" -vcodec libx264 -crf 18 -preset veryfast -c:a copy "$out_path"
