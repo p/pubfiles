@@ -2,30 +2,33 @@
 
 set -e
 
-src="$1"
-
-if test -z "$src"; then
+if test -z "$1"; then
   echo "Usage: `basename $0` src" 1>&2
   exit 1
 fi
 
-dest_root=/home/transcode/out
+while test -n "$1: do
+  src="$1"
+  shift
 
-mkdir -p "$dest_root"
+  dest_root=/home/transcode/out
 
-index=`cat $dest_root/.index || true`
+  mkdir -p "$dest_root"
 
-if test -n "$index"; then
-  index=`expr $index + 1`
-else
-  index=1
-fi
+  index=`cat $dest_root/.index || true`
 
-echo $index >$dest_root/.index
+  if test -n "$index"; then
+    index=`expr $index + 1`
+  else
+    index=1
+  fi
 
-index_fmt=`printf %03d $index`
+  echo $index >$dest_root/.index
 
-out_path=$dest_root/$index_fmt-$(basename "$src" |sed -e 's/[^a-zA-Z0-9.-_]/_/')
+  index_fmt=`printf %03d $index`
 
-# add -crf?
-ffmpeg -i "$src" -vcodec libx264 -crf 18 -preset veryfast -c:a copy "$out_path"
+  out_path=$dest_root/$index_fmt-$(basename "$src" |sed -e 's/[^a-zA-Z0-9.-_]/_/')
+
+  # add -crf?
+  ffmpeg -i "$src" -vcodec libx264 -crf 18 -preset veryfast -c:a copy "$out_path"
+done
