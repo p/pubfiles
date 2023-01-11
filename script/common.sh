@@ -46,6 +46,16 @@ yesno() {
   fi
 }
 
+yesnoauto() {
+  if test -z "$1"; then
+    echo Auto
+  elif $1; then
+    echo Yes
+  else
+    echo No
+  fi
+}
+
 install_if_needed() {
   local needed not_needed
   needed=
