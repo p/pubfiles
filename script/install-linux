@@ -21,6 +21,7 @@ echo 'tmp_zram=<size>'
 echo 'br_zram=<size>'
 echo 'main_user=<username>'
 echo 'br_users="<username> <username> ..."'
+echo 'wireless=true | false'
 echo
 
 if test -f /etc/setup.conf; then
@@ -71,6 +72,7 @@ echo Devuan: `is_devuan; yesno $?`
 echo Release: $release
 echo Headful: `is_headful; yesno $?`
 echo Multimedia: `install_mm; yesno $?`
+echo Wireless: `yesnoauto $wireless`
 
 echo Press any key to continue
 read a
@@ -135,7 +137,15 @@ if ! is_ubuntu; then
 fi
 
 need_wireless=false
-if lspci -v|grep -q iwlwifi && ! is_ubuntu; then
+skip_wireless=false
+if test -n "$wireless"; then
+  if $wireless; then
+    need_wireless=true
+  else
+    skip_wireless=true
+  fi
+fi
+if ! $skip_wireless && lspci -v|grep -q iwlwifi && ! is_ubuntu; then
   install_if_needed firmware-iwlwifi
   need_wireless=true
 fi
@@ -188,7 +198,7 @@ if ! is_laptop; then
   install_if_needed acpi-support
 fi
 
-if is_laptop || lspci |grep -q Wireless || $need_wireless; then
+if ! $skip_wireless && (is_laptop || lspci |grep -q Wireless || $need_wireless); then
   install_if_needed wireless-tools rfkill iw wpasupplicant
 fi
 
@@ -196,7 +206,7 @@ if is_laptop; then
   install_if_needed \
     acpi pm-utils nfs-common
 
-  if lspci |grep -q 'Intel.*PRO/Wireless.*AGN'; then
+  if ! $skip_wireless && lspci |grep -q 'Intel.*PRO/Wireless.*AGN'; then
     install_if_needed firmware-iwlwifi
   fi
 
