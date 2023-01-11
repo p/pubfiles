@@ -7,7 +7,7 @@ if test -z "$1"; then
   exit 1
 fi
 
-while test -n "$1: do
+while test -n "$1"; do
   src="$1"
   shift
 
