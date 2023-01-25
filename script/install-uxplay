@@ -29,7 +29,7 @@ install -m 555 -t /etc/boot.d -o root -g root "$BASE"/config/boot.d/uxplay
 
 mkdir -p /var/empty
 
-id uxplay || useradd -u 2242 -s `which nologin` -d /var/empty uxplay
+id uxplay || useradd -u 2242 -G audio -s `which nologin` -d /var/empty uxplay
 
 mkdir -p /var/log/uxplay
 chown uxplay:uxplay /var/log/uxplay
