@@ -1,0 +1,17 @@
+#!/bin/sh
+
+set -e
+
+if ! test -f /etc/setup.conf; then
+  echo "/etc/setup.conf missing, exiting." 1>&2
+  exit
+fi
+
+. /etc/setup.conf
+
+if test -z "$uxplay" || ! $uxplay; then
+  exit
+fi
+
+/sbin/start-stop-daemon --start -b -O /var/log/uxplay/uxplay.log -x /usr/bin/uxplay -- \
+  -vs 0 -as alsasink
