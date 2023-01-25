@@ -41,4 +41,6 @@
 [push]
 	default = simple
 [pull]
+	# ff = only overrides rebase = true
+	#ff = only
 	rebase = true
