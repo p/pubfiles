@@ -13,5 +13,5 @@ if test -z "$uxplay" || ! $uxplay; then
   exit
 fi
 
-/sbin/start-stop-daemon --start -b -O /var/log/uxplay/uxplay.log -x /usr/bin/uxplay -- \
+/sbin/start-stop-daemon --start -c uxplay -b -O /var/log/uxplay/uxplay.log -x /usr/bin/uxplay -- \
   -vs 0 -as alsasink
