@@ -1,0 +1,37 @@
+#!/bin/sh
+
+set -e
+
+if test "`id -u`" != 0; then
+  if which sudo 2>/dev/null 1>&2; then
+    echo "This needs to be run as root, trying sudo" 1>&2
+    exec sudo sh -x "$0" "$@"
+  else
+    echo "This needs to be run as root" 1>&2
+    exit 2
+  fi
+fi
+
+if echo "$0" |grep -q /; then
+  BASE=`dirname "$0"`/..
+else
+  echo "Cannot determine base directory" 1>&2
+  exit 2
+fi
+
+. $BASE/script/common.sh
+
+install_if_needed jackd2 alsa-utils
+
+mkdir -p /usr/libexec/pubfiles
+
+install -m 555 -t /etc/boot.d -o root -g root "$BASE"/config/boot.d/jackd
+
+mkdir -p /var/empty
+
+id jackd || useradd -G audio -u 2241 -d /var/empty jackd
+
+mkdir -p /var/log/jackd
+chown jackd:jackd /var/log/jackd
+
+echo jackd=true |tee -a /etc/setup.conf

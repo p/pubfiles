@@ -1,0 +1,38 @@
+#!/bin/sh
+
+set -e
+
+if ! test -f /etc/setup.conf; then
+  echo "/etc/setup.conf missing, exiting." 1>&2
+  exit
+fi
+
+. /etc/setup.conf
+
+if test -z "$jackd" || ! $jackd; then
+  exit
+fi
+
+found=false
+for card in `seq 0 9`; do
+  if test -f /proc/asound/card$card/id; then
+    if ! fgrep -qi hdmi /proc/asound/card$card/id; then
+      found=true
+      break
+    fi
+  fi
+done
+
+if $found; then
+  echo "Using $(aplay -l|grep "^card $card")"
+else
+  echo 'Could not find a suitable audio card' 1>&2
+  exit 2
+fi
+
+#export JACK_NO_AUDIO_RESERVATION=1
+#sudo -u jackd env JACK_NO_AUDIO_RESERVATION=1 start-stop-daemon --start -x /usr/bin/jackd -- -R -d alsa -d hw:$card -r 48000
+
+sudo -niu jackd env JACK_NO_AUDIO_RESERVATION=1 \
+  /sbin/start-stop-daemon --start -b -O /var/log/jackd/jackd.log -x /usr/bin/jackd -- \
+    -R -d alsa -d hw:$card -r 48000  
