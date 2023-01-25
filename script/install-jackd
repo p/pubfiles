@@ -23,6 +23,9 @@ fi
 
 install_if_needed jackd2 alsa-utils
 
+echo 'jackd2 jackd/tweak_rt_limits boolean true' |debconf-set-selections
+env DEBIAN_FRONTEND=noninteractive dpkg-reconfigure -p high jackd2 
+
 mkdir -p /usr/libexec/pubfiles
 
 install -m 555 -t /etc/boot.d -o root -g root "$BASE"/config/boot.d/jackd
