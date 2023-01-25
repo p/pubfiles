@@ -32,7 +32,7 @@ install -m 555 -t /etc/boot.d -o root -g root "$BASE"/config/boot.d/jackd
 
 mkdir -p /var/empty
 
-id jackd || useradd -G audio -u 2241 -d /var/empty jackd
+id jackd || useradd -G audio -u 2241 -s `which nologin` -d /var/empty jackd
 
 mkdir -p /var/log/jackd
 chown jackd:jackd /var/log/jackd
