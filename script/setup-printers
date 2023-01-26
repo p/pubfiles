@@ -2,7 +2,7 @@
 
 puts "Usage: setup-printers local-name remote-uri path-to-ppd"
 
-if ARGV.length % 3 != 0
+if ARGV.empty? || ARGV.length % 3 != 0
   raise 'Bad usage'
 end
 
@@ -24,7 +24,7 @@ EOT
 
 index = 1
 until ARGV.empty?
-  local_name, remote_uri, ppd_path = ARGV.shift(2)
+  local_name, remote_uri, ppd_path = ARGV.shift(3)
 
   config << <<-EOT
 <DefaultPrinter #{local_name}>
@@ -57,7 +57,7 @@ path = '/etc/cups/printers.conf'
 STDERR.puts("Writing #{path}")
 
 if File.exist?(path)
-  FileUtils.rename(path, "#{path}.#{Time.now.strftime('%Y%d%m-%H%M%S')}")
+  FileUtils.mv(path, "#{path}.#{Time.now.strftime('%Y%d%m-%H%M%S')}")
 
   File.open(path, 'w') do |f|
     f << config
@@ -67,6 +67,6 @@ end
 dir = '/etc/cups/ppd'
 FileUtils.mkdir_p(dir)
 
-ppd_paths.each do |src, name|
-  FileUtils.cp(src, File.join(dir, "#{name}.ppd"))
+ppd_paths.each do |name, src|
+  FileUtils.cp(src, File.join(dir, name))
 end
