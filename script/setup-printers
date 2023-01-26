@@ -58,10 +58,10 @@ STDERR.puts("Writing #{path}")
 
 if File.exist?(path)
   FileUtils.mv(path, "#{path}.#{Time.now.strftime('%Y%d%m-%H%M%S')}")
+end
 
-  File.open(path, 'w') do |f|
-    f << config
-  end
+File.open(path, 'w') do |f|
+  f << config
 end
 
 dir = '/etc/cups/ppd'
