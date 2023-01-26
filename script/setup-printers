@@ -70,3 +70,5 @@ FileUtils.mkdir_p(dir)
 ppd_paths.each do |name, src|
   FileUtils.cp(src, File.join(dir, name))
 end
+
+system("/etc/init.d/cups start")
