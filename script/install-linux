@@ -278,6 +278,10 @@ if ! id marker >/dev/null 2>&1; then
   useradd -s "`which nologin`" -u 3000 marker
 fi
 
+tee /etc/default/grub.d/text-mode.cgf <<-EOT
+GRUB_TERMINAL=console
+EOT
+
 $BASE/restore-netif-names
 
 # https://unix.stackexchange.com/questions/390184/dmesg-read-kernel-buffer-failed-permission-denied
