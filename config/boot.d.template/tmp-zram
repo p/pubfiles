@@ -11,6 +11,6 @@ dev=/dev/zram$num
 devbn=zram$num
 
 echo $SIZE > /sys/block/$devbn/disksize
-mkfs.xfs $dev
+mkfs.ext2 $dev
 mount -o noatime,nodiratime $dev /tmp
 chmod 01777 /tmp
