@@ -46,17 +46,13 @@ fi
 
 if test -n "$zram_size" && ! df /mnt/browsers |tail +2 |awk '{print $1}' |fgrep -q zram; then
   modprobe zram
-  if ! which mkfs.xfs; then
-    echo "mkfs.xfs not in PATH, aborting" 1>&2
-    exit 1
-  fi
 
   num=`cat /sys/class/zram-control/hot_add`
   dev=/dev/zram$num
   devbn=zram$num
 
   echo "$zram_size" > /sys/block/$devbn/disksize
-  mkfs.xfs $dev
+  mkfs.ext2 $dev
   mount -o noatime,nodiratime $dev /mnt/browsers
 fi
 
