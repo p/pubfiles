@@ -47,5 +47,6 @@ for user_spec in $br_users; do
   
   mkdir -p /home/br-downloads/"$user"
   chmod 0770 /home/br-downloads/"$user"
+    chown "$user:$user" /home/br-downloads/"$user"
   ln -sf /home/br-downloads/"$user" /home/"$user"/Downloads
 done
