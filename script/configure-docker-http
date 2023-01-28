@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+
+require 'json'
+
+if ARGV.empty?
+  raise 'Usage: configure-docker-http host ...'
+end
+
+PATH = '/etc/docker/daemon.json'
+
+if File.exist?(PATH)
+  contents = JSON.parse(File.read(PATH))
+else
+  contents = {}
+end
+
+contents['insecure-registries'] ||= []
+contents['insecure-registries'] += ARGV
+
+File.open(PATH, 'w') do |f|
+  f << JSON.dump(contents)
+end
