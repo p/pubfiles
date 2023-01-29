@@ -1,0 +1,44 @@
+#!/usr/bin/env ruby
+
+path = ARGV.shift || '/etc/fstab.add'
+
+unless File.exist?(path)
+  raise "Missing file to add - used #{path}. Provide the path as argument to add-fstab"
+end
+
+require 'fileutils'
+
+fstab_lines = File.open('/etc/fstab') do |f|
+  f.readlines
+end
+
+modified = false
+
+File.open(path) do |f|
+  f.each_line do |line|
+    next if line.strip.empty? || line.strip[0] == ?#
+
+    unless fstab_lines.index(line)
+      src, dest, _ = line.split(/\s+/, 3)
+
+      fl = fstab_lines.detect do |fl|
+        fl.split(/\s+/, 3)[0..1] == [src, dest]
+      end
+      if fl
+        puts "#{src} #{dest} already exists in fstab:\n#{fl}Please check /etc/fstab and adjust as needed"
+      end
+      fstab_lines << line
+      modified = true
+    end
+  end
+end
+
+if modified
+  puts "fstab was modified"
+  File.open('/etc/fstab.new', 'w') do |f|
+    fstab_lines.each do |line|
+      f << line
+    end
+  end
+  FileUtils.mv('/etc/fstab.new', '/etc/fstab')
+end
