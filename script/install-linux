@@ -199,7 +199,7 @@ if ! is_laptop; then
 fi
 
 if ! $skip_wireless && (is_laptop || lspci |grep -q Wireless || $need_wireless); then
-  install_if_needed wireless-tools rfkill iw wpasupplicant
+  install_if_needed wireless-tools rfkill iw wpasupplicant wireless-regdb
 fi
 
 if is_laptop; then
