@@ -102,7 +102,8 @@ if is_headful; then
   install_if_needed \
     gitk libvte9 feh \
     evince gimp \
-    xinit xauth openbox xsecurelock xss-lock x11-xserver-utils xserver-xorg \
+    xinit xauth openbox xsecurelock xss-lock \
+    x11-xserver-utils x11-utils xserver-xorg \
     xfonts-terminus libnss3-tools
 
   if ! is_ubuntu; then
