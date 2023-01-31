@@ -1,14 +1,22 @@
 #!/usr/bin/env ruby
 
+# https://www.ghacks.net/2016/08/14/override-firefox-add-on-signing-requirement/
+# https://firefox-source-docs.mozilla.org/mozbase/mozprofile.html
+
 require 'optparse'
 
 options = {}
 OptionParser.new do |opts|
-  opts.banner = "Usage: launch-iw [-c cert] [-u user] binary profile"
+  opts.banner = "Usage: launch-iw [-c cert] [-e ext.xpi] [-u user] binary profile"
 
   opts.on("-c", "--ca=PATH", "Add a CA certificate to trust store") do |value|
     options[:ca_certs] ||= []
     options[:ca_certs] << value
+  end
+
+  opts.on("-e", "--ext PATH", "Load unpacked extension at PATH") do |v|
+    options[:extensions] ||= []
+    options[:extensions] << v
   end
 
   opts.on("-u", "--user USER", "Launch as given user") do |v|
@@ -59,7 +67,11 @@ if Etc.getpwuid(Process.euid).name != target_user
         ARGV << '-c' << ca_path
       end
     end
-    cmd = %w(sudo -u) + [target_user, 'env', "XAUTHORITY=/home/#{target_user}/.Xauthority", File.realpath(File.expand_path($0))] + ARGV
+    cmd = %w(sudo -u) + [target_user, 'env', "XAUTHORITY=/home/#{target_user}/.Xauthority", File.realpath(File.expand_path($0))]
+    options[:extensions]&.each do |ext|
+      cmd += ['-e', ext]
+    end
+    cmd += ARGV
     puts "Executing #{cmd.join(' ')}"
     exec(*cmd)
   end
@@ -88,6 +100,7 @@ profile_path = File.join(catalog_dir, profile_basename)
 
 require 'inifile'
 require 'fileutils'
+require 'tmpdir'
 require 'json'
 require 'firefox_hash_generator'
 
@@ -148,6 +161,33 @@ if certs = options[:ca_certs]
   certs.each do |ca_path|
     puts "Adding #{ca_path}"
     system("certutil -d dbm:#{db_dir} -A -n '#{File.basename(ca_path)}' -t 'TCu,Cu,Tu' -i '#{ca_path}'")
+  end
+end
+
+options[:extensions]&.each do |ext_path|
+  Dir.mktmpdir do |tmpdir|
+    Dir.chdir(tmpdir) do
+      unless system("unzip #{ext_path}")
+        raise "Unzip of #{ext_path} failed"
+      end
+      contents = File.read('install.rdf')
+      rdf_id = ext_id = nil
+      contents.scan(%r,<em:id>(.+?)</em:id>,) do |match|
+        id = match.first
+        if id.start_with?('{')
+          ext_id = id
+        else
+          rdf_id = id
+        end
+      end
+      unless rdf_id && ext_id
+        raise "Couldn't find extension id in install.rdf for #{ext_path}"
+      end
+
+      ext_dir = File.join(profile_path, 'extensions')
+      FileUtils.mkdir_p(ext_dir)
+      FileUtils.cp(ext_path, File.join(ext_dir, "#{rdf_id}.xpi"))
+    end
   end
 end
 
