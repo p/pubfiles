@@ -78,6 +78,8 @@ user_pref('plugins.hide_infobar_for_outdated_plugin', true);
 user_pref('plugin.default_plugin_disabled', false);
 // stop stupid dns dumbness
 user_pref('network.dnsCacheExpiration', 0);
+// surely default of 400 is too small?
+user_pref('network.dnsCacheEntries', 10000);
 // disable smooth sliding (chrome?)
 user_pref('alerts.disableSlidingEffect', true);
 // disable smooth scrolling
@@ -230,6 +232,12 @@ user_pref('notification.feature.enabled', false);
 // https://www.purevpn.com/internet-privacy/disable-webrtc
 user_pref('media.peerconnection.enabled', false);
 
+user_pref("media.peerconnection.enabled", false); // VPN cannot bypassed anymore (https://www.reddit.com/r/VPN/comments/2tva1o/websites_can_now_use_webrtc_to_determine_your/)
+user_pref("media.peerconnection.turn.disable", true); // makes sure WebRTC is really disabled
+user_pref("media.peerconnection.use_document_iceservers", false); // makes sure WebRTC is really disabled
+user_pref("media.peerconnection.video.enabled", false); // makes sure WebRTC is really disabled
+user_pref("media.peerconnection.identity.timeout", 1); // makes sure WebRTC is really disabled
+
 user_pref('pdfjs.disabled', true);
 
 // https://medium.com/volosoft/how-to-disable-firefox-warning-potential-security-risk-ahead-f081fbf81a4f
@@ -237,3 +245,12 @@ user_pref('security.insecure_field_warning.contextual.enabled', false);
 user_pref('security.certerrors.permanentOverride', false);
 user_pref('network.stricttransportsecurity.preloadlist', false);
 user_pref('security.enterprise_roots.enabled', true);
+
+// Use DNS instead of search for single words
+user_pref('browser.fixup.dns_first_for_single_words', true);
+
+// Disable release notes in waterfox on first run of new profile
+user_pref('startup.homepage_welcome_url', 'about:blank');
+
+// TODO - investigate:
+user_pref('dom.workers.enabled', false);
