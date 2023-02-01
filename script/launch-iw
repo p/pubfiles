@@ -167,6 +167,7 @@ end
 require 'zip'
 require 'active_support'
 require 'active_support/core_ext/hash/conversions'
+require 'active_support/core_ext/hash/indifferent_access'
 
 class PackedExtension
   def initialize(path)
@@ -215,9 +216,61 @@ class PackedExtension
   end
 end
 
+class ExtensionsMetadata
+  def initialize(path)
+    @path = path
+
+    load!
+  end
+
+  attr_reader :path
+
+  def load!
+    data = if File.exist?(path)
+      JSON.load(File.read(path))
+    else
+      {
+        schemaVersion: 24,
+        addons: addons,
+      }
+    end
+    @data = ActiveSupport::HashWithIndifferentAccess.new(data)
+  end
+
+  attr_reader :data
+
+  def addon(name)
+    data.fetch(:addons).detect do |addon|
+      # Not all addons have names
+      addon[:name] == name
+    end
+  end
+
+  def set_addon(name, info)
+    found = false
+    data.fetch(:addons).each do |addon|
+      if addon[:name] == name
+        found = true
+        addon.update(info)
+        break
+      end
+    end
+    unless found
+      data[:addons] << ActiveSupport::HashWithIndifferentAccess.new(info).update('name' => name)
+    end
+  end
+
+  def dump!
+    File.open(path, 'w') do |f|
+      f << data
+    end
+  end
+end
+
 if exts = options[:extensions]
   addons = []
   metadata_path = File.join(profile_path, 'extensions.json')
+  md = ExtensionsMetadata.new(metadata_path)
 
   exts.each do |ext_path|
     ext = PackedExtension.new(ext_path)
@@ -226,7 +279,8 @@ if exts = options[:extensions]
     FileUtils.mkdir_p(ext_dir)
     FileUtils.cp(ext_path, File.join(ext_dir, "#{ext.ext_id}.xpi"))
 
-    addons << {
+    info = md.addon(ext.name) || {}
+    info.update(
       id: ext.ext_id,
       location: 'app-profile',
       version: ext.version,
@@ -244,17 +298,11 @@ if exts = options[:extensions]
       appDisabled: false,
       targetApplications: [ext.target_application],
       path: File.realpath(ext_path),
-    }
+    )
+    md.set_addon(ext.name, info)
   end
 
-  ext_info = {
-    schemaVersion: 24,
-    addons: addons,
-  }
-
-  File.open(metadata_path, 'w') do |f|
-    f << JSON.dump(ext_info)
-  end
+  md.dump!
 end
 
 # Waterfox and waterfox classic put profiles in the same place, ugh.
