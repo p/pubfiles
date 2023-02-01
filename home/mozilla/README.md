@@ -12,3 +12,8 @@ https://gist.github.com/derjanb/9f6c10168e63c3dc3cf0
 https://stackoverflow.com/questions/49509874/how-to-update-tampermonkey-script-to-a-local-file-programmatically
 
 https://violentmonkey.github.io/guide/creating-a-userscript/
+
+## User Chrome
+
+https://www.howtogeek.com/334716/how-to-customize-firefoxs-user-interface-with-userchrome.css/
+https://github.com/MrOtherGuy/firefox-csshacks (also for user content css)

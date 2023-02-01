@@ -1,3 +1,7 @@
+/* To use this file, set the following pref in user.js:
+user_pref('toolkit.legacyUserProfileCustomizations.stylesheets', 'true');
+*/
+
 /* Disable marquee display */
 /* http://www.mozilla.org/unix/customizing.html */
 marquee {
@@ -6,4 +10,10 @@ marquee {
    * because you can still see the text in the marquee,
    * but without scrolling.
    */
+}
+
+* {
+	/* also check expanded propertsie? https://developer.mozilla.org/en-US/docs/Web/CSS/animation */
+	animation: none !important;
+	animation-name: none !important;
 }
