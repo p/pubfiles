@@ -252,5 +252,8 @@ user_pref('browser.fixup.dns_first_for_single_words', true);
 // Disable release notes in waterfox on first run of new profile
 user_pref('startup.homepage_welcome_url', 'about:blank');
 
+// Enable userChrome.css & userContent.css - https://github.com/MrOtherGuy/firefox-csshacks
+user_pref('toolkit.legacyUserProfileCustomizations.stylesheets', 'true');
+
 // TODO - investigate:
 user_pref('dom.workers.enabled', false);
