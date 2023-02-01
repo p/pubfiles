@@ -164,31 +164,48 @@ if certs = options[:ca_certs]
   end
 end
 
-options[:extensions]&.each do |ext_path|
-  Dir.mktmpdir do |tmpdir|
-    Dir.chdir(tmpdir) do
-      unless system("unzip #{ext_path}")
-        raise "Unzip of #{ext_path} failed"
-      end
-      contents = File.read('install.rdf')
-      rdf_id = ext_id = nil
-      contents.scan(%r,<em:id>(.+?)</em:id>,) do |match|
-        id = match.first
-        if id.start_with?('{')
-          ext_id = id
-        else
-          rdf_id = id
+require 'zip'
+require 'active_support'
+require 'active_support/core_ext/hash/conversions'
+
+class PackedExtension
+  def initialize(path)
+    @path = path
+  end
+
+  attr_reader :path
+
+  def ext_id
+    @ext_id ||= metadata.fetch('RDF').fetch('Description').fetch('id')
+  end
+
+  def metadata
+    @metadata ||= begin
+      install_xml = nil
+      Zip::File.open(path) do |zip|
+        zip.each do |entry|
+          if entry.name == 'install.rdf'
+            install_xml = entry.get_input_stream.read
+          end
         end
       end
-      unless rdf_id && ext_id
-        raise "Couldn't find extension id in install.rdf for #{ext_path}"
+
+      if install_xml.nil?
+        raise "No install.rdf in #{path} - not a fox extension?"
       end
 
-      ext_dir = File.join(profile_path, 'extensions')
-      FileUtils.mkdir_p(ext_dir)
-      FileUtils.cp(ext_path, File.join(ext_dir, "#{rdf_id}.xpi"))
+      Hash.from_xml(install_xml)
     end
   end
+end
+
+options[:extensions]&.each do |ext_path|
+  ext = PackedExtension.new(ext_path)
+  ext_id = ext.ext_id
+
+  ext_dir = File.join(profile_path, 'extensions')
+  FileUtils.mkdir_p(ext_dir)
+  FileUtils.cp(ext_path, File.join(ext_dir, "#{ext_id}.xpi"))
 end
 
 # Waterfox and waterfox classic put profiles in the same place, ugh.
