@@ -176,7 +176,17 @@ class PackedExtension
   attr_reader :path
 
   def ext_id
-    @ext_id ||= metadata.fetch('RDF').fetch('Description').fetch('id')
+    desc.fetch('id')
+  end
+
+  %w(bootstrap unpack version name description creator).each do |key|
+    define_method(key) do
+      desc.fetch(key)
+    end
+  end
+
+  def target_application
+    desc.fetch('targetApplication')
   end
 
   def metadata
@@ -197,15 +207,54 @@ class PackedExtension
       Hash.from_xml(install_xml)
     end
   end
+
+  private
+
+  def desc
+    @desc ||= metadata.fetch('RDF').fetch('Description')
+  end
 end
 
-options[:extensions]&.each do |ext_path|
-  ext = PackedExtension.new(ext_path)
-  ext_id = ext.ext_id
+if exts = options[:extensions]
+  addons = []
+  metadata_path = File.join(profile_path, 'extensions.json')
 
-  ext_dir = File.join(profile_path, 'extensions')
-  FileUtils.mkdir_p(ext_dir)
-  FileUtils.cp(ext_path, File.join(ext_dir, "#{ext_id}.xpi"))
+  exts.each do |ext_path|
+    ext = PackedExtension.new(ext_path)
+
+    ext_dir = File.join(profile_path, 'extensions')
+    FileUtils.mkdir_p(ext_dir)
+    FileUtils.cp(ext_path, File.join(ext_dir, "#{ext.ext_id}.xpi"))
+
+    addons << {
+      id: ext.ext_id,
+      location: 'app-profile',
+      version: ext.version,
+      type: 'extension',
+      bootstrap: ext.bootstrap,
+      defaultLocale: {
+        name: ext.name,
+        description: ext.description,
+        creator: ext.creator,
+        homepageURL: nil,
+      },
+      visible: true,
+      active: true,
+      userDisabled: false,
+      appDisabled: false,
+      targetApplications: [ext.target_application],
+      path: File.realpath(ext_path),
+    }
+  end
+
+  ext_info = {
+    schemaVersion: 24,
+    addons: addons,
+  }
+
+  File.open(metadata_path, 'w') do |f|
+    f << JSON.dump(ext_info)
+  end
 end
 
 # Waterfox and waterfox classic put profiles in the same place, ugh.
