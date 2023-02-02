@@ -1,0 +1,75 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: dockerpasswd [options] host username [password]"
+
+  opts.on("-f", "--file=PATH", "Path to docker configuration file (defalut: ~/.docker/config.json)") do |value|
+    options[:config_path] ||= []
+    options[:config_path] << value
+  end
+
+  opts.on("-i", "Read password from standard input") do
+    options[:read_password] = true
+  end
+end.parse!
+
+config_path = options[:config_path] || File.expand_path('~/.docker/config.json')
+
+host, username, password = ARGV
+
+if host.nil?
+  raise "Host is not provided"
+end
+
+if host.empty?
+  raise "Host is empty"
+end
+
+if username.nil?
+  raise "Username is not provided"
+end
+
+if username.empty?
+  raise "Username is empty"
+end
+
+if password && options[:read_password]
+  raise "Password is provided and -i is provided"
+end
+
+if options[:read_password]
+  password = STDIN.read.strip
+end
+
+if password.nil?
+  raise "Password is not provided"
+end
+
+if password.empty?
+  raise "Password is empty"
+end
+
+require 'base64'
+require 'json'
+require 'fileutils'
+
+if File.exist?(config_path)
+  contents = JSON.parse(File.read(config_path))
+else
+  contents = {}
+end
+
+contents['auths'] ||= {}
+contents['auths'][host] ||= {
+  auth: Base64.encode64("#{username}:#{password}").strip,
+}
+
+FileUtils.mkdir_p(File.dirname(config_path))
+File.open(config_path + '.part', 'w') do |f|
+  f << JSON.dump(contents)
+end
+
+FileUtils.mv(config_path + '.part', config_path)
