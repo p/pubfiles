@@ -1,3 +1,8 @@
+## Extension Installation
+
+http://kb.mozillazine.org/Installing_extensions
+http://kb.mozillazine.org/Determine_extension_ID
+
 ## Policies
 
 https://support.mozilla.org/en-US/kb/customizing-firefox-using-policiesjson
@@ -13,7 +18,10 @@ https://stackoverflow.com/questions/49509874/how-to-update-tampermonkey-script-t
 
 https://violentmonkey.github.io/guide/creating-a-userscript/
 
-## User Chrome
+## User Chrome / UI customization
 
 https://www.howtogeek.com/334716/how-to-customize-firefoxs-user-interface-with-userchrome.css/
 https://github.com/MrOtherGuy/firefox-csshacks (also for user content css)
+https://github.com/Aris-t2/CustomCSSforFx
+https://www.userchrome.org/what-is-userchrome-css.html
+https://www-archive.mozilla.org/unix/customizing.html
