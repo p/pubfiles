@@ -1,0 +1,69 @@
+#!/usr/bin/env ruby
+
+if ARGV.empty?
+  raise "Usage: export-photos [path...]"
+end
+
+require 'fileutils'
+require 'find'
+require 'exif'
+
+sources = ARGV
+root = File.dirname(sources.first)
+
+loop do
+  if sources.all? { |src| File.dirname(src) == root }
+    break
+  end
+  
+  new_root = File.dirname(root)
+  if root == new_root
+    raise "Should not happen"
+  end
+  
+  root = new_root
+end
+
+puts "Root: #{root}"
+
+sources.each do |src|
+  rel_src = src[root.length...]
+  if rel_src.start_with?('/')
+    rel_src = rel_src[1..]
+  end
+  
+  dest = File.join('/tmp/0-sale', rel_src)
+  FileUtils.mkdir_p(dest_dir = File.dirname(dest))
+  FileUtils.cp_r(src, dest_dir, remove_destination: true)
+  
+  Find.find(dest) do |path|
+    next if File.directory?(path)
+    
+    ed = begin
+      File.open(path) do |f|
+        Exif::Data.new(f)
+      end
+    rescue Exif::NotReadable
+      next
+    end
+    
+    if ed.orientation != 1
+      unless system("mogrify -auto-orient #{path}")
+        raise "Failed to reorient #{path}"
+      end
+    else
+      puts "Orient #{path}"
+      unless system("exiv2 rm #{path}")
+        raise "Failed to remove exif data from #{path}"
+      end
+    end
+    
+    begin
+      File.open(path) do |f|
+        Exif::Data.new(f)
+      end
+      raise "Still have exif data in #{path}"
+    rescue Exif::NotReadable
+    end
+  end
+end
