@@ -99,6 +99,8 @@ install_if_needed \
   git curl wget make gcc \
   zip unzip net-tools rsync tmux python-is-python3 zstd
 
+# libglib2.0-bin: gsettings (for disabling recent files)
+
 # chromium is no longer here - use ungoogled-chromium
 if is_headful; then
   install_if_needed \
@@ -106,7 +108,7 @@ if is_headful; then
     evince gimp \
     xinit xauth openbox xsecurelock xss-lock \
     x11-xserver-utils x11-utils xserver-xorg \
-    xfonts-terminus libnss3-tools
+    xfonts-terminus libnss3-tools libglib2.0-bin
 
   if ! is_ubuntu; then
     # Does not exist in ubuntu 20.04
@@ -333,5 +335,13 @@ if test -n "$br_users"; then
       user=br-$user
     fi
     $BASE/setup-$user
+  done
+fi
+
+if is_headful; then
+  for u in me w; do
+    if id $u; then
+      su - $u -c 'gsettings set org.gnome.desktop.privacy remember-recent-files false'
+    fi
   done
 fi
