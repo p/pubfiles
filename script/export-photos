@@ -8,11 +8,13 @@ require 'fileutils'
 require 'find'
 require 'exif'
 
-sources = ARGV
+sources = ARGV.map do |path|
+  File.realpath(path)
+end
 root = File.dirname(sources.first)
 
 loop do
-  if sources.all? { |src| File.dirname(src) == root }
+  if sources.all? { |src| (File.dirname(src) + '/').start_with?(root + '/') }
     break
   end
 
@@ -22,6 +24,7 @@ loop do
   end
 
   root = new_root
+  p root
 end
 
 puts "Root: #{root}"
