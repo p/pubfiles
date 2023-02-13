@@ -323,6 +323,16 @@ fi
 
 $BASE/generate-setup-key
 
+cat <<-EOT |tee /etc/gitattributes
+*.[jJ][pP][gG] -delta
+*.[jJ][pP][eE][gG] -delta
+*.[pP][nN][gG] -delta
+*.[mM][oO][vV] -delta
+*.[mM][pP]4 -delta
+*.[zZ][iI][pP] -delta
+*.[gG][zZ] -delta
+EOT
+
 echo 'Run sensors-detect if you haven'"'"'t to load kernel modules for hardware sersors.'
 
 if test -d /opt/pubfiles; then
