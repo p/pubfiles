@@ -1,0 +1,5 @@
+#!/bin/sh
+
+set -e
+
+find "$@" -type f -exec echo gm convert -rotate -90 {} {} \;
