@@ -1,0 +1,411 @@
+#!/usr/bin/env ruby
+
+# Inspiration: https://github.com/dmelo/vswm
+
+autoload :FileUtils, 'fileutils'
+autoload :Tempfile, 'tempfile'
+autoload :JSON, 'json'
+autoload :OptionParser, 'optparse'
+#gem 'childprocess'
+autoload :ChildProcess, 'childprocess'
+
+class Error < StandardError
+end
+
+class WpaSupplicantFailed < Error
+end
+
+class InterfaceNotFound < Error
+end
+
+class NoIpAddress < Error
+end
+
+class NoDefaultGateway < Error
+end
+
+class CalledProcessError < Error
+end
+
+module Sub
+
+  module_function def uncheck_call(cmd, env: nil)
+  p cmd
+    process = ChildProcess.new(*cmd)
+    process.io.inherit!
+    if env
+      env.each do |k, v|
+        process.environment[k.to_s] = v
+      end
+    end
+    process.start
+    process.wait
+    process
+  end
+
+  module_function def check_call(cmd, env: nil)
+    process = uncheck_call(cmd, env: env)
+    check_exit_code(process, cmd)
+  end
+
+  module_function def check_output(cmd, env: nil)
+  p cmd
+    process = ChildProcess.new(*cmd)
+    process.io.inherit!
+    process.io.stdout = Tempfile.new("child-output")
+    process.io.stderr = Tempfile.new("child-error")
+    begin
+      if env
+        env.each do |k, v|
+          process.environment[k.to_s] = v
+        end
+      end
+      process.start
+      process.wait
+      check_exit_code(process, cmd)
+      process.io.stdout.rewind
+      process.io.stdout.read
+    ensure
+      process.io.stdout.close
+      process.io.stderr.close
+    end
+  end
+
+  private
+
+  module_function def format_cmd(cmd)
+    cmd.join(' ')
+  end
+
+  module_function def check_exit_code(process, cmd)
+    unless process.exit_code == 0
+      raise CalledProcessError, "Failed to execute: #{format_cmd(cmd)} (exit code #{process.exit_code})"
+    end
+  end
+end
+
+module Utils
+  module_function def monotime
+    Process.clock_gettime(Process::CLOCK_MONOTONIC)
+  end
+
+  module_function def have(basename)
+    !!path_dirs.detect do |dir|
+      File.exist?(File.join(dir, basename))
+    end
+  end
+
+  private
+
+  module_function def path_dirs
+    @path_dirs ||= ENV.fetch('PATH').split(':')
+  end
+end
+
+class Runner
+  def initialize(**opts)
+    @options = opts.dup.freeze
+  end
+
+  attr_reader :options
+
+  def ssid
+    options.fetch(:ssid)
+  end
+
+  def password
+    options[:password]
+  end
+
+  def state_dir
+    options.fetch(:state_dir)
+  end
+
+  def run
+    %w(ifdown ifup dhclient wpa_supplicant).each do |proc_name|
+      Sub.uncheck_call(['pkill', proc_name])
+    end
+
+    identify_interfaces
+    @wireless_ifname = wireless_ifnames.first
+
+    %w(ifdown ifup dhclient wpa_supplicant).each do |proc_name|
+      Sub.uncheck_call(['pkill', '-9', proc_name])
+    end
+
+    if have_ifdown = Utils.have('ifdown')
+      Sub.uncheck_call(['ifdown', wireless_ifname])
+      wired_ifnames.each do |ifname|
+        Sub.uncheck_call(['ifdown', ifname])
+      end
+    end
+
+    unblock_rfkill
+
+    start_wpa_supplicant
+
+    puts('Running dhclient')
+    Sub.check_call(['dhclient', '-v', wireless_ifname])
+
+    FileUtils.mkdir_p(state_dir)
+    path = File.join(state_dir, 'config.json')
+    config = {
+      ssid: ssid,
+      password: password,
+      interface: wireless_ifname,
+      ip: get_if_ip(wireless_ifname),
+      gateway: get_default_gateway,
+    }
+    File.open(path, 'w') do |f|
+      f << JSON.dump(config)
+    end
+  end
+
+  private
+
+  attr_reader :wired_ifnames
+  attr_reader :wireless_ifnames
+  attr_reader :wireless_ifname
+
+  def identify_interfaces
+    wireless = []
+    wired = []
+
+    output = Sub.check_output(%w(iwconfig))
+    # "no wireless extensions" lines are printed to standard error
+    output.split(/[\r\n]+/).each do |line|
+      if line =~ %r,\A(\w+),
+        ifname = $1
+        wireless << ifname
+      end
+    end
+
+    output = Sub.check_output(%w(ip -j a))
+    infos = {}
+    JSON.parse(output).each do |info|
+      if info.fetch('link_type') == 'ether'
+        ifname = info.fetch('ifname')
+        unless wireless.include?(ifname)
+          wired << ifname
+        end
+      end
+    end
+
+    @wired_ifnames = wired
+    @wireless_ifnames = wireless
+  end
+
+  def get_if_ip(ifname)
+    output = Sub.check_output(['ip', '-j', 'address', 'show', ifname])
+    result = JSON.parse(output)
+    if ai = result.first['addr_info']
+      ai = ai.first
+      unless (family = ai.fetch('family')) == 'inet'
+        raise "Unhandled family: #{family}"
+      end
+      ai.fetch('local')
+    else
+      raise NoIpAddress, "No IP address for #{ifname}"
+    end
+  end
+
+  def get_default_gateway
+    lines = Sub.check_output(%w(netstat -rn)).split("\n")
+    lines.each do |line|
+      if line.start_with?('0.0.0.0')
+        return line.split(/\s+/, 2).first
+      end
+    end
+    raise NoDefaultGateway
+  end
+
+  def unblock_rfkill
+    if Utils.have('rfkill')
+      output = Sub.check_output(%w(rfkill))
+      output.split("\n").each do |line|
+        id, type, device, soft, hard = line.strip.split(/\s+/)
+        if type == 'wlan' && soft == 'blocked'
+          puts("Unblocking rfkill")
+          Sub.check_call(['rfkill', 'unblock', id])
+        end
+      end
+    end
+  end
+
+  def start_wpa_supplicant
+    dir = '/etc/network/interfaces.d'
+    if File.exist?(dir)
+      contents = "iface #{wireless_ifname} inet dhcp\n"
+      if password
+        contents << "  wpa-ssid \"#{ssid}\"\n"
+      else
+        contents << "  wireless-essid \"#{ssid}\""
+      end
+      File.open(File.join(dir, wireless_ifname), 'w') do |f|
+        f << contents
+      end
+    end
+
+    Sub.check_call(['iwconfig', wireless_ifname, 'essid', ssid])
+
+    if password
+      contents = <<-EOT
+        ctrl_interface=/run/wpa_supplicant
+        network={
+          scan_ssid=1
+          ssid="#{ssid}"
+          key_mgmt=WPA-PSK
+          psk="#{password}"
+        }
+EOT
+      wpa_conf_path = File.join('/etc/network/wpa_supplicant.conf.d', wireless_ifname)
+      File.open(wpa_conf_path, 'w') do |f|
+        f << contents
+      end
+
+      begin
+        Sub.check_call(%w(wpa_cli status))
+      rescue CalledProcessError
+      else
+        Sub.check_call(%w(wpa_cli terminate))
+        sleep 1
+      end
+
+      puts('Starting wpa_supplicant')
+      wpa_supplicant_log_path = '/tmp/wpa_supplicant.log'
+      Sub.check_call(['wpa_supplicant', '-B',
+        '-D', 'nl80211,wext', '-i', wireless_ifname,
+        #'-f', wpa_supplicant_log_path,
+        '-c', wpa_conf_path,
+      ])
+      FileUtils.chmod(0o644, wpa_supplicant_log_path)
+
+      started_at = Utils.monotime
+      loop do
+        status = get_current_status
+
+        if status[:no_ssid]
+          raise WpaSupplicantFailed, 'ssid is off/any, bad auth to wpa supplicant?'
+        end
+
+        if status[:wpa_completed]
+          break
+        end
+
+        if (elapsed = Utils.monotime - started_at) > options.fetch(:wpa_supplicant_timeout)
+          raise WpaSupplicantFailed, "Giving up on wpa association after #{options.fetch(:wpa_supplicant_timeout)} seconds"
+        end
+
+        puts 'ssid: %s, wpa: %s, elapsed: %d' % [status[:ssid], status[:wpa_state], elapsed]
+        sleep 1
+      end
+    end
+  end
+
+  def get_current_status
+    output = Sub.check_output(['iwconfig', wireless_ifname])
+    status = {associated: false}
+    if output =~ /\bESSID:"([^"]*)"/
+      status[:ssid] = $1
+    elsif output =~ /\bESSID:([^\s]+)/
+      status[:ssid] = $1
+    end
+    if status[:ssid] == 'off/any'
+      status[:no_ssid] = true
+    end
+
+    if output =~ /Access Point: (?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}/
+      status[:associated] = true
+    end
+
+    if password
+      begin
+        output = Sub.check_output(%w(wpa_cli status))
+      rescue CalledProcessError
+      else
+        if output =~ /\bwpa_state=(\w+)/
+          status[:wpa_state] = $1
+        end
+        status[:wpa_completed] = status[:wpa_state] == 'COMPLETED'
+      end
+    end
+
+    status
+  end
+
+  def default_gw_ok?
+    output = Sub.check_output(%w(netstat -rn))
+    lines = output.split("\n").select do |line|
+      line.start_with?('0.0.0.0')
+    end
+    if lines.length > 1
+      puts "Multiple default gateways??"
+      return false
+    end
+    if lines.length == 0
+      puts "No default gateway"
+      return false
+    end
+    gw = lines.first.split(/\s+/)[1]
+    puts "Default gateway: #{gw}"
+    true
+  end
+
+  def start_dhclient
+    Sub.uncheck_call(%w(pkill dhclient))
+    Sub.check_call(['dhclient', '-v', wireless_ifname])
+  end
+end
+
+options = {
+  wpa_supplicant_timeout: 60,
+  state_dir: '/run/wireless',
+}
+OptionParser.new do |opts|
+  opts.banner = "Usage: connect-wireless [options] ssid [password]"
+
+  opts.on("-r", "--resume", "Restore configuration after wake-up") do
+    options[:resume] = true
+  end
+
+  opts.on("-k", "--keep", "Stay running to maintain specified configuration") do
+    options[:keep] = true
+  end
+
+  opts.on("-d", "--daemon", "Daemonize") do
+    options[:daemonize] = true
+  end
+
+  opts.on("-P", "--pidfile PATH", "Path to pidfile when daemonizing") do |v|
+    options[:pidfile_path] = v
+  end
+
+  opts.on("-l", "--log PATH", "Log to specified path instead of standard output") do |v|
+    options[:log_path] = v
+  end
+
+  opts.on("-t", "--wpa-supplicant-timeout TIMEOUT", "Timeout to wait for wpasupplicant") do |v|
+    options[:wpa_supplicant_timeout] = Float(v)
+  end
+
+  opts.on('--state-dir PATH', 'Path to state directory to use') do |v|
+    options[:state_dir] = v
+  end
+end.parse!
+
+ssid, password = ARGV
+if ssid.nil?
+  raise 'Usage'
+end
+
+if options[:daemonize]
+  unless options[:log_path]
+    raise "Log destination must be specified when daemonizing"
+  end
+
+  unless options[:pidfile_path]
+    raise "Pidfile path must be specified when daemonizing"
+  end
+end
+
+Runner.new(**options.merge(ssid: ssid, password: password)).run
