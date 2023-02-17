@@ -9,7 +9,14 @@ if test -z "$host"; then
   exit 1
 fi
 
-url="http://$host:3142"
+if ! echo "$host" |fgrep -q :; then
+  host="$host:3142"
+fi
+if echo "$host" |fgrep -q ://; then
+  url="$host"
+else
+  url="http://$host:3142"
+fi
 
 cat <<-EOT >/etc/apt/apt.conf.d/41-apt-cache
 Acquire::HTTP::Proxy "$url";
