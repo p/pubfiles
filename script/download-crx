@@ -17,7 +17,7 @@ require 'open-uri'
 class Downloader
   def initialize(id_or_url)
     case id_or_url
-    when %r,\Ahttps://chrome.google.com/webstore/detail/([^/]+)/([a-z0-9]+)\z,
+    when %r,\Ahttps://chrome.google.com/webstore/detail/([^/]+)/([a-z0-9]+)(?:\?[^?]+)?\z,
       @slug = $1
       @id = $2
     when %r,\A([a-z0-9]+)\z,
@@ -128,7 +128,7 @@ if __FILE__ == $0
   local_fn = "#{local_name}-#{downloader.version}.crx"
 
   puts "Saving to #{local_fn}"
-  downloader.save(local_fn, 'w')
+  downloader.save(local_fn)
 
   if options[:unpack]
     downloader.unpack(local_fn)
