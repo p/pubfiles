@@ -1,0 +1,26 @@
+#!/bin/sh
+
+set -e
+
+if test "`id -u`" != 0; then
+  if which sudo 2>/dev/null 1>&2; then
+    echo "This needs to be run as root, trying sudo" 1>&2
+    exec sudo sh -x "$0" "$@"
+  else
+    echo "This needs to be run as root" 1>&2
+    exit 2
+  fi
+fi
+
+. /etc/setup.conf
+
+if echo "$0" |grep -q /; then
+  BASE=`dirname "$0"`
+else
+  echo "Cannot determine base directory" 1>&2
+  exit 2
+fi
+
+. $BASE/common.sh
+
+install_if_needed simplescreenrecorder
