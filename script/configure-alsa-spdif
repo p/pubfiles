@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+tee /etc/modprobe.d/alsa.conf <<-EOT
+options snd-hda index=1
+options snd-hda-intel index=1
+options snd-usb-audio index=0
+EOT
