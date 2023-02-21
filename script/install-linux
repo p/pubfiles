@@ -291,6 +291,7 @@ $BASE/restore-netif-names
 
 # https://unix.stackexchange.com/questions/390184/dmesg-read-kernel-buffer-failed-permission-denied
 echo 'kernel.dmesg_restrict = 0' |tee /etc/sysctl.d/dmesg_permit.conf
+sysctl kernel.dmesg_restrict=0
 
 # sensors
 # echo level 4 > /proc/acpi/ibm/fan
