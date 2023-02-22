@@ -22,6 +22,7 @@ echo 'br_zram=<size>'
 echo 'main_user=<username>'
 echo 'br_users="<username> <username> ..."'
 echo 'wireless=true | false'
+echo 'skip_ntpd=true | false'
 echo
 
 if test -f /etc/setup.conf; then
@@ -93,8 +94,13 @@ if ! is_aws; then
   install_if_needed smartmontools
 fi
 
+if test "$skip_ntpd" != true; then
+  install_if_needed openntpd
+  openntpd -ss
+fi
+
 install_if_needed \
-  console-setup console-setup-linux openntpd openssh-server \
+  console-setup console-setup-linux openssh-server \
   zsh sudo man-db dnsutils \
   git curl wget make gcc \
   zip unzip net-tools rsync tmux python-is-python3 zstd
@@ -301,8 +307,6 @@ sysctl kernel.dmesg_restrict=0
 # https://github.com/vmatare/thinkfan/
 # https://askubuntu.com/questions/1166057/fan-constantly-running-at-full-speed
 # https://bbs.archlinux.org/viewtopic.php?id=122412
-
-openntpd -ss
 
 if test -f /etc/setup.conf; then
   value=`egrep '^[[:space:]]*tmp_zram=' /etc/setup.conf |awk -F = '{print $2}' |sed -Ee 's/[[:space:]]*#.*//'`
