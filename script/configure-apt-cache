@@ -15,7 +15,7 @@ fi
 if echo "$host" |fgrep -q ://; then
   url="$host"
 else
-  url="http://$host:3142"
+  url="http://$host"
 fi
 
 cat <<-EOT >/etc/apt/apt.conf.d/41-apt-cache
