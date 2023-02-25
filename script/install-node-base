@@ -27,5 +27,5 @@ mkdir -p $HOME/bin
 cd $HOME/bin
 
 for f in $HOME/.npm-root/bin/*; do
-  ln -s "$f"
+  ln -sf "$f"
 done
