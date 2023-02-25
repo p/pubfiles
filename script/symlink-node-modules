@@ -2,8 +2,13 @@
 
 set -e
 
+# Put a node_modules subdir in the path.
+# Without it webpack's detection of installed packages (GTFO)
+# is broken.
+
 bn=`pwd |sha1sum |awk '{print $1}'`
-path=$HOME/.node_modules/$bn
+path=$HOME/.node_modules/$bn/node_modules
 
 mkdir -p $path
-ln -fs $path node_modules
+rm -f node_modules
+ln -s $path node_modules
