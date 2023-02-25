@@ -18,9 +18,13 @@ fi
 
 echo 'prefix = ${HOME}/.npm-root' >$HOME/.npmrc
 
-curl https://www.npmjs.com/install.sh |bash
+if ! $HOME/bin/yarn -v; then
+  if ! $HOME/bin/npm -v; then
+    curl https://www.npmjs.com/install.sh |bash
+  fi
 
-$HOME/.npm-root/bin/npm install -g yarn
+  $HOME/.npm-root/bin/npm install -g yarn
+fi
 
 mkdir -p $HOME/bin
 
