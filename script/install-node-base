@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# IMPORTANT: this installation writes into current working directory.
+# Maybe it does more undesirable nonsense.
+# Do not use from a trusted user account.
+
+set -e
+
+if test `id -u` = 0; then
+  echo This script should not be run as root 1>&2
+  exit 1
+fi
+
+if test `whoami` = me; then
+  echo This script should not be run as me 1>&2
+  exit 1
+fi
+
+echo 'prefix = ${HOME}/.npm-root' >$HOME/.npmrc
+
+curl https://www.npmjs.com/install.sh |bash -x
+
+$HOME/.npm-root/bin/npm install -g yarn
+
+mkdir -p $HOME/bin
+
+cd $HOME/bin
+
+for f in $HOME/.npm-root/bin/*; do
+  ln -s "$f"
+done
