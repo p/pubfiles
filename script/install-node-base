@@ -4,7 +4,7 @@
 # Maybe it does more undesirable nonsense.
 # Do not use from a trusted user account.
 
-set -ex
+set -e
 
 if test `id -u` = 0; then
   echo This script should not be run as root 1>&2
@@ -18,7 +18,7 @@ fi
 
 echo 'prefix = ${HOME}/.npm-root' >$HOME/.npmrc
 
-curl https://www.npmjs.com/install.sh |bash -x
+curl https://www.npmjs.com/install.sh |bash
 
 $HOME/.npm-root/bin/npm install -g yarn
 
