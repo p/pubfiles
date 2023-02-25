@@ -77,8 +77,10 @@ echo Headful: `is_headful; yesno $?`
 echo Multimedia: `install_mm; yesno $?`
 echo Wireless: `yesnoauto $wireless`
 
-echo Press any key to continue
-read a
+if test "$DEBIAN_FRONTEND" != noninteractive; then
+  echo Press any key to continue
+  read a
+fi
 
 if is_devuan; then
  install_sources $BASE/../config/apt/devuan/$release/sources.list
