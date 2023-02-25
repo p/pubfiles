@@ -4,7 +4,7 @@
 # Maybe it does more undesirable nonsense.
 # Do not use from a trusted user account.
 
-set -e
+set -ex
 
 if test `id -u` = 0; then
   echo This script should not be run as root 1>&2
