@@ -2,4 +2,4 @@
 
 set -e
 
-bundle config set --local path '~/.cache/vendor/bundle'
+bundle config set --global path '~/.cache/vendor/bundle'
