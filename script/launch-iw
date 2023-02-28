@@ -32,6 +32,19 @@ end
 
 require 'etc'
 
+def run(cmd)
+  joined = cmd.join(' ')
+  puts "Executing #{joined}"
+  if pid = fork
+    Process.wait(pid)
+    if $?.exitstatus != 0
+      raise "Failed to run #{joined}: process exited with code #{$?.exitstatus}"
+    end
+  else
+    exec(*cmd)
+  end
+end
+
 target_user = options[:user] || profile
 unless target_user.start_with?('br-')
   target_user = "br-#{target_user}"
@@ -52,22 +65,21 @@ if Etc.getpwuid(Process.euid).name != target_user
     end
   else
     puts "Relaunching as #{target_user}"
+    cmd = ['sudo', '-nu', target_user, 'id']
+    run(cmd)
     auths = `xauth list`.strip.split("\n")
     auths.each do |auth|
-      cmd = %w(sudo -u) + [target_user] + %w(env) + ["XAUTHORITY=/home/#{target_user}/.Xauthority"] + %w(xauth add) + auth.split(/\s+/)
-      puts "Executing #{cmd.join(' ')}"
-      if fork
-        Process.wait
-      else
-        exec(*cmd)
-      end
+      cmd = ['sudo', '-nu', target_user,
+        'env', "XAUTHORITY=/home/#{target_user}/.Xauthority",
+        'xauth', 'add'] + auth.split(/\s+/)
+      run(cmd)
     end
     if certs = options[:ca_certs]
       certs.each do |ca_path|
         ARGV << '-c' << ca_path
       end
     end
-    cmd = %w(sudo -u) + [target_user, 'env', "XAUTHORITY=/home/#{target_user}/.Xauthority", File.realpath(File.expand_path($0))]
+    cmd = %w(sudo -nu) + [target_user, 'env', "XAUTHORITY=/home/#{target_user}/.Xauthority", File.realpath(File.expand_path($0))]
     options[:extensions]&.each do |ext|
       cmd += ['-e', ext]
     end
