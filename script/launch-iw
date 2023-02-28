@@ -2,6 +2,8 @@
 
 # https://www.ghacks.net/2016/08/14/override-firefox-add-on-signing-requirement/
 # https://firefox-source-docs.mozilla.org/mozbase/mozprofile.html
+#
+# X11 message boxes: zenity
 
 require 'optparse'
 
