@@ -3,3 +3,5 @@
 set -e
 
 echo 'allowed_users = anybody' |tee /etc/X11/Xwrapper.config
+
+usermod -aG tty me
