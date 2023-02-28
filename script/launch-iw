@@ -4,6 +4,9 @@
 # https://firefox-source-docs.mozilla.org/mozbase/mozprofile.html
 #
 # X11 message boxes: zenity
+#
+# Requirements:
+# ruby-activesupport
 
 require 'optparse'
 
