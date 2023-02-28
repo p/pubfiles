@@ -1,0 +1,5 @@
+#!/bin/sh
+
+set -e
+
+echo 'allowed_users = anybody' |tee /etc/X11/Xwrapper.config
