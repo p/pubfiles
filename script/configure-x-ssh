@@ -12,3 +12,6 @@ if test -n "$1"; then
   echo "Changing ownership of /dev/tty8 to $1"
   chown "$1" /dev/tty8
 fi
+
+# Run:
+# startx -- vt8
