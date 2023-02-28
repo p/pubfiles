@@ -51,7 +51,7 @@ sources.each do |src|
     end
 
     if ed.orientation != 1
-      unless system("mogrify -auto-orient #{path}")
+      unless system("mogrify -auto-orient \"#{path}\"")
         raise "Failed to reorient #{path}"
       end
     end
