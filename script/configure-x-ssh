@@ -2,6 +2,13 @@
 
 set -e
 
+# https://unix.stackexchange.com/questions/497204/cannot-open-virtual-console-7-permission-denied-when-trying-to-start-x-on-gent
+
 echo 'allowed_users = anybody' |tee /etc/X11/Xwrapper.config
 
-usermod -aG tty me
+#usermod -aG tty me
+
+if test -n "$1"; then
+  echo "Changing ownership of /dev/tty8 to $1"
+  chown "$1" /dev/tty8
+fi
