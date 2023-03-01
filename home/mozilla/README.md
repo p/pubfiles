@@ -1,3 +1,7 @@
+## Files
+
+https://www.waterfox.net/support/WINNT/profiles-where-waterfox-stores-user-data/
+
 ## Extension Installation
 
 http://kb.mozillazine.org/Installing_extensions
