@@ -25,3 +25,9 @@ https://github.com/MrOtherGuy/firefox-csshacks (also for user content css)
 https://github.com/Aris-t2/CustomCSSforFx
 https://www.userchrome.org/what-is-userchrome-css.html
 https://www-archive.mozilla.org/unix/customizing.html
+
+## Privacy
+
+Decentraleyes - common js rerouter extension
+
+Facebook containers/multi-container extension - interesting
