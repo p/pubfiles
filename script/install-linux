@@ -338,6 +338,7 @@ cat <<-EOT |tee /etc/gitattributes
 *.[mM][pP]4 -delta
 *.[zZ][iI][pP] -delta
 *.[gG][zZ] -delta
+*.[dD][eE][bB] -delta
 EOT
 
 echo 'Run sensors-detect if you haven'"'"'t to load kernel modules for hardware sersors.'
