@@ -42,6 +42,12 @@ def is_laptop():
     
     return False
 
+def is_headful():
+    try:
+        return config['headful']
+    except KeyError:
+        return is_laptop()
+
 config = {}
 
 if os.path.exists('/etc/setup.conf'):
@@ -55,12 +61,6 @@ if os.path.exists('/etc/setup.conf'):
             elif v == 'false':
                 v = False
             config[k] = v
-
-def is_headful():
-    try:
-        return config['headful']
-    except KeyError:
-        return is_laptop()
 
 abs_pub_root = os.path.abspath(pub_root)
 
