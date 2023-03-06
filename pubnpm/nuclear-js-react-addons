@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -e
+
+root=$HOME/tmp/repos
+name=nuclear-js-react-addons
+
+mkdir -p $root
+
+if test -d $root/$name; then
+  (cd $root/$name && git fetch origin && git checkout master && git reset --hard origin/master)
+else
+  git clone https://github.com/p/$name $root/$name
+fi
+
+(cd $root/$name && npm publish --access public "$@")
