@@ -104,7 +104,7 @@ fi
 install_if_needed \
   console-setup console-setup-linux openssh-server \
   zsh sudo man-db dnsutils \
-  git curl wget make gcc \
+  git curl wget make gcc ruby \
   zip unzip net-tools rsync tmux python-is-python3 zstd
 
 # libglib2.0-bin: gsettings (for disabling recent files)
