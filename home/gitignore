@@ -8,3 +8,4 @@ node_modules
 # openoffice lock files
 .~lock.*
 .bundle
+yarn-error.log
