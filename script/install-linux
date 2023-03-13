@@ -301,6 +301,11 @@ $BASE/restore-netif-names
 echo 'kernel.dmesg_restrict = 0' |tee /etc/sysctl.d/dmesg_permit.conf
 sysctl kernel.dmesg_restrict=0
 
+# Disable IPv6 because yarn is trying to reach IPv6 addresses and failing.
+# https://www.geeksforgeeks.org/how-to-disable-ipv6-in-linux/
+echo 'net.ipv6.conf.default.disable_ipv6 = 1' |tee /etc/sysctl.d/disable_ipv6.conf
+sysctl net.ipv6.conf.default.disable_ipv6=1
+
 # sensors
 # echo level 4 > /proc/acpi/ibm/fan
 
