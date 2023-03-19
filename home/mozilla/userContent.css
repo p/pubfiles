@@ -13,7 +13,7 @@ marquee {
 }
 
 * {
-	/* also check expanded propertsie? https://developer.mozilla.org/en-US/docs/Web/CSS/animation */
+	/* also check expanded properties? https://developer.mozilla.org/en-US/docs/Web/CSS/animation */
 	animation: none !important;
 	animation-name: none !important;
 }
