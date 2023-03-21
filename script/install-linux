@@ -103,7 +103,7 @@ fi
 
 install_if_needed \
   console-setup console-setup-linux openssh-server \
-  zsh sudo man-db dnsutils \
+  zsh sudo man-db dnsutils netcat-openbsd \
   git curl wget make gcc ruby \
   zip unzip net-tools rsync tmux python-is-python3 zstd
 
