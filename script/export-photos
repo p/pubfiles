@@ -29,6 +29,8 @@ end
 
 puts "Root: #{root}"
 
+FileUtils.rm_rf('/tmp/0-sale')
+
 sources.each do |src|
   rel_src = src[root.length...]
   if rel_src.start_with?('/')
@@ -36,7 +38,8 @@ sources.each do |src|
   end
 
   dest = File.join('/tmp/0-sale', rel_src)
-  FileUtils.mkdir_p(dest_dir = File.dirname(dest))
+  dest_dir = File.dirname(dest)
+  FileUtils.mkdir_p(dest_dir)
   FileUtils.cp_r(src, dest_dir, remove_destination: true)
 
   Find.find(dest) do |path|
