@@ -19,8 +19,11 @@ fi
 # 4.0
 #sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 9DA31620334BD75D9DCB49F368818C72E52529D4
 # 4.2
-curl -sfL https://www.mongodb.org/static/pgp/server-5.0.asc | apt-key add -
+#curl -sfL https://www.mongodb.org/static/pgp/server-5.0.asc | apt-key add -
 #curl -sfL https://www.mongodb.org/static/pgp/server-6.0.asc | apt-key add -
+
+curl -sfL https://www.mongodb.org/static/pgp/server-5.0.asc \
+  -o /etc/apt/trusted.gpg.d/mongodb-server-5.0.asc
 
 #relname=`lsb_release -sc`
 #relname=buster
