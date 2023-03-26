@@ -1,5 +1,0 @@
-#!/bin/sh
-
-#exec /opt/waterfox-classic/waterfox -no-remote -ProfileManager
-
-exec `dirname "$0"`/launch-iw /opt/waterfox-classic/waterfox ${1:-default}
