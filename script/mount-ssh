@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -e
+
+src="$1"
+dest="$2"
+
+if test -z "$dest"; then
+  echo "Usage: mount-ssh src dest" 1>&2
+  exit 1
+fi
+
+mkdir -p "$2"
+sshfs "$1" "$2"
