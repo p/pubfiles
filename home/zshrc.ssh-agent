@@ -1,5 +1,9 @@
-if test -f ~/.ssh/agent; then
-        eval `cat ~/.ssh/agent`
+AGENTRC="$HOME/.ssh/agentrc"
+
+unset SSH_AGENT_PID SSH_AUTH_SOCK
+
+if test -f "$AGENTRC"; then
+        eval `cat "$AGENTRC"`
         if test -z "$SSH_AGENT_PID" || 
           ! kill -0 $SSH_AGENT_PID || 
           ! pgrep ssh-agent |fgrep -qx $SSH_AGENT_PID
@@ -9,7 +13,7 @@ if test -f ~/.ssh/agent; then
 fi
 
 if test -z "$SSH_AGENT_PID"; then
-        ssh-agent >~/.ssh/agent
-        eval `cat ~/.ssh/agent`
+        ssh-agent >"$AGENTRC"
+        . `cat "$AGENTRC"`
 	ssh-add
 fi
