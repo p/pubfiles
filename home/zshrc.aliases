@@ -46,7 +46,15 @@ if test -n "$DISPLAY"; then
   if have pm-suspend && have lock; then
     if have xsecurelock; then
       locks() {
-        env XSECURELOCK_PASSWORD_PROMPT=asterisks XSECURELOCK_SHOW_HOSTNAME=1 XSECURELOCK_SHOW_USERNAME=1 xsecurelock -- sudo pm-suspend `get_suspend_args`
+        env XSECURELOCK_PASSWORD_PROMPT=asterisks \
+          XSECURELOCK_SHOW_HOSTNAME=1 \
+          XSECURELOCK_SHOW_USERNAME=1 \
+          xsecurelock -- sudo pm-suspend `get_suspend_args`
+        rv=$?
+        if test $rv = 0; then
+          reset
+        fi
+        return $rv
       }
     else
       locks() {
