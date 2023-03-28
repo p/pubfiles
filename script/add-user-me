@@ -23,3 +23,7 @@ fi
 if test -d /etc/sudoers.d; then
   install -m 444 `dirname $0`/../config/sudoers.d/power-mgmt /etc/sudoers.d
 fi
+
+if which bundle >/dev/null 2>&1; then
+  bundle config set --global path '~/.cache/vendor/bundle'
+fi
