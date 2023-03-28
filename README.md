@@ -35,3 +35,9 @@
 
 F11 -> Page Up
 F12 -> Page Down
+
+## Common Commands
+
+### Hold Debian Package
+
+    apt-mark hold <package>
