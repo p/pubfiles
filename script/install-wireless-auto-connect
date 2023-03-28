@@ -19,6 +19,34 @@ else
   exit 2
 fi
 
+ssid=
+psk=
+while getopts s:p: opt; do
+  case $opt in
+  s)
+    ssid="$OPTARG"
+    ;;
+  p)
+    psk="$OPTARG"
+    ;;
+  *)
+    echo "Bogus option $opt" 1>&2
+    exit 1
+    ;;
+  esac
+done
+shift $((OPTIND-1))
+
+if test -n "$psk" && test -z "$ssid"; then
+  echo "PSK provided but SSID was not" 1>&2
+  exit 1
+fi
+
+if test -n "$1"; then
+  echo "Bad usage, script does not accept positional arguments" 1>&2
+  exit 1
+fi
+
 . $BASE/script/common.sh
 
 install_if_needed python3-daemonize
@@ -33,3 +61,10 @@ else
   echo /etc/pm/sleep.d missing - not a laptop? - skipping resume configuration
 fi
 install -m 555 -t /etc/boot.d -o root -g root "$BASE"/config/boot.d/wireless-auto-connect
+
+if test -n "$ssid"; then
+  echo "wireless_ssid=$ssid" |tee -a /etc/setup.conf
+fi
+if test -n "$psk"; then
+  echo "wireless_psk=`setup_encrypt $psk`" |tee -a /etc/setup.conf
+fi
