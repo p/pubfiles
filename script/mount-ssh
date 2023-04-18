@@ -5,10 +5,22 @@ set -e
 src="$1"
 dest="$2"
 
-if test -z "$dest"; then
-  echo "Usage: mount-ssh src dest" 1>&2
+if test -z "$src"; then
+  echo "Usage: mount-ssh src [dest]" 1>&2
   exit 1
 fi
 
-mkdir -p "$2"
-sshfs "$1" "$2"
+if test -z "$dest"; then
+  if echo "$src" |egrep -q ':$'; then
+    src=`echo "$src" |tr -d :`
+  fi
+  if echo "$src" |egrep -q '[/]'; then
+    echo "Bad source spec when no destination given; must be a hostname only" 1>&2
+    exit 1
+  fi
+  dest="/mnt/`id -un`/$src"
+  src="$src":
+fi
+
+mkdir -p "$dest"
+sshfs "$src" "$dest"
