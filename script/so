@@ -7,6 +7,4 @@ if test -z "$1"; then
   exit 2
 fi
 
-name="$1"
-
-soffice --norestore "$name"
+soffice --norestore "$@"
