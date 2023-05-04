@@ -11,7 +11,7 @@ if test "$1" = -u; then
   fi
 
   apt-get build-dep scite
-  apt-get install fakeroot libgtk2.0-dev debhelper
+  apt-get install fakeroot libgtk2.0-dev debhelper liblua5.3-dev
 fi
 
 if test "`dirname "$0"`" = .; then
