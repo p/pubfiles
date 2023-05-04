@@ -143,6 +143,8 @@ if is_headful; then
   fi
 fi
 
+install_if_needed firmware-linux
+
 # USB wifi dongles need firmware
 if ! is_ubuntu; then
   # Does not exist in ubuntu 20.04
