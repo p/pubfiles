@@ -1,4 +1,0 @@
-#!/bin/sh
-
-exec `dirname "$0"`/launch-chromium \
-  -E /usr/lib/chrome-ext-ua-switcher -E /usr/share/chrome-ext-dotjs w "$@"
