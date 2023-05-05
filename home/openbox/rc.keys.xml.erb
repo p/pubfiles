@@ -1,15 +1,35 @@
   <keybind key="A-F12">
-    <action name="Execute"><command>xmmsctrl next</command></action>
+    <action name="Execute"><command>
+      sh -c '<%= mpc %> next &amp;&amp; <%= mpc %> play'
+    </command></action>
   </keybind>
   <keybind key="A-F11">
-    <action name="Execute"><command>xmmsctrl prev</command></action>
+    <action name="Execute"><command><%= mpc %> prev</command></action>
+  </keybind>
+  <keybind key="C-F12">
+    <action name="Execute"><command>
+      sh -c '<%= mpc %> seek +15 &amp;&amp; <%= mpc %> play'
+    </command></action>
+  </keybind>
+  <keybind key="C-F11">
+    <action name="Execute"><command><%= mpc %> seek -15</command></action>
+  </keybind>
+  <keybind key="C-S-F12">
+    <action name="Execute"><command>
+      sh -c '<%= mpc %> seek +30 &amp;&amp; <%= mpc %> play'
+    </command></action>
+  </keybind>
+  <keybind key="C-S-F11">
+    <action name="Execute"><command>
+      sh -c '<%= mpc %> next &amp;&amp; <%= mpc %> seek +10'
+    </command></action>
   </keybind>
   <keybind key="F12">
     <action name="Execute"><command>sh -c '
-      if xmmsctrl playing; then
-        xmmsctrl time +15
+      if test "`<%= mpc %> status %state%`" = playing; then
+        <%= mpc %> seek +15
       else
-        xmmsctrl play
+        <%= mpc %> play
       fi
     '</command></action>
   </keybind>
