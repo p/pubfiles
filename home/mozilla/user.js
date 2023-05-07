@@ -94,6 +94,8 @@ user_pref('social.enabled', false);
 // Blank page be blank
 // https://support.mozilla.org/en-US/questions/926778
 user_pref('browser.newtab.url', 'about:blank');
+// same thing in newer foxes
+user_pref('browser.newtabpage.enabled', false);
 // Disable status bar delay - this is completely retarded
 // a delay of 0 is not working?
 // also: https://bugzilla.mozilla.org/show_bug.cgi?id=632365
@@ -257,3 +259,4 @@ user_pref('toolkit.legacyUserProfileCustomizations.stylesheets', 'true');
 
 // TODO - investigate:
 user_pref('dom.workers.enabled', false);
+user_pref('dom.animations-api.core.enabled', false);
