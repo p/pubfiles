@@ -1,0 +1,23 @@
+{
+ "policies": {
+   "AppAutoUpdate": false,
+   "DisableAppUpdate":true,
+   "DisableBuiltinPDFViewer":true,
+   "DisableFeedbackCommands":true,
+   "DisableFirefoxAccounts":true,
+   "DisableFirefoxStudies":true,
+   "DisableForgetButton":true,
+   "DisablePocket":true,
+   "DisableProfileImport":true,
+   "DisableSetDesktopBackground":true,
+   "DisableSystemAddonUpdate":true,
+   "DisableTelemetry":true,
+   "DisplayBookmarksToolbar":false,
+   "DisplayMenuBar":true,
+   "DNSOverHTTPS":false,
+   "DontCheckDefaultBrowser":true,
+   "EnableTrackingProtection":true,
+   "PDFjs":false,
+   "Homepage":"about:blank"
+ }
+}
