@@ -27,3 +27,7 @@ fi
 if which bundle >/dev/null 2>&1; then
   bundle config set --global path '~/.cache/vendor/bundle'
 fi
+
+for dir in .mozilla .waterfox .config/chromium; do
+  su - me -c "mkdir -p $dir && chmod 0000 $dir"
+done
