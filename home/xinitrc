@@ -88,6 +88,7 @@ if have xss-lock && have xsecurelock; then
     XSECURELOCK_SHOW_HOSTNAME=1 \
     XSECURELOCK_SHOW_USERNAME=1 \
     XSECURELOCK_AUTH_FOREGROUND_COLOR=rgb:aa/aa/aa \
+    XSECURELOCK_DISCARD_FIRST_KEYPRESS=0 \
     xsecurelock &
 fi
 
