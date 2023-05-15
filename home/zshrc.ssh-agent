@@ -13,7 +13,23 @@ if test -f "$AGENTRC"; then
 fi
 
 if test -z "$SSH_AGENT_PID"; then
+	#rm -f "$AGENTRC"
         ssh-agent >"$AGENTRC"
-        . `cat "$AGENTRC"`
+	if false; then
+	try=0
+	while true; do
+		if test -e "$AGENTRC"; then
+			break
+		else
+			sleep 0.1
+			try=`expr $try + 1`
+			if test "$try" \> 10; then
+				echo 'Giving up on ssh agent starting' 1>&2
+				break
+			fi
+		fi
+	done
+	fi
+        eval `cat "$AGENTRC"`
 	ssh-add
 fi
