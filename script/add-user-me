@@ -31,3 +31,10 @@ fi
 for dir in .mozilla .waterfox .config/chromium; do
   su - me -c "mkdir -p $dir && chmod 0000 $dir"
 done
+
+# Normally the home directory would be created by useradd above, but if
+# /home was completely removed then user may remain without a homedir.
+if ! test -d /home/me; then
+  mkdir /home/me
+  chown me:me /home/me
+fi
