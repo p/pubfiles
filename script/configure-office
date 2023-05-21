@@ -1,0 +1,37 @@
+#!/usr/bin/env ruby
+
+require 'nokogiri'
+
+# Possibly XDG_HOME should be taken into account here?
+config_path = File.expand_path('~/.config/libreoffice/4/user/registrymodifications.xcu')
+
+base_contents = <<-EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<oor:items xmlns:oor="http://openoffice.org/2001/registry" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<item oor:path="/org.openoffice.Office.Common/Misc"><prop oor:name="FirstRun" oor:op="fuse"><value>false</value></prop></item>
+<item oor:path="/org.openoffice.Office.Common/Misc"><prop oor:name="ShowTipOfTheDay" oor:op="fuse"><value>false</value></prop></item>
+</oor:items>
+EOT
+
+if File.exist?(config_path)
+  doc = Nokogiri::XML(File.read(config_path))
+  
+  found = false
+  doc.xpath('//oor:items/item/prop[@oor:name="ShowTipOfTheDay"]').each do |prop|
+    found = true
+    prop.xpath('value').children.first.content = 'false'
+  end
+  
+  unless found
+    item = Nokogiri::XML::DocumentFragment.parse(%q~<item oor:path="/org.openoffice.Office.Common/Misc"><prop oor:name="ShowTipOfTheDay" oor:op="fuse"><value>false</value></prop></item>~)
+    doc.xpath('//oor:items').first << item
+  end
+  
+  File.open(config_path, 'w') do |f|
+    f << doc.to_s
+  end
+else
+  File.open(config_path, 'w') do |f|
+    f << base_contents
+  end
+end
