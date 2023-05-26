@@ -30,16 +30,19 @@ end
 module Sub
 
   module_function def uncheck_call(cmd, env: nil)
+    start_process(cmd, env: env).tap do |process|
+      process.wait
+    end
+  end
+
+  module_function def start_and_forward(cmd, env: nil)
     process = ChildProcess.new(*cmd)
     process.io.inherit!
-    if env
-      env.each do |k, v|
-        process.environment[k.to_s] = v
-      end
-    end
+    rd, wr = IO.pipe
+    apply_env(process, env)
     process.start
-    process.wait
-    process
+    p 1
+    p process.wait
   end
 
   module_function def check_call(cmd, env: nil)
@@ -53,11 +56,7 @@ module Sub
     process.io.stdout = Tempfile.new("child-output")
     process.io.stderr = Tempfile.new("child-error")
     begin
-      if env
-        env.each do |k, v|
-          process.environment[k.to_s] = v
-        end
-      end
+      apply_env(process, env)
       process.start
       process.wait
       check_exit_code(process, cmd)
@@ -69,7 +68,23 @@ module Sub
     end
   end
 
+  module_function def start_process(cmd, env: nil)
+    process = ChildProcess.new(*cmd)
+    process.io.inherit!
+    apply_env(process, env)
+    process.start
+    process
+  end
+
   private
+
+  module_function def apply_env(process, env)
+    if env
+      env.each do |k, v|
+        process.environment[k.to_s] = v
+      end
+    end
+  end
 
   module_function def format_cmd(cmd)
     cmd.join(' ')
@@ -271,12 +286,18 @@ EOT
 
       puts('Starting wpa_supplicant')
       wpa_supplicant_log_path = '/tmp/wpa_supplicant.log'
-      Sub.check_call(['wpa_supplicant', '-B',
+      # TODO detach from controlling terminal here
+      wpa_process = Sub.start_process(['wpa_supplicant',
         '-D', 'nl80211,wext', '-i', wireless_ifname,
         #'-f', wpa_supplicant_log_path,
         '-c', wpa_conf_path,
       ])
       FileUtils.chmod(0o644, wpa_supplicant_log_path)
+
+      Thread.new do
+        wpa_process.wait
+        @wpa_exited = true
+      end
 
       started_at = Utils.monotime
       loop do
@@ -292,6 +313,10 @@ EOT
 
         if (elapsed = Utils.monotime - started_at) > options.fetch(:wpa_supplicant_timeout)
           raise WpaSupplicantFailed, "Giving up on wpa association after #{options.fetch(:wpa_supplicant_timeout)} seconds"
+        end
+
+        if @wpa_exited
+          raise WpaSupplicantFailed, "wpa_supplicant unexpectedly terminated with exit code #{wpa_process.exit_code}"
         end
 
         puts 'ssid: %s, wpa: %s, elapsed: %d' % [status[:ssid], status[:wpa_state], elapsed]
