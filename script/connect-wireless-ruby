@@ -30,7 +30,6 @@ end
 module Sub
 
   module_function def uncheck_call(cmd, env: nil)
-  p cmd
     process = ChildProcess.new(*cmd)
     process.io.inherit!
     if env
@@ -49,7 +48,6 @@ module Sub
   end
 
   module_function def check_output(cmd, env: nil)
-  p cmd
     process = ChildProcess.new(*cmd)
     process.io.inherit!
     process.io.stdout = Tempfile.new("child-output")
