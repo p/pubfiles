@@ -191,7 +191,7 @@ class Runner
 
     FileUtils.mkdir_p(state_dir)
     path = File.join(state_dir, 'config.json')
-    config = {
+    @config = {
       ssid: ssid,
       password: password,
       interface: wireless_ifname,
@@ -199,7 +199,39 @@ class Runner
       gateway: get_default_gateway,
     }
     File.open(path, 'w') do |f|
-      f << JSON.dump(config)
+      f << JSON.dump(@config)
+    end
+
+    if options[:keep]
+      keep
+    end
+  end
+
+  def keep
+    loop do
+      get_current_state
+
+      if state[:wpa_completed]
+        sleep 3
+        next
+      end
+
+      if state[:no_ssid]
+        raise WpaSupplicantFailed, 'ssid is off/any, bad auth to wpa supplicant?'
+      end
+
+      if (elapsed = Utils.monotime - started_at) > options.fetch(:wpa_supplicant_timeout)
+        raise WpaSupplicantFailed, "Giving up on wpa association after #{options.fetch(:wpa_supplicant_timeout)} seconds"
+      end
+
+      if @wpa_exited
+        raise WpaSupplicantFailed, "wpa_supplicant unexpectedly terminated with exit code #{wpa_process.exit_code}"
+      end
+
+      puts 'ssid: %s, wpa: %s, elapsed: %d' % [state[:ssid], state[:wpa_state], elapsed]
+      sleep 3
+    rescue WpaSupplicantFailed
+      start_wpa_supplicant
     end
   end
 
@@ -331,13 +363,13 @@ EOT
 
       started_at = Utils.monotime
       loop do
-        status = get_current_status
+        get_current_state
 
-        if status[:no_ssid]
+        if state[:no_ssid]
           raise WpaSupplicantFailed, 'ssid is off/any, bad auth to wpa supplicant?'
         end
 
-        if status[:wpa_completed]
+        if state[:wpa_completed]
           break
         end
 
@@ -349,26 +381,28 @@ EOT
           raise WpaSupplicantFailed, "wpa_supplicant unexpectedly terminated with exit code #{wpa_process.exit_code}"
         end
 
-        puts 'ssid: %s, wpa: %s, elapsed: %d' % [status[:ssid], status[:wpa_state], elapsed]
+        puts 'ssid: %s, wpa: %s, elapsed: %d' % [state[:ssid], state[:wpa_state], elapsed]
         sleep 1
       end
     end
   end
 
-  def get_current_status
+  attr_reader :state
+
+  def get_current_state
     output = Sub.check_output(['iwconfig', wireless_ifname])
-    status = {associated: false}
+    state = {associated: false}
     if output =~ /\bESSID:"([^"]*)"/
-      status[:ssid] = $1
+      state[:ssid] = $1
     elsif output =~ /\bESSID:([^\s]+)/
-      status[:ssid] = $1
+      state[:ssid] = $1
     end
-    if status[:ssid] == 'off/any'
-      status[:no_ssid] = true
+    if state[:ssid] == 'off/any'
+      state[:no_ssid] = true
     end
 
     if output =~ /Access Point: (?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}/
-      status[:associated] = true
+      state[:associated] = true
     end
 
     if password
@@ -377,13 +411,13 @@ EOT
       rescue CalledProcessError
       else
         if output =~ /\bwpa_state=(\w+)/
-          status[:wpa_state] = $1
+          state[:wpa_state] = $1
         end
-        status[:wpa_completed] = status[:wpa_state] == 'COMPLETED'
+        state[:wpa_completed] = state[:wpa_state] == 'COMPLETED'
       end
     end
 
-    status
+    @state = state
   end
 
   def default_gw_ok?
