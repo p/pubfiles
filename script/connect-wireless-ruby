@@ -94,7 +94,7 @@ module Sub
     end
 
     wr.close
-    cmd_name = cmd.first
+    cmd_name = File.basename(cmd.first)
     thread = Thread.new do
       loop do
         chunk = rd.readline
@@ -306,7 +306,22 @@ class Runner
     end
   end
 
+  attr_reader :wpa_process_info
+
   def start_wpa_supplicant
+    if @wpa_process_info
+      begin
+        Process.kill(@wpa_process_info.fetch(:pid))
+      rescue SystemCallError
+      end
+      begin
+        @wpa_process_info.fetch(:thread).kill
+      rescue ThreadError
+      end
+      @wpa_process_info = nil
+    end
+    @wpa_exited = false
+
     dir = '/etc/network/interfaces.d'
     if File.exist?(dir)
       contents = "iface #{wireless_ifname} inet dhcp\n"
@@ -325,6 +340,7 @@ class Runner
     if password
       contents = <<-EOT
         ctrl_interface=/run/wpa_supplicant
+        #ap_scan=0
         network={
           scan_ssid=1
           ssid="#{ssid}"
@@ -348,16 +364,20 @@ EOT
       puts('Starting wpa_supplicant')
       wpa_supplicant_log_path = '/tmp/wpa_supplicant.log'
       # TODO detach from controlling terminal here
-      wpa_process_info = Sub.start_process_pipe(['wpa_supplicant',
+      binary = 'wpa_supplicant'
+      binary = '/home/me/apps/exp/hostap/wpa_supplicant/wpa_supplicant'
+      @wpa_process_info = Sub.start_process_pipe([binary,
         '-D', 'nl80211,wext', '-i', wireless_ifname,
         #'-f', wpa_supplicant_log_path,
-        '-c', wpa_conf_path,
+        '-c', wpa_conf_path, '-d',
       ])
       FileUtils.chmod(0o644, wpa_supplicant_log_path)
 
       Thread.new do
         pid = wpa_process_info.fetch(:pid)
-        Process.waitpid(pid)
+        exitstatus = Process.waitpid(pid)
+        wpa_process_info[:exitstatus] = $?.exitstatus
+      ensure
         @wpa_exited = true
       end
 
@@ -378,7 +398,7 @@ EOT
         end
 
         if @wpa_exited
-          raise WpaSupplicantFailed, "wpa_supplicant unexpectedly terminated with exit code #{wpa_process.exit_code}"
+          raise WpaSupplicantFailed, "wpa_supplicant unexpectedly terminated with exit code #{wpa_process_info.fetch(:exitstatus)}"
         end
 
         puts 'ssid: %s, wpa: %s, elapsed: %d' % [state[:ssid], state[:wpa_state], elapsed]
