@@ -56,7 +56,24 @@ end
 disk_infos.each do |disk, di|
   puts "#{File.basename(disk)}    #{'%10s' % di[:size]}  #{di[:model]} Serial: #{di[:serial]}"
   di[:part_infos].each do |part, pi|
-    puts "  #{File.basename(part)} #{'%10s' % pi[:size]}"
+    final_part = pi[:mapper] || part
+    status = `df -h #{final_part}`.split("\n")[1]
+    fs, size, used, avail, perc, mounted = status.split(/\s+/)
+    if fs == 'udev'
+      fs, size, used, avail, perc, mounted = nil
+    end
+    #p status
+    mapper_info = if pi[:mapper]
+      " via #{File.basename(pi[:mapper])}"
+    else
+      ''
+    end
+    mount_info = if fs
+      " -> #{mounted} #{perc} used"
+    else
+      ''
+    end
+    puts "  #{File.basename(part)} #{'%10s' % pi[:size]} #{mapper_info}#{mount_info}"
   end
 end
 
