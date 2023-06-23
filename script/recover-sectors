@@ -1,0 +1,174 @@
+#!/usr/bin/env ruby
+
+require 'daybreak'
+autoload :FileUtils, 'fileutils'
+autoload :Tempfile, 'tempfile'
+autoload :JSON, 'json'
+autoload :OptionParser, 'optparse'
+#gem 'childprocess'
+autoload :ChildProcess, 'childprocess'
+
+class Error < StandardError
+end
+
+class WpaSupplicantFailed < Error
+end
+
+class InterfaceNotFound < Error
+end
+
+class NoIpAddress < Error
+end
+
+class NoDefaultGateway < Error
+end
+
+class CalledProcessError < Error
+end
+
+module Sub
+
+  module_function def uncheck_call(cmd, env: nil)
+    start_process(cmd, env: env).tap do |process|
+      process.wait
+    end
+  end
+
+  module_function def start_and_forward(cmd, env: nil)
+    process = ChildProcess.new(*cmd)
+    process.io.inherit!
+    rd, wr = IO.pipe
+    apply_env(process, env)
+    process.start
+    p 1
+    p process.wait
+  end
+
+  module_function def check_call(cmd, env: nil)
+    process = uncheck_call(cmd, env: env)
+    check_exit_code(process, cmd)
+  end
+
+  module_function def check_output(cmd, env: nil)
+    process = ChildProcess.new(*cmd)
+    process.io.inherit!
+    process.io.stdout = Tempfile.new("child-output")
+    process.io.stderr = Tempfile.new("child-error")
+    begin
+      apply_env(process, env)
+      process.start
+      process.wait
+      check_exit_code(process, cmd)
+      process.io.stdout.rewind
+      process.io.stdout.read
+    ensure
+      process.io.stdout.close
+      process.io.stderr.close
+    end
+  end
+
+  module_function def start_process(cmd, env: nil)
+    process = ChildProcess.new(*cmd)
+    process.io.inherit!
+    apply_env(process, env)
+    process.start
+    process
+  end
+
+  module_function def start_process_pipe(cmd, env: nil)
+    rd, wr = IO.pipe
+    pid = fork do
+      rd.close
+      STDOUT.reopen(wr)
+      STDERR.reopen(wr)
+      wr.close
+
+      if env
+        env.each do |k, v|
+          ENV[k] = v
+        end
+      end
+
+      exec(*cmd)
+    end
+
+    wr.close
+    cmd_name = File.basename(cmd.first)
+    thread = Thread.new do
+      loop do
+        chunk = rd.readline
+        STDOUT << "[#{cmd_name}] #{chunk}"
+      end
+    end
+
+    {pid: pid, thread: thread}
+  end
+
+  private
+
+  module_function def apply_env(process, env)
+    if env
+      env.each do |k, v|
+        process.environment[k.to_s] = v
+      end
+    end
+  end
+
+  module_function def format_cmd(cmd)
+    cmd.join(' ')
+  end
+
+  module_function def check_exit_code(process, cmd)
+    unless process.exit_code == 0
+      raise CalledProcessError, "Failed to execute: #{format_cmd(cmd)} (exit code #{process.exit_code})"
+    end
+  end
+end
+
+options = {}
+
+OptionParser.new do |opts|
+  opts.on('--from=SRC', '-f', 'Source file/device') do |v|
+    options[:from] = v
+  end
+
+  opts.on('--to=DEST', '-t', 'Destination file/device') do |v|
+    options[:to] = v
+  end
+
+  opts.on('--list=PATH', '-l', 'Path to list of sectors to copy') do |v|
+    options[:list_path] = v
+  end
+
+  opts.on('--db=PATH', '-d', 'Path to database of copied sectors') do |v|
+    options[:db_path] = v
+  end
+end.parse!
+
+def recover(from, to, start, count)
+  proc = Sub.uncheck_call(%W(dd if=#{from} of=#{to} iseek=#{start} oseek=#{start} bs=512 count=#{count}))
+  proc.exit_code == 0
+end
+
+begin
+  db = Daybreak::DB.new(options.fetch(:db_path))
+  counter = 0
+  File.open(options.fetch(:list_path)) do |f|
+    f.each_line do |line|
+      start, count = line.strip.split(/\s+/).map { |v| Integer(v) }
+      next if count.nil? || count == 0
+      key = "#{start}:#{count}"
+      # Pass 1 - untried
+      next unless db[key].nil?
+      puts key
+      result = recover(options.fetch(:from), options.fetch(:to), start, count)
+      db[key] = result
+      counter += 1
+      #if counter % 1000 == 0
+        db.flush
+      #end
+    end
+  end
+ensure
+  db.close
+end
