@@ -26,6 +26,9 @@ disks.each do |disk|
   if status =~ /Serial [nN]umber:\s+(\S+)/
     serial = $1
   end
+  if status =~ /Device Model:\s+(.+?)\n/
+    model = $1
+  end
   disk_infos[disk] = {
     parts: parts,
     size: size,
