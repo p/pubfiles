@@ -2,10 +2,15 @@
 
 require 'yaml'
 
-disks = Dir['/dev/sd?'].sort
+disks = (Dir['/dev/sd?'] + Dir['/dev/nvme?n?']).sort
 disk_infos = {}
 disks.each do |disk|
-  parts = Dir["#{disk}?"].sort
+  pattern = if disk =~ /nvme/
+    "#{disk}p?"
+  else
+    "#{disk}?"
+  end
+  parts = Dir[pattern].sort
   status = `fdisk -l #{disk}`
   size = "#{status.split(/\s+/)[2]} #{status.split(/\s+/)[3].sub(',', '')}"
   if status =~ /Disk model: ([^\n]+)/
@@ -49,8 +54,15 @@ dms.each do |dm|
     device: device,
     label: label,
   }
-  disk_infos[device[...-1]][:part_infos][device].update(
-    mapper: dm, mapper_label: label)
+  parent = if device =~ /nvme/
+    device[...-2]
+  elsif device =~ /\bsd/
+    device[...-1]
+  else
+    raise NotImplementedError
+  end
+  m = disk_infos[parent][:part_infos][device]
+  m.update(mapper: dm, mapper_label: label)
 end
 
 disk_infos.each do |disk, di|
