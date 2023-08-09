@@ -9,6 +9,10 @@ fi
 
 url="$1"
 
+if echo "$url" |grep -q "^https://pdf1.alldatasheet.com/pdfjsview/web/viewer.html?file=//"; then
+  url=`echo "$url" |sed -e s,'^https://pdf1.alldatasheet.com/pdfjsview/web/viewer.html?file=//,https://,'`
+fi
+
 if echo "$url" |grep -q "^pdf1.alldatasheet.com/datasheet/pdf"; then
   url="https://$url"
 fi
