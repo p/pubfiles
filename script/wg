@@ -8,6 +8,11 @@ if test -z "$1"; then
 fi
 
 url="$1"
+
+if echo "$url" |grep -q "^pdf1.alldatasheet.com/datasheet/pdf"; then
+  url="https://$url"
+fi
+
 bn="`basename $url`"
 
 curl -kLH User-Agent:Mozilla/5.0 -Haccept-language:en -o "$bn" "$url"
