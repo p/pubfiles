@@ -69,7 +69,8 @@ dms.each do |dm|
 end
 
 disk_infos.each do |disk, di|
-  puts "#{File.basename(disk)}    #{'%10s' % di[:size]}  #{di[:model]} Serial: #{di[:serial]}"
+  puts
+  puts "#{File.basename(disk)}    #{'%10s' % di[:size]}  #{'%-20s' % di[:model]} Serial: #{di[:serial]}"
   di[:part_infos].each do |part, pi|
     final_part = pi[:mapper] || part
     status = `df -h #{final_part}`.split("\n")[1]
@@ -79,17 +80,18 @@ disk_infos.each do |disk, di|
     end
     #p status
     mapper_info = if pi[:mapper]
-      " via #{File.basename(pi[:mapper])}"
+      " via #{'%-21s' % File.basename(pi[:mapper])}"
     else
-      ''
+      ' ' * 26
     end
     mount_info = if fs
-      " -> #{mounted} #{perc} used"
+      " -> #{'%-20s' % mounted} #{'%4s' % perc} used"
     else
       ''
     end
     puts "  #{File.basename(part)} #{'%10s' % pi[:size]} #{mapper_info}#{mount_info}"
   end
 end
+puts
 
 #puts disk_infos.to_yaml
