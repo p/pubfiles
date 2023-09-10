@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -e
+
+if id backrun >/dev/null 2>&1; then
+  :
+else
+  useradd -m -s /bin/zsh -u 2232 backrun
+fi
+
+# Normally the home directory would be created by useradd above, but if
+# /home was completely removed then user may remain without a homedir.
+if ! test -d /home/backrun; then
+  mkdir /home/backrun
+  chown backrun:backrun /home/backrun
+fi
