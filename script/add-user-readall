@@ -1,0 +1,23 @@
+#!/bin/sh
+
+set -e
+
+groups=
+
+for group in files; do
+  if groupmod $group; then
+    groups="$groups,$group"
+  fi
+done
+if id readall >/dev/null 2>&1; then
+  usermod -s /bin/zsh -aG $groups readall
+else
+  useradd -m -s /bin/zsh -u 2225 -G $groups readall
+fi
+
+# Normally the home directory would be created by useradd above, but if
+# /home was completely removed then user may remain without a homedir.
+if ! test -d /home/readall; then
+  mkdir /home/readall
+  chown readall:readall /home/readall
+fi
