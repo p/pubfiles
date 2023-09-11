@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+mkdir -p $HOME/bin
+
+curl -sfLo $HOME/bin/yt-dlp https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp
+
+chmod +x $HOME/bin/yt-dlp
