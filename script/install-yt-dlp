@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# TODO: https://github.com/ddelange/yt
+
 set -e
 
 mkdir -p $HOME/bin
