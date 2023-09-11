@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # http://bsdpower.com/rebuild-scite-for-gtk2-on-debian-jessie/
-# Run as root: apt-get build-dep scite && apt-get install fakeroot libgtk2.0-dev
+# Run as root: apt-get build-dep scite && apt-get install fakeroot libgtk2.0-dev devscripts
 
 set -e
 
