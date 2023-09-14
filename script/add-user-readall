@@ -15,7 +15,10 @@ else
   groups="-G $groups"
 fi
 if id readall >/dev/null 2>&1; then
-  usermod -s /bin/zsh -a $groups readall
+  if test -n "$groups"; then
+    groups="-a $groups"
+  fi
+  usermod -s /bin/zsh $groups readall
 else
   useradd -m -s /bin/zsh -u 2225 $groups readall
 fi
