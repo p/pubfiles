@@ -9,17 +9,16 @@ for group in files; do
     groups="$groups,$group"
   fi
 done
-if test "$groups" = ,; then
-  groups=
-else
-  groups="-G $groups"
-fi
+groups=`echo "$groups" |sed -e s/^,//`
 if id readall >/dev/null 2>&1; then
   if test -n "$groups"; then
-    groups="-a $groups"
+    groups="-aG $groups"
   fi
   usermod -s /bin/zsh $groups readall
 else
+  if test -n "$groups"; then
+    groups="-G $groups"
+  fi
   useradd -m -s /bin/zsh -u 2225 $groups readall
 fi
 
