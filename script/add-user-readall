@@ -9,10 +9,15 @@ for group in files; do
     groups="$groups,$group"
   fi
 done
-if id readall >/dev/null 2>&1; then
-  usermod -s /bin/zsh -aG $groups readall
+if test "$groups" = ,; then
+  groups=
 else
-  useradd -m -s /bin/zsh -u 2225 -G $groups readall
+  groups="-G $groups"
+fi
+if id readall >/dev/null 2>&1; then
+  usermod -s /bin/zsh -a $groups readall
+else
+  useradd -m -s /bin/zsh -u 2225 $groups readall
 fi
 
 # Normally the home directory would be created by useradd above, but if
