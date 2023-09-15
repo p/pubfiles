@@ -53,6 +53,11 @@ dms.each do |dm|
     label = $1
   end
 
+  if device == '(null)'
+    warn "warning: dm #{dm} has null device"
+    next
+  end
+
   dm_infos[dm] = {
     device: device,
     label: label,
