@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# https://wiki.debian.org/GrubEFIReinstall
+#
+# Other resources:
+# https://blog.uncooperative.org/uefi/linux/shim/efi%20system%20partition/2014/02/06/the-efi-system-partition.html
+
+root="$1"
+
+if test -z "$root"; then
+  echo "Usage: fix-efi-partition mounted-root" 1>&2
+  exit 1
+fi
+
+if ! test -d "$root"/EFI; then
+  echo "Missing $root/EFI" 1>&2
+  exit 2
+fi
+
+cd "$root"/EFI
+
+mkdir -p boot
+cp debian/grubx64.efi boot/bootx64.efi
+
+# echo "grub-efi-amd64 grub2/force_efi_extra_removable boolean true" | sudo debconf-set-selections
