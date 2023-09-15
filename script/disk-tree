@@ -75,7 +75,7 @@ end
 
 disk_infos.each do |disk, di|
   puts
-  puts "#{File.basename(disk)}    #{'%10s' % di[:size]}  #{'%-20s' % di[:model]} Serial: #{di[:serial]}"
+  puts "#{'%-10s' % File.basename(disk)}   #{'%10s' % di[:size]}  #{'%-20s' % di[:model]} Serial: #{di[:serial]}"
   di[:part_infos].each do |part, pi|
     final_part = pi[:mapper] || part
     status = `df -h #{final_part}`.split("\n")[1]
@@ -94,7 +94,7 @@ disk_infos.each do |disk, di|
     else
       ''
     end
-    puts "  #{File.basename(part)} #{'%10s' % pi[:size]} #{mapper_info}#{mount_info}"
+    puts "  #{'%-10s' % File.basename(part)} #{'%10s' % pi[:size]} #{mapper_info}#{mount_info}"
   end
 end
 puts
