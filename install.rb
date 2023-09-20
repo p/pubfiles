@@ -69,6 +69,17 @@ class Installer
       if File.exist?('/usr/sbin/pm-suspend')
         ln_sf('/usr/sbin/pm-suspend', '~/bin/pm-suspend')
       end
+
+      # Disable recent files.
+      # https://alexcabal.com/disabling-gnomes-recently-used-file-list-the-better-way
+      # See also: https://unix.stackexchange.com/questions/74031/disable-recently-used-in-gtk-file-directory-selector
+      if have?('gsettings')
+        # TODO error checking?
+        # This probably won't work without X running either.
+        unless system("gsettings set org.gnome.desktop.privacy remember-recent-files false")
+          warn "Failed to run gsettings to turn off recent files"
+        end
+      end
     end
   end
 
