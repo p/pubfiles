@@ -3,6 +3,7 @@
 require 'optparse'
 autoload :FileUtils, 'fileutils'
 autoload :Etc, 'etc'
+autoload :ERB, 'erb'
 
 options = {}
 OptionParser.new do |opts|
@@ -51,6 +52,10 @@ class Installer
       if %w(me w).include?(Etc.getlogin)
         # xinitrc.tpl
         rm_f('~/.xinitrc')
+
+        template = File.read(File.join(File.dirname(__FILE__), 'home/xinitrc.erb'))
+        out = ERB.new(template).result(binding)
+        write_file(out, '~/.xinitrc')
       end
 
       if have?('xscreensaver')
@@ -102,7 +107,7 @@ class Installer
 
   def laptop?
     if have?('laptop-detect')
-      system('laptop')
+      system('laptop-detect')
     else
       false
     end
@@ -143,6 +148,13 @@ class Installer
       FileUtils.cp(src, dest)
     else
       FileUtils.ln_sf(src, dest)
+    end
+  end
+
+  def write_file(contents, dest)
+    dest = maybe_expand_dest(dest)
+    File.open(dest, 'w') do |f|
+      f << contents
     end
   end
 
