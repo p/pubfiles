@@ -37,8 +37,11 @@ class Installer
       install_file('home/gitignore', '~/.gitignore')
     end
 
-    install_file('home/irbrc', '~/.irbrc')
-    install_file('home/gemrc', '~/.gemrc')
+    if have?('ruby')
+      install_file('home/irbrc', '~/.irbrc')
+      install_file('home/gemrc', '~/.gemrc')
+      install_file('home/bundle/config', '~/.bundle/config')
+    end
 
     if headful?
       mkdir_p('~/.config/gtk-2.0')
