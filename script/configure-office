@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'nokogiri'
+autoload :FileUtils, 'fileutils'
 
 # Possibly XDG_HOME should be taken into account here?
 config_path = File.expand_path('~/.config/libreoffice/4/user/registrymodifications.xcu')
@@ -10,27 +11,46 @@ base_contents = <<-EOT
 <oor:items xmlns:oor="http://openoffice.org/2001/registry" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 <item oor:path="/org.openoffice.Office.Common/Misc"><prop oor:name="FirstRun" oor:op="fuse"><value>false</value></prop></item>
 <item oor:path="/org.openoffice.Office.Common/Misc"><prop oor:name="ShowTipOfTheDay" oor:op="fuse"><value>false</value></prop></item>
+<!-- Autocompletion in calc -->
+<!-- https://ask.libreoffice.org/t/how-can-i-disable-autocomplete-in-calc/7441 -->
+<item oor:path="/org.openoffice.Office.Calc/Input"><prop oor:name="AutoInput" oor:op="fuse"><value>false</value></prop></item>
 </oor:items>
 EOT
 
+settings = [
+  ["/org.openoffice.Office.Common/Misc", 'ShowTipOfTheDay', 'false'],
+  ["/org.openoffice.Office.Calc/Input", 'AutoInput', 'false'],
+]
+
 if File.exist?(config_path)
+  warn "Modifying #{config_path}"
+
   doc = Nokogiri::XML(File.read(config_path))
-  
-  found = false
-  doc.xpath('//oor:items/item/prop[@oor:name="ShowTipOfTheDay"]').each do |prop|
-    found = true
-    prop.xpath('value').children.first.content = 'false'
+
+  settings.each do |setting_path, setting_name, new_value|
+    found = false
+    doc.xpath(%Q,//oor:items/item/prop[@oor:name="#{setting_name}"],).each do |prop|
+      found = true
+      prop.xpath('value').children.first.content = new_value
+    end
+
+    unless found
+      item = Nokogiri::XML::DocumentFragment.parse(%Q~
+        <item oor:path="#{setting_path}">
+          <prop oor:name="#{setting_name}" oor:op="fuse">
+            <value>#{new_value}</value></prop></item>
+        ~)
+      doc.xpath('//oor:items').first << item
+    end
   end
-  
-  unless found
-    item = Nokogiri::XML::DocumentFragment.parse(%q~<item oor:path="/org.openoffice.Office.Common/Misc"><prop oor:name="ShowTipOfTheDay" oor:op="fuse"><value>false</value></prop></item>~)
-    doc.xpath('//oor:items').first << item
-  end
-  
+
   File.open(config_path, 'w') do |f|
     f << doc.to_s
   end
 else
+  warn "Creating #{config_path}"
+
+  FileUtils.mkdir_p(File.dirname(config_path))
   File.open(config_path, 'w') do |f|
     f << base_contents
   end
