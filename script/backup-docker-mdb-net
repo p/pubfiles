@@ -1,0 +1,26 @@
+#!/bin/sh
+
+set -e
+
+IMAGE=mongo:5.0
+
+dest="$1"
+
+if test -z "$dest"; then
+  echo "Usage: `basename "$0"` dest-dir" 1>&2
+  exit 1
+fi
+
+dest=`realpath "$dest"`
+if ! test -e "$dest"; then
+  echo "Creating $dest"
+  mkdir -p $dest
+else
+  echo "$dest already exists, backup may have extra files in it"
+fi
+
+my_id=`id -u`
+
+docker run --network mdb-net \
+  --mount type=bind,src="$dest",dst=/mnt/dump-out \
+  $IMAGE bash -c 'mongodump -h mdb --out /mnt/dump-out; rv=$?; chown -R '$my_id:$my_id' /mnt/dump-out; exit $rv'
