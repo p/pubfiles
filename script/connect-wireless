@@ -125,7 +125,10 @@ def get_current_status(interface, wpa_supplicant=False):
     match = re.search(r'\bESSID:"([^"]*)"', output)
     if not match:
         match = re.search(r'\bESSID:([^\s]*)', output)
-    status['network'] = match.group(1)
+    if match:
+      status['network'] = match.group(1)
+    else:
+      status['network']='off/any'
     status['no_network'] = status['network'] == 'off/any'
     if re.search(r'Access Point: (?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}', output):
         status['associated'] = True
