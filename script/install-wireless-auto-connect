@@ -60,6 +60,7 @@ if test -d /etc/pm/sleep.d; then
 else
   echo /etc/pm/sleep.d missing - not a laptop? - skipping resume configuration
 fi
+mkdir -p /etc/boot.d
 install -m 555 -t /etc/boot.d -o root -g root "$BASE"/config/boot.d/wireless-auto-connect
 
 if test -n "$ssid"; then
