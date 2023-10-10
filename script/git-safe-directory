@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# Git wrapper to work around the same-ownership checks
+# (see Git commits 8959555cee7ec045958f9b6dd62e541affb7e7d9 and
+# 3b0bf2704980b1ed6018622bdf5377ec22289688).
+# The only bypass of these checks implemented in Git is per-directory,
+# which is a great hassle when working as root on a machine that uses git
+# for various purposes.
+#
+# This scripts executes git commands as the user owning the current directory
+# if the current user is root.
+#
+# This script is currently not intended to be a replacement for the `git'
+# command.
+
+set -e
+
+if test `id -u` = 0 && test `stat -c %u .` != 0; then
+  sudo -u "`stat -c %U .`" git "$@"
+else
+  git "$@"
+fi
