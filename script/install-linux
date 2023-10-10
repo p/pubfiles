@@ -370,3 +370,12 @@ if is_headful; then
     fi
   done
 fi
+
+mkdir -p /root/bin
+if test -e /root/.zshrc; then
+  if ! diff /root/.zshrc $BASE/../home/zshrc.root /root/.zshrc; then
+    echo "warning: /root/.zshrc exists and differs from $BASE/../home/zshrc.root /root/.zshrc, leaving alone" 1>&2
+  fi
+else
+  install -m 555 $BASE/../home/zshrc.root /root/.zshrc
+fi
