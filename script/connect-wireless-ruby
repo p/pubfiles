@@ -371,7 +371,9 @@ EOT
         #'-f', wpa_supplicant_log_path,
         '-c', wpa_conf_path, '-d',
       ])
-      FileUtils.chmod(0o644, wpa_supplicant_log_path)
+      if File.exist?(wpa_supplicant_log_path)
+        FileUtils.chmod(0o644, wpa_supplicant_log_path)
+      end
 
       Thread.new do
         pid = wpa_process_info.fetch(:pid)
