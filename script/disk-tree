@@ -42,6 +42,7 @@ dms = Dir['/dev/mapper/*'].sort
 dm_infos = {}
 dms.each do |dm|
   next if File.basename(dm) == 'control'
+  dev_num = File.basename(File.readlink(dm))
   status = `cryptsetup status #{dm}`
   if status =~ /device:\s+(\S+)/
     device = $1
@@ -61,6 +62,7 @@ dms.each do |dm|
   dm_infos[dm] = {
     device: device,
     label: label,
+    device_num: dev_num,
   }
   parent = if device =~ /nvme/
     device[...-2]
@@ -70,12 +72,12 @@ dms.each do |dm|
     raise NotImplementedError
   end
   m = disk_infos[parent][:part_infos][device]
-  m.update(mapper: dm, mapper_label: label)
+  m.update(mapper: dm, mapper_label: label, mapper_device_num: dev_num)
 end
 
 disk_infos.each do |disk, di|
   puts
-  puts "#{'%-10s' % File.basename(disk)}   #{'%10s' % di[:size]}  #{'%-20s' % di[:model]} Serial: #{di[:serial]}"
+  puts "#{'%-10s' % File.basename(disk)}   #{'%10s' % di[:size]}  #{'%-20s' % di[:model]}      Serial: #{di[:serial]}"
   di[:part_infos].each do |part, pi|
     final_part = pi[:mapper] || part
     status = `df -h #{final_part}`.split("\n")[1]
@@ -85,9 +87,9 @@ disk_infos.each do |disk, di|
     end
     #p status
     mapper_info = if pi[:mapper]
-      " via #{'%-21s' % File.basename(pi[:mapper])}"
+      " via #{'%-21s' % File.basename(pi[:mapper])} (#{pi[:mapper_device_num]})"
     else
-      ' ' * 26
+      ' ' * 33
     end
     mount_info = if fs
       " -> #{'%-20s' % mounted} #{'%4s' % perc} used"
