@@ -155,6 +155,8 @@ class Installer
   def install_file(src, dest)
     src = maybe_expand_src(src)
     dest = maybe_expand_dest(dest)
+    dest_dir = File.dirname(dest)
+    FileUtils.mkdir_p(dest_dir)
     if options[:copy]
       FileUtils.cp(src, dest)
     else
