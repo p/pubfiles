@@ -116,7 +116,7 @@ if is_headful; then
     evince gimp \
     xinit xauth openbox xsecurelock xss-lock \
     x11-xserver-utils x11-utils xserver-xorg \
-    xfonts-terminus libnss3-tools libglib2.0-bin
+    xfonts-terminus fonts-terminus-otb libnss3-tools libglib2.0-bin
 
   if ! is_ubuntu; then
     # Does not exist in ubuntu 20.04
