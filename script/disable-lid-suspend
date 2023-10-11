@@ -35,6 +35,7 @@ EOT
   # /proc/acpi/wakeup.
   # It'll succeed on the first invocation since boot.
   /etc/boot.d/disable-lid-switch || true
+  done=true
 fi
 
 if test -f $devuan_logind_path; then
