@@ -2,6 +2,8 @@
 
 # disable sleep on lid close
 # https://unix.stackexchange.com/questions/307497/gnome-disable-sleep-on-lid-close
+# https://unix.stackexchange.com/questions/389603/how-to-ignore-lid-switch-action
+# https://dev1galaxy.org/viewtopic.php?id=2021
 
 set -e
 
@@ -19,6 +21,21 @@ if test "`id -u`" != 0; then
 fi
 
 done=false
+
+if test -f /proc/acpi/wakeup; then
+  dev=$(grep ^LID /proc/acpi/wakeup |awk '{print $4}' |sed -e s/platform://)
+  mkdir -p /etc/boot.d
+  cat <<-EOT >/etc/boot.d/disable-lid-switch
+#!/bin/sh
+echo $dev |tee /sys/bus/acpi/drivers/button/unbind
+EOT
+  chmod +x /etc/boot.d/disable-lid-switch
+  # This command will fail on second and subsequent invocations for the same
+  # device, even though the device remains shown as "enabled" in
+  # /proc/acpi/wakeup.
+  # It'll succeed on the first invocation since boot.
+  /etc/boot.d/disable-lid-switch || true
+fi
 
 if test -f $devuan_logind_path; then
   logind_path=$devuan_logind_path
