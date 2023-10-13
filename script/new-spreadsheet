@@ -1,6 +1,33 @@
 #!/bin/sh
 
-set -x
+set -e
+
+force=false
+program=soffice
+
+while getopts fgh opt; do
+  case $opt in
+  f)
+    force=true;;
+  g)
+    program=gnumeric;;
+  h)
+    echo "Usage: `basename $0` [-fgh]"
+    echo
+    echo "Options:"
+    echo
+    echo "-f    If file exists, replace it with a new file"
+    echo "-g    Open gnumeric instead of soffice"
+    echo "-h    This help text"
+    exit
+    ;;
+  *)
+    echo "Bogus option $opt" 1>&2
+    exit 1
+    ;;
+  esac
+done
+shift $((OPTIND-1))
 
 if test -z "$1"; then
   echo "Usage: `basename $0` path" 1>&2
@@ -10,9 +37,53 @@ fi
 name="$1"
 
 if ! basename "$name" |fgrep .; then
-  echo "Adjusting $name to $name.ods"
+  echo "Notice: Adjusting $name to $name.ods" 1>&2
   name="$name.ods"
 fi
 
+made=false
+
+if test -f "$name"; then
+  if ! $force; then
+    made=true
+    echo "Notice: $name already exists, use -f to overwrite" 1>&2
+  fi
+fi
+
+if ! $made; then
+  tmpdir=`mktemp -d`
+  
+  if ! which zip >/dev/null 2>&1; then
+    echo "Error: zip utility missing" 1>&2
+    exit 1
+  fi
+  
+  printf application/vnd.oasis.opendocument.spreadsheet >"$tmpdir"/mimetype
+  cat <<-EOT >"$tmpdir"/content.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0">
+</office:document-content>
+EOT
+  mkdir "$tmpdir"/META-INF
+cat <<-EOT >"$tmpdir"/META-INF/manifest.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0">
+ <manifest:file-entry manifest:full-path="/" manifest:media-type="application/vnd.oasis.opendocument.spreadsheet"/>
+ <manifest:file-entry manifest:full-path="content.xml" manifest:media-type="text/xml"/>
+</manifest:manifest>
+EOT
+
+  (cd "$tmpdir" && zip -r out .)
+  mv "$tmpdir"/out.zip "$name"
+  
+  rm -rf "$tmpdir"
+fi
+
 touch "$name"
-soffice --calc --norestore "$name"
+if test $program = gnumeric; then
+  cmd="gnumeric"
+else
+  cmd="soffice --calc --norestore"
+fi
+
+exec $cmd "$name"
