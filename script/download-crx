@@ -52,30 +52,50 @@ class Downloader
     end
   end
 
-  def manifest_data
-    @manifest_data ||= begin
-      io = StringIO.new(zip_contents)
+  def extract_contents(path)
+    io = StringIO.new(zip_contents)
 
-      manifest = nil
-      Zip::File.open_buffer(io) do |zip_file|
-        zip_file.each do |entry|
-          if entry.name == 'manifest.json'
-            manifest = JSON.load(entry.get_input_stream)
-            break
+    Zip::File.open_buffer(io) do |zip_file|
+      zip_file.each do |entry|
+        if entry.name == path
+          if block_given?
+            return yield entry.get_input_stream
+          else
+            return entry.get_input_stream.read
           end
         end
       end
+    end
 
-      if manifest.nil?
-        raise "Couldn't read manifest"
+    raise "Not present in archive: #{path}"
+  end
+
+  def manifest_data
+    @manifest_data ||= begin
+      extract_contents('manifest.json') do |io|
+        JSON.load(io)
       end
-
-      manifest
     end
   end
 
   def name_from_package
-    manifest_data.fetch('name').gsub(/[^\w]/, '-').gsub(/--+/, '-').sub(/\A-/, '').sub(/-\z/, '')
+    name = manifest_data.fetch('name').gsub(/[^\w]/, '-').gsub(/--+/, '-').sub(/\A-/, '').sub(/-\z/, '')
+    if name =~ /\A__MSG_(\w+)__\z/
+      key = $1
+      en_messages.fetch(key).fetch('message')
+    end
+  end
+
+  def fs_name_from_package
+    name_from_package.gsub(/[^-a-zA-Z0-9]/, '_')
+  end
+
+  def en_messages
+    @messages_data ||= begin
+      extract_contents('_locales/en/messages.json') do |io|
+        JSON.load(io)
+      end
+    end
   end
 
   def version
@@ -124,7 +144,7 @@ if __FILE__ == $0
   downloader = Downloader.new(url_or_id)
   puts "Downloaded #{downloader.contents.length} bytes"
 
-  local_name = options[:name] || downloader.name_from_package
+  local_name = options[:name] || downloader.fs_name_from_package
   local_fn = "#{local_name}-#{downloader.version}.crx"
 
   puts "Saving to #{local_fn}"
