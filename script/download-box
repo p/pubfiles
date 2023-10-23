@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+
+require 'shellwords'
+require 'net/http'
+require 'json'
+
+request = ARGV.shift || STDIN.read
+
+if request =~ /\A\s*fetch\("([^"]+)",((?:.|\n)+)\);\s*\z/
+  url, opts = $1, $2
+  opts = JSON.parse(opts)
+  headers = opts.fetch('headers')
+else
+  raise 'Bad request, should be nodejs fetch'
+end
+
+puts "Get #{url}"
+res = Net::HTTP.get(URI(url), headers)
+begin
+  doc = JSON.parse(res)
+rescue JSON::ParserError => exc
+  raise "Error parsing response: #{exc.class}: #{exc}: #{res}"
+end
+if doc['result'] != 'success'
+  raise "Bad response: #{res}"
+end
+dl_url = doc.fetch('download_url')
+
+puts "Dowloading #{dl_url}"
+cmd = "wget --content-disposition #{Shellwords.escape(dl_url)}"
+exec(cmd)
