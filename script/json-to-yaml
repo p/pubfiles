@@ -1,0 +1,39 @@
+#!/usr/bin/env ruby
+
+autoload :FileUtils, 'fileutils'
+autoload :JSON, 'json'
+autoload :YAML, 'yaml'
+require 'optparse'
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: json-to-yaml [-w ext] path..."
+
+  opts.on("--write=EXT", "-w", "Save to YAML files with specified extension EXT") do |v|
+    options[:write] = v
+  end
+end.parse!
+
+if ARGV.empty?
+  content = JSON.load(STDIN.read)
+  puts YAML.dump(content)
+else
+  ARGV.each do |path|
+    content = File.open(path, 'rb') do |f|
+      JSON.load(f)
+    end
+
+    result = YAML.dump(content)
+
+    if ext = options[:write]
+      out_path = path.sub(/\.json/, '') + '.' + ext
+      File.open(out_path + '.tmp', 'wb') do |f|
+        f << result
+      end
+
+      FileUtils.mv(path + '.tmp', path)
+    else
+      puts result
+    end
+  end
+end
