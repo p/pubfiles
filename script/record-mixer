@@ -1,0 +1,45 @@
+#!/bin/sh
+
+set -e
+
+mixer=
+rate=
+
+while getopts amr: opt; do
+  case $opt in
+  a)
+    mixer=alesis
+    ;;
+  A)
+    mixer=mackie
+    ;;
+  r)
+    rate="$OPTARG"
+    ;;
+  *)
+    echo "Bogus option $opt" 1>&2
+    exit 10
+    ;;
+  esac
+done
+shift $((OPTIND-1))
+
+if test -z "$mixer"; then
+fi
+
+if test -z "$rate"; then
+  rate=48000
+fi
+
+case "$mixer" in
+alesis)
+  # 44100 & 48000 sample rates are supported.
+  ffmpeg -f alsa -sample_rate "$rate" -i hw:1 "$@"
+mackie)
+  ffmpeg -f alsa -sample_rate "$rate" -acodec pcm_s32le -channels 32  -i hw:1 "$@"
+  ;;
+*)
+  echo "Bogus mixer $mixer" 1>&2
+  exit 2
+  ;;
+esac
