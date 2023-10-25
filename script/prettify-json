@@ -13,20 +13,25 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-ARGV.each do |path|
-  content = File.open(path, 'rb') do |f|
-    JSON.load(f)
-  end
-  
-  result = JSON.pretty_generate(content)
-  
-  if options[:inplace]
-    File.open(path + '.tmp', 'wb') do |f|
-      f << result
+if ARGV.empty?
+  content = JSON.load(STDIN.read)
+  puts JSON.pretty_generate(content)
+else
+  ARGV.each do |path|
+    content = File.open(path, 'rb') do |f|
+      JSON.load(f)
     end
-    
-    FileUtils.mv(path + '.tmp', path)
-  else
-    puts result
+
+    result = JSON.pretty_generate(content)
+
+    if options[:inplace]
+      File.open(path + '.tmp', 'wb') do |f|
+        f << result
+      end
+
+      FileUtils.mv(path + '.tmp', path)
+    else
+      puts result
+    end
   end
 end
