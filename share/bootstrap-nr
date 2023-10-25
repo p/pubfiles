@@ -6,7 +6,8 @@ apt-get install curl
 
 curl https://raw.githubusercontent.com/p/pubfiles/master/script/configure-apt-no-recommends | sh
 
-apt-get install git python-is-python3 console-setup console-setup-linux
+apt-get install git python-is-python3 console-setup console-setup-linux \
+  ruby ruby-childprocess openssh-server
 
 mkdir -p /usr/libexec/pubfiles
 
