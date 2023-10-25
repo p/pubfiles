@@ -4,20 +4,86 @@ set -e
 
 # https://www.reddit.com/r/openbsd/comments/ived5q/solved_a_few_issues_recording_sound_audio_using/
 
-pulse=true
+audio_sys=
+audio_only=false
+use_dsnoop=false
 
-if $pulse; then
-  backend=pulse
-  device=`pacmd list-sources |grep name: |fgrep -v '.monitor>' |awk '{print $2}' |tr -d '<>'`
-else
-  backend=alsa
-  device=hw:0
+while getopts aAs opt; do
+  case $opt in
+  a)
+    audio_sys=alsa
+    ;;
+  A)
+    audio_only=true
+    ;;
+  s)
+    use_dsnoop=true
+    ;;
+  *)
+    echo "Bogus option $opt" 1>&2
+    exit 10
+    ;;
+  esac
+done
+shift $((OPTIND-1))
+
+if test -z "$audio_sys" && which pacmd >/dev/null 2>&1; then
+  echo Using pulseaudio
+  audio_sys=pulse
 fi
 
-ffmpeg  -video_size `xdpyinfo|grep dimensions:|head -1 |awk '{print $2}'` \
-  -framerate 30 \
-  -f x11grab -i :0.0+0,0 \
-  -f $backend -ac 2 -i $device \
-  -c:v libx264rgb -crf 0 -preset ultrafast -color_range 2 \
+if test $audio_sys = pulse; then
+  audio_backend=pulse
+  audio_device=`pacmd list-sources |grep name: |fgrep -v '.monitor>' |awk '{print $2}' |tr -d '<>'`
+else
+  audio_backend=alsa
+  if $use_dsnoop; then
+    audio_device=dsnooped
+  else
+    audio_device=hw:0
+  fi
+fi
+
+video_args=
+if ! $audio_only; then
+  xdpyinfo >/dev/null
+  video_input="-video_size `xdpyinfo|grep dimensions:|head -1 |awk '{print $2}'` \
+    -framerate 30 \
+    -f x11grab -i :0.0+0,0"
+  video_processing="-c:v libx264rgb -crf 0 -preset ultrafast -color_range 2"
+fi
+
+exec ffmpeg $video_input \
+  -f $audio_backend -ac 2 -i $audio_device \
+  $video_processing \
   -c:a pcm_s16le \
   "$@"
+
+exit
+
+dsnoop configuration (/etc/asound.conf):
+
+pcm.dsnooped {
+    type dsnoop
+    slave {
+        pcm "hw:0,0" 
+        channels 2 
+    }
+    ipc_key 1024
+}
+
+
+pcm.!default
+{
+    type asym
+    playback.pcm
+    {
+        type plug
+        slave.pcm "dmix"
+    }
+    capture.pcm
+    {
+        type plug
+        slave.pcm "dsnooped"
+    }
+}
