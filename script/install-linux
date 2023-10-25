@@ -131,7 +131,7 @@ if is_headful; then
   fi
 
   if install_mm; then
-    install_if_needed mpv alsa-utils youtube-dl
+    install_if_needed mpv alsa-utils yt-dlp
     # mplayer does not always exist
     install_if_needed mplayer || true
   fi
