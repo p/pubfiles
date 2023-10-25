@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -e
+
+groups=audio,video
+if id zoom >/dev/null 2>&1; then
+  usermod -s /bin/zsh -aG $groups zoom
+else
+  useradd -m -s /bin/zsh -u 2531 -G $groups zoom
+fi
+
+if test -d /etc/sudoers.d; then
+  if id me >/dev/null 2>&1; then
+    install -m 444 `dirname $0`/../config/sudoers.d/zoom-me /etc/sudoers.d
+  fi
+fi
