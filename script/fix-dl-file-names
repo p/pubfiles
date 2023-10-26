@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+
+require 'find'
+require 'fileutils'
+
+start = ARGV.shift || '.'
+
+Find.find(start) do |path|
+  bn = File.basename(path)
+  dn = File.dirname(path)
+  fixed = bn.gsub('%20', '_')
+  if bn != fixed
+    puts path
+    FileUtils.mv(path, File.join(dn, fixed))
+  end
+end
