@@ -30,6 +30,8 @@ end
 puts "Root: #{root}"
 
 FileUtils.rm_rf('/tmp/0-sale')
+index = 0
+TEMPLATE = 'img-%03d'
 
 sources.each do |src|
   rel_src = src[root.length...]
@@ -40,7 +42,11 @@ sources.each do |src|
   dest = File.join('/tmp/0-sale', rel_src)
   dest_dir = File.dirname(dest)
   FileUtils.mkdir_p(dest_dir)
-  FileUtils.cp_r(src, dest_dir, remove_destination: true)
+  ext = File.basename(src).sub(/.*\./, '')
+  dest_bn = (TEMPLATE % index) + '.' + ext
+  index += 1
+  dest_path = File.join(dest_dir, dest_bn)
+  FileUtils.cp_r(src, dest_path, remove_destination: true)
 
   Find.find(dest) do |path|
     next if File.directory?(path)
