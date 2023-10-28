@@ -373,7 +373,7 @@ fi
 
 mkdir -p /root/bin
 if test -e /root/.zshrc; then
-  if ! diff /root/.zshrc $BASE/../home/zshrc.root /root/.zshrc; then
+  if ! diff -q /root/.zshrc $BASE/../home/zshrc.root; then
     echo "warning: /root/.zshrc exists and differs from $BASE/../home/zshrc.root /root/.zshrc, leaving alone" 1>&2
   fi
 else
