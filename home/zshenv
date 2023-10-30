@@ -21,3 +21,7 @@ export LC_ALL=C.UTF-8
 export LANG=C.UTF-8
 
 export FILTER_BRANCH_SQUELCH_WARNING=1
+
+# Prevent bundler from installing versions of itself and re-execing them.
+# For pre-2.5 bundlers (2.3, 2.4).
+export BUNDLER_VERSION=99
