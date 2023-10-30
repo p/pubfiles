@@ -2,4 +2,8 @@
 BUNDLE_PATH: "~/.cache/vendor/bundle"
 BUNDLE_DISABLE_VERSION_CHECK: true
 BUNDLE_IGNORE_FUNDING_REQUESTS: true
-
+# This is meant to stop autoswitching & self version management.
+# I think this would take effect as of bundler 2.5?
+# For 2.4 and 2.3 set BUNDLER_VERSION=number in environment.
+# Which number should be used is unclear, both 1 and 99 seem to work.
+BUNDLE_VERSION: system
