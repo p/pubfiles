@@ -1,2 +1,5 @@
 ---
 BUNDLE_PATH: "~/.cache/vendor/bundle"
+BUNDLE_DISABLE_VERSION_CHECK: true
+BUNDLE_IGNORE_FUNDING_REQUESTS: true
+
