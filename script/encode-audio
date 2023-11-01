@@ -1,0 +1,35 @@
+#!/bin/sh
+
+set -e
+
+src="$1"
+
+if test -z "$src"; then
+  echo `basename $0` src 1>&2
+  exit 1
+fi
+
+# https://stackoverflow.com/questions/5618363/is-there-a-way-to-use-ffmpeg-to-determine-the-encoding-of-a-file-before-transcod
+
+info=`ffprobe -show_streams "$src"`
+if test $? != 0; then
+  echo ffprobe failed, bad file? 1>&2
+  exit 2
+fi
+
+if echo "$info" |grep -q channels=2; then
+  echo
+  echo "2 channels, assuming Alesis output"
+  
+  name="`basename "$src" |sed -e 's/\.wav$//'`"
+  echo "Will encode to 225 & 175 kbps mp3 to $name-225.mp3 and $name-175.mp3"
+  echo "Press Enter to continue"
+  read x
+  echo continuing
+  
+  ffmpeg -i "$src" -codec:a libmp3lame  -qscale:a 1 "$name"-225.mp3
+  ffmpeg -i "$src" -codec:a libmp3lame  -qscale:a 3 "$name"-175.mp3
+else
+  echo "Unhandled path" 1>&2
+  exit 3
+fi
