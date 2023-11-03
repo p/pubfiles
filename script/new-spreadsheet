@@ -59,9 +59,20 @@ if ! $made; then
   fi
   
   printf application/vnd.oasis.opendocument.spreadsheet >"$tmpdir"/mimetype
+  
+  # LibreOffice does not require anything in <office:document-content/>.
+  # Gnumeric requires one <table:table/>, if no tables are present
+  # it doesn't consider the file as having been loaded (prompts to save to
+  # a new file) and starts with "Sheet2" rather than "Sheet1".
   cat <<-EOT >"$tmpdir"/content.xml
 <?xml version="1.0" encoding="UTF-8"?>
-<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0">
+<office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0">
+  <office:body>
+    <office:spreadsheet>
+      <table:table table:name="Sheet1" table:print="true">
+      </table:table>
+    </office:spreadsheet>
+  </office:body>
 </office:document-content>
 EOT
   mkdir "$tmpdir"/META-INF
