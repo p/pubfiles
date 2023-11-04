@@ -6,6 +6,39 @@ require 'find'
 require 'fileutils'
 require 'mongo'
 
+class InsertThread
+  def initialize(coll, insert_queue, done_queue)
+    @coll, @insert_queue = coll, insert_queue
+    @done_queue = done_queue
+  end
+
+  attr_reader :coll, :insert_queue
+  attr_reader :done_queue
+
+  def start
+    Thread.new do
+      loop do
+        batch = []
+        loop do
+          batch << insert_queue.pop(true)
+          break if batch.length > 100
+        rescue ThreadError
+          break
+        end
+
+        if batch.empty?
+          sleep 1
+        else
+          coll.insert_many(batch)
+          STDOUT << "i#{batch.length} "
+        end
+
+        break if insert_queue.empty? && !done_queue.empty?
+      end
+    end
+  end
+end
+
 class Processor
   def initialize(start)
     @start = start
@@ -19,6 +52,10 @@ class Processor
 
   def coll
     @coll ||= db_client[:files]
+  end
+
+  def dir_coll
+    @dir_coll ||= db_client[:dirs]
   end
 
   def entries_in_dir(path)
@@ -48,7 +85,10 @@ class Processor
           if File.basename(path) == 'lost+found'
             next
           end
-          dir_contents << [path, entries_in_dir(path)]
+          rel_dir_path = relativize(path)
+          if rel_dir_path != '' && !File.symlink?(path)
+            dir_contents << [rel_dir_path, entries_in_dir(path)]
+          end
         elsif File.file?(path)
           rel = relativize(path)
           found_files << rel
@@ -96,39 +136,21 @@ class Processor
       done_process << true
     end
 
-    insert_thread = Thread.new do
-      loop do
-        batch = []
-        loop do
-          batch << insert_queue.pop(true)
-          break if batch.length > 100
-        rescue ThreadError
-          break
-        end
-
-        if batch.empty?
-          sleep 1
-        else
-          coll.insert_many(batch)
-          STDOUT << "i#{batch.length} "
-        end
-
-        break if insert_queue.empty? && !done_process.empty?
-      end
-    end
+    insert_thread = InsertThread.new(coll, insert_queue, done_process).start
 
     find_thread.join
     process_thread.join
 
     dir_hashes = {}
+    dir_done_process = Queue.new
+    dir_insert_queue = Queue.new
 
     dir_thread = Thread.new do
       skipped = []
       until skipped.empty? && dir_contents.empty?
         until dir_contents.empty?
           begin
-            dir_path, entries = dir_contents.pop
-            rel_dir_path = relativize(dir_path)
+            rel_dir_path, entries = dir_contents.pop
             shas = entries.map do |entry|
               entry_path = File.join(dir_path, entry)
               rel_path = relativize(entry_path)
@@ -140,6 +162,7 @@ class Processor
             end
             dir_sha = sum("d:#{dir_path};#{entries.length};#{shas.join(',')}")
             dir_hashes[rel_dir_path] = dir_sha
+            dir_insert_queue << {rel_path: rel_dir_path, sha256: dir_sha}
           rescue KeyError
             skipped << [dir_path, entries]
           end
@@ -153,10 +176,14 @@ class Processor
           skipped.replace([])
         end
       end
+      dir_done_process << true
     end
+
+    dir_insert_thread = InsertThread.new(dir_coll, dir_insert_queue, dir_done_process).start
 
     insert_thread.join
     dir_thread.join
+    dir_insert_thread.join
   end
 
   def sum(text)
