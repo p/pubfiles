@@ -65,7 +65,11 @@ class Processor
   end
 
   def relativize(path)
-    path[start.length..].sub(%r,\A/,, '')
+    (path[start.length..] || '').sub(%r,\A/,, '')
+  end
+
+  def absolutize(path)
+    File.join(start, path)
   end
 
   def find
@@ -107,10 +111,12 @@ class Processor
     end
 
     processed = {}
+    in_db = {}
 
     process_thread = Thread.new do
       coll.find.projection(rel_path: 1, sha256: 1).each do |doc|
         processed[doc.fetch(:rel_path)] = doc.fetch(:sha256)
+        in_db[doc.fetch(:rel_path)] = true
       end
 
       loop do
@@ -152,19 +158,19 @@ class Processor
           begin
             rel_dir_path, entries = dir_contents.pop
             shas = entries.map do |entry|
-              entry_path = File.join(dir_path, entry)
-              rel_path = relativize(entry_path)
+              rel_path = File.join(rel_dir_path, entry)
+              entry_path = absolutize(rel_path)
               if File.symlink?(entry_path)
                 'S'
               else
                 dir_hashes[rel_path] || processed.fetch(rel_path)
               end
             end
-            dir_sha = sum("d:#{dir_path};#{entries.length};#{shas.join(',')}")
+            dir_sha = sum("d:#{rel_dir_path};#{entries.length};#{shas.join(',')}")
             dir_hashes[rel_dir_path] = dir_sha
             dir_insert_queue << {rel_path: rel_dir_path, sha256: dir_sha}
           rescue KeyError
-            skipped << [dir_path, entries]
+            skipped << [rel_dir_path, entries]
           end
         end
         if skipped.count > 0
@@ -179,18 +185,45 @@ class Processor
       dir_done_process << true
     end
 
+    # There aren't many directories out there and they are easy to recompute.
+    dir_coll.delete_many
     dir_insert_thread = InsertThread.new(dir_coll, dir_insert_queue, dir_done_process).start
 
     insert_thread.join
     dir_thread.join
+
+    prune_thread = Thread.new do
+      rel_paths = in_db.keys - processed.keys
+      if rel_paths.any?
+        puts "Deleting #{rel_paths.count}"
+        p coll.delete_many(rel_path: {'$in': rel_paths})
+      end
+    end
+
     dir_insert_thread.join
+    prune_thread.join
   end
 
   def sum(text)
     Digest::SHA256.new.update(text).hexdigest
   end
 
-  def show_dups
+  def show_dirs
+    view = dir_coll.aggregate([
+      {'$group': {_id: '$sha256',
+        count: {'$count': {}},
+        rel_paths: {'$push': '$rel_path'},
+      }},
+      {'$match': {count: {'$gt': 1}}},
+      {'$sort': {count: -1}},
+    ])
+    p view.count
+    view.take(100).each do |doc|
+      p doc
+    end
+  end
+
+  def show_files
     view = coll.aggregate([
       {'$group': {_id: '$sha256',
         count: {'$count': {}},
@@ -209,8 +242,12 @@ end
 options = {}
 
 OptionParser.new do |opts|
-  opts.on('-s', 'Show duplicates') do
-    options[:show] = true
+  opts.on('-d', 'Show duplicate dirs') do
+    options[:show_dirs] = true
+  end
+
+  opts.on('-s', 'Show duplicate files') do
+    options[:show_files] = true
   end
 end.parse!
 
