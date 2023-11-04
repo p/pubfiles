@@ -132,7 +132,11 @@ class Processor
             shas = entries.map do |entry|
               entry_path = File.join(dir_path, entry)
               rel_path = relativize(entry_path)
-              dir_hashes[rel_path] || processed.fetch(rel_path)
+              if File.symlink?(entry_path)
+                'S'
+              else
+                dir_hashes[rel_path] || processed.fetch(rel_path)
+              end
             end
             dir_sha = sum("d:#{dir_path};#{entries.length};#{shas.join(',')}")
             dir_hashes[rel_dir_path] = dir_sha
@@ -142,7 +146,7 @@ class Processor
         end
         if skipped.count > 0
           puts "\n#{skipped.count} skipped"
-          sleep 1
+          sleep 0.1
           skipped.each do |item|
             dir_contents.push(item)
           end
