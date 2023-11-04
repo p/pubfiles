@@ -17,8 +17,11 @@ class Processor
     @db_client ||= Mongo::Client.new('mongodb://127.0.0.1:27017/dups')
   end
 
+  def coll
+    @coll ||= db_client[:files]
+  end
+
   def find
-    coll = db_client[:files]
     coll.indexes.create_one({rel_path: 1}, unique: true)
     #coll.delete_many
 
@@ -96,6 +99,34 @@ class Processor
     process_thread.join
     insert_thread.join
   end
+
+  def show_dups
+    view = coll.aggregate([
+      {'$group': {_id: '$sha256',
+        count: {'$count': {}},
+        rel_paths: {'$push': '$rel_path'},
+      }},
+      {'$match': {count: {'$gt': 1}}},
+      {'$sort': {count: -1}},
+    ])
+    p view.count
+    view.take(100).each do |doc|
+      p doc
+    end
+  end
 end
 
-Processor.new(ARGV.shift || '.').find
+options = {}
+
+OptionParser.new do |opts|
+  opts.on('-s', 'Show duplicates') do
+    options[:show] = true
+  end
+end.parse!
+
+processor = Processor.new(ARGV.shift || '.')
+if options[:show]
+  processor.show_dups
+else
+  processor.find
+end
