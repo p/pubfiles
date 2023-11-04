@@ -1,86 +1,101 @@
 #!/usr/bin/env ruby
 
+require 'optparse'
 require 'digest'
 require 'find'
 require 'fileutils'
 require 'mongo'
 
-db_client = Mongo::Client.new('mongodb://127.0.0.1:27017/dups')
-coll = db_client[:files]
-coll.indexes.create_one({rel_path: 1}, unique: true)
-#coll.delete_many
+class Processor
+  def initialize(start)
+    @start = start
+  end
 
-start = ARGV.shift || '.'
-found_files = Queue.new
-done_find = Queue.new
-insert_queue = Queue.new
-done_process = Queue.new
+  attr_reader :start
 
-find_thread = Thread.new do
-  count = 0
-  Find.find(start) do |path|
-    next unless File.file?(path)
-    rel = path[start.length..].sub(%r,\A/,, '')
-    found_files << rel
-    count += 1
-    if count % 1000 == 0
-      STDOUT << '.'
-      sleep 0
+  def db_client
+    @db_client ||= Mongo::Client.new('mongodb://127.0.0.1:27017/dups')
+  end
+
+  def find
+    coll = db_client[:files]
+    coll.indexes.create_one({rel_path: 1}, unique: true)
+    #coll.delete_many
+
+    found_files = Queue.new
+    done_find = Queue.new
+    insert_queue = Queue.new
+    done_process = Queue.new
+
+    find_thread = Thread.new do
+      count = 0
+      Find.find(start) do |path|
+        next unless File.file?(path)
+        rel = path[start.length..].sub(%r,\A/,, '')
+        found_files << rel
+        count += 1
+        if count % 1000 == 0
+          STDOUT << '.'
+          sleep 0
+        end
+      end
+      done_find << true
     end
-  end
-  done_find << true
-end
 
-process_thread = Thread.new do
-  processed = {}
-  coll.find.projection(rel_path: 1).each do |doc|
-    processed[doc[:rel_path]] = true
-  end
-
-  loop do
-    loop do
-      begin
-        rel_path = found_files.pop(true)
-      rescue ThreadError
-        sleep 1
-        break
+    process_thread = Thread.new do
+      processed = {}
+      coll.find.projection(rel_path: 1).each do |doc|
+        processed[doc[:rel_path]] = true
       end
 
-      next if processed.key?(rel_path)
+      loop do
+        loop do
+          begin
+            rel_path = found_files.pop(true)
+          rescue ThreadError
+            sleep 1
+            break
+          end
 
-      sha256 = Digest::SHA256.file(File.join(start, rel_path))
-      digest = sha256.hexdigest
-      insert_queue << {rel_path: rel_path, sha256: digest}
-      processed[rel_path] = true
-      STDOUT << 'h'
+          next if processed.key?(rel_path)
+
+          sha256 = Digest::SHA256.file(File.join(start, rel_path))
+          digest = sha256.hexdigest
+          insert_queue << {rel_path: rel_path, sha256: digest}
+          processed[rel_path] = true
+          STDOUT << 'h'
+        end
+        break if found_files.empty? && !done_find.empty?
+        sleep 0
+      end
+      done_process << true
     end
-    break if found_files.empty? && !done_find.empty?
-    sleep 0
+
+    insert_thread = Thread.new do
+      loop do
+        batch = []
+        loop do
+          batch << insert_queue.pop(true)
+          break if batch.length > 100
+        rescue ThreadError
+          break
+        end
+
+        if batch.empty?
+          sleep 1
+        else
+          coll.insert_many(batch)
+          STDOUT << "i#{batch.length} "
+        end
+
+        break if insert_queue.empty? && !done_process.empty?
+      end
+    end
+
+    find_thread.join
+    process_thread.join
+    insert_thread.join
   end
-  done_process << true
 end
 
-insert_thread = Thread.new do
-  loop do
-    batch = []
-    loop do
-      batch << insert_queue.pop(true)
-      break if batch.length > 100
-    rescue ThreadError
-      break
-    end
-
-    if batch.empty?
-      sleep 1
-    else
-      coll.insert_many(batch)
-      STDOUT << "i#{batch.length} "
-    end
-
-    break if insert_queue.empty? && !done_process.empty?
-  end
-end
-
-find_thread.join
-process_thread.join
-insert_thread.join
+Processor.new(ARGV.shift || '.').find
