@@ -21,6 +21,16 @@ class Processor
     @coll ||= db_client[:files]
   end
 
+  def entries_in_dir(path)
+    Dir.entries(path).reject do |entry|
+      entry == '.' || entry == '..'
+    end
+  end
+
+  def relativize(path)
+    path[start.length..].sub(%r,\A/,, '')
+  end
+
   def find
     coll.indexes.create_one({rel_path: 1}, unique: true)
     #coll.delete_many
@@ -29,26 +39,38 @@ class Processor
     done_find = Queue.new
     insert_queue = Queue.new
     done_process = Queue.new
+    dir_contents = Queue.new
 
     find_thread = Thread.new do
       count = 0
       Find.find(start) do |path|
-        next unless File.file?(path)
-        rel = path[start.length..].sub(%r,\A/,, '')
-        found_files << rel
-        count += 1
-        if count % 1000 == 0
-          STDOUT << '.'
-          sleep 0
+        if File.directory?(path)
+          if File.basename(path) == 'lost+found'
+            next
+          end
+          dir_contents << [path, entries_in_dir(path)]
+        elsif File.file?(path)
+          rel = relativize(path)
+          found_files << rel
+          count += 1
+          if count % 1000 == 0
+            STDOUT << '.'
+            sleep 0
+          end
+        elsif File.symlink?(path)
+          # ignore
+        else
+          raise NotImplementedError
         end
       end
       done_find << true
     end
 
+    processed = {}
+
     process_thread = Thread.new do
-      processed = {}
-      coll.find.projection(rel_path: 1).each do |doc|
-        processed[doc[:rel_path]] = true
+      coll.find.projection(rel_path: 1, sha256: 1).each do |doc|
+        processed[doc.fetch(:rel_path)] = doc.fetch(:sha256)
       end
 
       loop do
@@ -65,7 +87,7 @@ class Processor
           sha256 = Digest::SHA256.file(File.join(start, rel_path))
           digest = sha256.hexdigest
           insert_queue << {rel_path: rel_path, sha256: digest}
-          processed[rel_path] = true
+          processed[rel_path] = sha256
           STDOUT << 'h'
         end
         break if found_files.empty? && !done_find.empty?
@@ -97,7 +119,44 @@ class Processor
 
     find_thread.join
     process_thread.join
+
+    dir_hashes = {}
+
+    dir_thread = Thread.new do
+      skipped = []
+      until skipped.empty? && dir_contents.empty?
+        until dir_contents.empty?
+          begin
+            dir_path, entries = dir_contents.pop
+            rel_dir_path = relativize(dir_path)
+            shas = entries.map do |entry|
+              entry_path = File.join(dir_path, entry)
+              rel_path = relativize(entry_path)
+              dir_hashes[rel_path] || processed.fetch(rel_path)
+            end
+            dir_sha = sum("d:#{dir_path};#{entries.length};#{shas.join(',')}")
+            dir_hashes[rel_dir_path] = dir_sha
+          rescue KeyError
+            skipped << [dir_path, entries]
+          end
+        end
+        if skipped.count > 0
+          puts "\n#{skipped.count} skipped"
+          sleep 1
+          skipped.each do |item|
+            dir_contents.push(item)
+          end
+          skipped.replace([])
+        end
+      end
+    end
+
     insert_thread.join
+    dir_thread.join
+  end
+
+  def sum(text)
+    Digest::SHA256.new.update(text).hexdigest
   end
 
   def show_dups
