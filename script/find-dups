@@ -154,9 +154,11 @@ class Processor
     dir_thread = Thread.new do
       skipped = []
       until skipped.empty? && dir_contents.empty?
+        did_anything = false
+        STDOUT << '?'
         until dir_contents.empty?
+          rel_dir_path, entries = dir_contents.pop
           begin
-            rel_dir_path, entries = dir_contents.pop
             shas = entries.map do |entry|
               rel_path = File.join(rel_dir_path, entry)
               entry_path = absolutize(rel_path)
@@ -169,29 +171,41 @@ class Processor
             dir_sha = sum("d:#{rel_dir_path};#{entries.length};#{shas.join(',')}")
             dir_hashes[rel_dir_path] = dir_sha
             dir_insert_queue << {rel_path: rel_dir_path, sha256: dir_sha}
-          rescue KeyError
+            did_anything = true
+          rescue KeyError => exc
+            puts "#{exc.class}: #{exc}"
             skipped << [rel_dir_path, entries]
           end
         end
         if skipped.count > 0
           puts "\n#{skipped.count} skipped"
-          sleep 0.1
+          sleep 1
           skipped.each do |item|
             dir_contents.push(item)
           end
+          if skipped.length < 10
+            puts "\nSkipped:"
+            skipped.each do |path|
+              p path
+            end
+          end
           skipped.replace([])
+        else
+          sleep 0.2
         end
       end
       dir_done_process << true
     end
 
     # There aren't many directories out there and they are easy to recompute.
+    puts 'Replacing dirs in db'
     dir_coll.delete_many
     dir_insert_thread = InsertThread.new(dir_coll, dir_insert_queue, dir_done_process).start
 
     insert_thread.join
     dir_thread.join
 
+    puts 'Pruning'
     prune_thread = Thread.new do
       rel_paths = in_db.keys - processed.keys
       if rel_paths.any?
@@ -200,6 +214,7 @@ class Processor
       end
     end
 
+    puts 'Waiting'
     dir_insert_thread.join
     prune_thread.join
   end
@@ -252,8 +267,10 @@ OptionParser.new do |opts|
 end.parse!
 
 processor = Processor.new(ARGV.shift || '.')
-if options[:show]
-  processor.show_dups
+if options[:show_dirs]
+  processor.show_dirs
+elsif options[:show_files]
+  processor.show_files
 else
   processor.find
 end
