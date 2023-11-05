@@ -20,15 +20,17 @@ end
 class Finder
   include Conversions
 
-  def initialize(start, found_files, found_dirs)
+  def initialize(start, found_files, found_dirs, done)
     @start = start
     @found_files = found_files
     @found_dirs = found_dirs
+    @done = done
   end
 
   attr_reader :start
   attr_reader :found_files
   attr_reader :found_dirs
+  attr_reader :done
 
   def entries_in_dir(path)
     Dir.entries(path).reject do |entry|
@@ -61,7 +63,7 @@ class Finder
         raise NotImplementedError
       end
     end
-    done_find << true
+    done << true
   end
 end
 
@@ -130,10 +132,10 @@ class Processor
     done_find = Queue.new
     insert_queue = Queue.new
     done_process = Queue.new
-    dir_contents = Queue.new
+    found_dirs = Queue.new
 
     find_thread = Thread.new do
-      Finder.new(start, found_files, dir_contents).run
+      Finder.new(start, found_files, found_dirs, done_find).run
     end
 
     processed = {}
@@ -182,13 +184,14 @@ class Processor
 
     dir_thread = Thread.new do
       skipped = []
-      until skipped.empty? && dir_contents.empty?
+      until skipped.empty? && found_dirs.empty?
         did_anything = false
         STDOUT << '?'
-        until dir_contents.empty?
-          rel_dir_path, entries = dir_contents.pop
+        until found_dirs.empty?
+          rel_dir_path, entries = found_dirs.pop
           begin
             shas = entries.map do |entry|
+            p entry
               rel_path = File.join(rel_dir_path, entry)
               entry_path = absolutize(rel_path)
               if File.symlink?(entry_path)
@@ -210,7 +213,7 @@ class Processor
           puts "\n#{skipped.count} skipped"
           sleep 1
           skipped.each do |item|
-            dir_contents.push(item)
+            found_dirs.push(item)
           end
           if skipped.length < 10
             puts "\nSkipped:"
