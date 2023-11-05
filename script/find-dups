@@ -191,7 +191,6 @@ class Processor
           rel_dir_path, entries = found_dirs.pop
           begin
             shas = entries.map do |entry|
-            p entry
               rel_path = File.join(rel_dir_path, entry)
               entry_path = absolutize(rel_path)
               if File.symlink?(entry_path)
@@ -205,7 +204,6 @@ class Processor
             dir_insert_queue << {rel_path: rel_dir_path, sha256: dir_sha}
             did_anything = true
           rescue KeyError => exc
-            puts "#{exc.class}: #{exc}"
             skipped << [rel_dir_path, entries]
           end
         end
