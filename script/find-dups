@@ -35,7 +35,7 @@ class Finder
   def entries_in_dir(path)
     Dir.entries(path).reject do |entry|
       entry == '.' || entry == '..'
-    end
+    end.sort
   end
 
   def run
@@ -199,7 +199,8 @@ class Processor
                 dir_hashes[rel_path] || processed.fetch(rel_path)
               end
             end
-            dir_sha = sum("d:#{rel_dir_path};#{entries.length};#{shas.join(',')}")
+            # This is a hash of contents only.
+            dir_sha = sum("#{entries.length};#{shas.join(',')}")
             dir_hashes[rel_dir_path] = dir_sha
             dir_insert_queue << {rel_path: rel_dir_path, sha256: dir_sha}
             did_anything = true
@@ -238,7 +239,6 @@ class Processor
     insert_thread.join
     dir_thread.join
 
-exit
     puts 'Pruning'
     prune_thread = Thread.new do
       rel_paths = in_db.keys - processed.keys
