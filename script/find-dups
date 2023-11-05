@@ -107,11 +107,13 @@ end
 class Processor
   include Conversions
 
-  def initialize(start)
+  def initialize(start, **opts)
     @start = start
+    @options = opts.dup.freeze
   end
 
   attr_reader :start
+  attr_reader :options
 
   def db_client
     @db_client ||= Mongo::Client.new('mongodb://127.0.0.1:27017/dups')
@@ -269,6 +271,16 @@ class Processor
     ])
     p view.count
     view.take(100).each do |doc|
+      if filter = options[:filter]
+        next unless doc['rel_paths'].any? do |path|
+          path.include?(filter)
+        end
+      end
+      if regexp_filter = options[:regexp_filter]
+        next unless doc['rel_paths'].any? do |path|
+          path =~ regexp_filter
+        end
+      end
       puts doc.fetch('count')
       doc.fetch('rel_paths').each do |path|
         if escape
@@ -307,12 +319,20 @@ OptionParser.new do |opts|
     options[:escape] = true
   end
 
+  opts.on('-f', '--filter=FILTER', 'Only show groups including FILTER') do |v|
+    options[:filter] = v
+  end
+
+  opts.on('-r', '--regexp=REGEXP', 'Only show groups matching REGEXP') do |v|
+    options[:regexp_filter] = v
+  end
+
   opts.on('-s', 'Show duplicate files') do
     options[:show_files] = true
   end
 end.parse!
 
-processor = Processor.new(ARGV.shift || '.')
+processor = Processor.new(ARGV.shift || '.', **options)
 if options[:show_dirs]
   processor.show_dirs(escape: options[:escape])
 elsif options[:show_files]
