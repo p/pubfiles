@@ -1,11 +1,69 @@
 #!/usr/bin/env ruby
 
-require 'concurrent/channel'
 require 'optparse'
 require 'digest'
 require 'find'
 require 'fileutils'
 require 'mongo'
+
+module Conversions
+
+  def relativize(path)
+    (path[start.length..] || '').sub(%r,\A/,, '')
+  end
+
+  def absolutize(path)
+    File.join(start, path)
+  end
+end
+
+class Finder
+  include Conversions
+
+  def initialize(start, found_files, found_dirs)
+    @start = start
+    @found_files = found_files
+    @found_dirs = found_dirs
+  end
+
+  attr_reader :start
+  attr_reader :found_files
+  attr_reader :found_dirs
+
+  def entries_in_dir(path)
+    Dir.entries(path).reject do |entry|
+      entry == '.' || entry == '..'
+    end
+  end
+
+  def run
+    count = 0
+    Find.find(start) do |path|
+      if File.directory?(path)
+        if File.basename(path) == 'lost+found'
+          next
+        end
+        rel_dir_path = relativize(path)
+        if rel_dir_path != '' && !File.symlink?(path)
+          found_dirs << [rel_dir_path, entries_in_dir(path)]
+        end
+      elsif File.file?(path)
+        rel = relativize(path)
+        found_files << rel
+        count += 1
+        if count % 1000 == 0
+          STDOUT << '.'
+          sleep 0
+        end
+      elsif File.symlink?(path)
+        # ignore
+      else
+        raise NotImplementedError
+      end
+    end
+    done_find << true
+  end
+end
 
 class Inserter
   def initialize(coll, insert_queue, done_queue)
@@ -19,22 +77,33 @@ class Inserter
   attr_reader :done_queue
 
   def run
-    loop do
+    done = false
+    until done
       batch = []
       loop do
-        batch << insert_queue.take
+        item = insert_queue.pop
+        if item.nil?
+          # queue closed
+          done = true
+          break
+        end
+        batch << item
         break if batch.length > 100
       rescue ThreadError
-        break
+        raise
       end
 
-      coll.insert_many(batch)
+      if batch.any?
+        coll.insert_many(batch)
+      end
       STDOUT << "i#{batch.length} "
     end
   end
 end
 
 class Processor
+  include Conversions
+
   def initialize(start)
     @start = start
   end
@@ -53,56 +122,18 @@ class Processor
     @dir_coll ||= db_client[:dirs]
   end
 
-  def entries_in_dir(path)
-    Dir.entries(path).reject do |entry|
-      entry == '.' || entry == '..'
-    end
-  end
-
-  def relativize(path)
-    (path[start.length..] || '').sub(%r,\A/,, '')
-  end
-
-  def absolutize(path)
-    File.join(start, path)
-  end
-
   def find
     coll.indexes.create_one({rel_path: 1}, unique: true)
     #coll.delete_many
 
     found_files = Queue.new
     done_find = Queue.new
-    insert_queue = Concurrent::Channel.new(capacity: 100)
+    insert_queue = Queue.new
     done_process = Queue.new
     dir_contents = Queue.new
 
     find_thread = Thread.new do
-      count = 0
-      Find.find(start) do |path|
-        if File.directory?(path)
-          if File.basename(path) == 'lost+found'
-            next
-          end
-          rel_dir_path = relativize(path)
-          if rel_dir_path != '' && !File.symlink?(path)
-            dir_contents << [rel_dir_path, entries_in_dir(path)]
-          end
-        elsif File.file?(path)
-          rel = relativize(path)
-          found_files << rel
-          count += 1
-          if count % 1000 == 0
-            STDOUT << '.'
-            sleep 0
-          end
-        elsif File.symlink?(path)
-          # ignore
-        else
-          raise NotImplementedError
-        end
-      end
-      done_find << true
+      Finder.new(start, found_files, dir_contents).run
     end
 
     processed = {}
@@ -127,7 +158,7 @@ class Processor
 
           sha256 = Digest::SHA256.file(File.join(start, rel_path))
           digest = sha256.hexdigest
-          insert_queue.put(rel_path: rel_path, sha256: digest)
+          insert_queue << {rel_path: rel_path, sha256: digest}
           processed[rel_path] = sha256
           STDOUT << 'h'
         end
@@ -135,6 +166,7 @@ class Processor
         sleep 0
       end
       done_process << true
+      insert_queue.close
     end
 
     insert_thread = Thread.new do
@@ -146,7 +178,7 @@ class Processor
 
     dir_hashes = {}
     dir_done_process = Queue.new
-    dir_insert_queue = Concurrent::Channel.new(capacity: 100)
+    dir_insert_queue = Queue.new
 
     dir_thread = Thread.new do
       skipped = []
@@ -167,7 +199,7 @@ class Processor
             end
             dir_sha = sum("d:#{rel_dir_path};#{entries.length};#{shas.join(',')}")
             dir_hashes[rel_dir_path] = dir_sha
-            dir_insert_queue.put(rel_path: rel_dir_path, sha256: dir_sha)
+            dir_insert_queue << {rel_path: rel_dir_path, sha256: dir_sha}
             did_anything = true
           rescue KeyError => exc
             puts "#{exc.class}: #{exc}"
@@ -192,6 +224,7 @@ class Processor
         end
       end
       dir_done_process << true
+      dir_insert_queue.close
     end
 
     # There aren't many directories out there and they are easy to recompute.
@@ -204,6 +237,7 @@ class Processor
     insert_thread.join
     dir_thread.join
 
+exit
     puts 'Pruning'
     prune_thread = Thread.new do
       rel_paths = in_db.keys - processed.keys
