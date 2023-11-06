@@ -1,0 +1,26 @@
+--- libusb/core.c.orig	2023-11-06 10:25:25.391336928 -0500
++++ libusb/core.c	2023-11-06 10:25:34.015107828 -0500
+@@ -793,6 +793,15 @@
+ 	return ret;
+ }
+ 
++static int compar(const struct libusb_device * const *pa, const struct libusb_device * const *pb) {
++	const struct libusb_device *a = *pa, *b = *pb;
++	if (a->bus_number != b->bus_number)
++		return a->bus_number < b->bus_number ? -1 : 1;
++	if (a->device_address != b->device_address)
++		return a->device_address < b->device_address ? -1 : 1;
++	return 0;
++}
++
+ /** @ingroup libusb_dev
+  * Returns a list of USB devices currently attached to the system. This is
+  * your entry point into finding a USB device to operate.
+@@ -868,6 +877,7 @@
+ 		struct libusb_device *dev = discdevs->devices[i];
+ 		ret[i] = libusb_ref_device(dev);
+ 	}
++	qsort(ret, len, sizeof(struct libusb_device *), compar);
+ 	*list = ret;
+ 
+ out:
