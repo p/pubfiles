@@ -1,0 +1,38 @@
+--- find/ftsfind.c.orig	2023-11-07 13:44:13.498255407 -0500
++++ find/ftsfind.c	2023-11-07 13:56:40.857051098 -0500
+@@ -471,6 +471,26 @@
+ }
+ 
+ 
++static int compar_(FTSENT const *aa, FTSENT const *bb)
++{
++  if (aa->fts_parent == bb->fts_parent)
++    return strcmp(aa->fts_name, bb->fts_name);
++  
++  if (aa->fts_parent && !bb->fts_parent)
++    return 1;
++  if (bb->fts_parent && !aa->fts_parent)
++    return -1;
++
++  return compar_(aa->fts_parent, bb->fts_parent);
++}
++
++static
++int compar(FTSENT const **a, FTSENT const **b)
++{
++  const FTSENT *aa = *a, *bb = *b;
++  return compar_(aa, bb);
++}
++
+ 
+ static bool
+ find (char *arg)
+@@ -503,7 +523,7 @@
+   if (options.stay_on_filesystem)
+     ftsoptions |= FTS_XDEV;
+ 
+-  p = fts_open (arglist, ftsoptions, NULL);
++  p = fts_open (arglist, ftsoptions, compar);
+   if (NULL == p)
+     {
+       error (0, errno, _("cannot search %s"),
