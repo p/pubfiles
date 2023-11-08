@@ -80,6 +80,11 @@ class Installer
           warn "Failed to run gsettings to turn off recent files"
         end
       end
+
+      if have?('soffice')
+        load File.join(File.dirname(__FILE__), 'script/configure-office')
+        OfficeConfigurator.new.run
+      end
     end
   end
 

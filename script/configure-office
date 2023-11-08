@@ -3,10 +3,8 @@
 require 'nokogiri'
 autoload :FileUtils, 'fileutils'
 
-# Possibly XDG_HOME should be taken into account here?
-config_path = File.expand_path('~/.config/libreoffice/4/user/registrymodifications.xcu')
-
-base_contents = <<-EOT
+class OfficeConfigurator
+  BASE_CONTENTS = <<-EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <oor:items xmlns:oor="http://openoffice.org/2001/registry" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 <item oor:path="/org.openoffice.Office.Common/Misc"><prop oor:name="FirstRun" oor:op="fuse"><value>false</value></prop></item>
@@ -17,41 +15,53 @@ base_contents = <<-EOT
 </oor:items>
 EOT
 
-settings = [
-  ["/org.openoffice.Office.Common/Misc", 'ShowTipOfTheDay', 'false'],
-  ["/org.openoffice.Office.Calc/Input", 'AutoInput', 'false'],
-]
+  SETTINGS = [
+    ["/org.openoffice.Office.Common/Misc", 'ShowTipOfTheDay', 'false'],
+    ["/org.openoffice.Office.Calc/Input", 'AutoInput', 'false'],
+  ]
 
-if File.exist?(config_path)
-  warn "Modifying #{config_path}"
+  # Possibly XDG_HOME should be taken into account here?
+  def config_path
+    File.expand_path('~/.config/libreoffice/4/user/registrymodifications.xcu')
+  end
 
-  doc = Nokogiri::XML(File.read(config_path))
+  def run
+    if File.exist?(config_path)
+      warn "Modifying #{config_path}"
 
-  settings.each do |setting_path, setting_name, new_value|
-    found = false
-    doc.xpath(%Q,//oor:items/item/prop[@oor:name="#{setting_name}"],).each do |prop|
-      found = true
-      prop.xpath('value').children.first.content = new_value
+      doc = Nokogiri::XML(File.read(config_path))
+
+      SETTINGS.each do |setting_path, setting_name, new_value|
+        found = false
+        doc.xpath(%Q,//oor:items/item/prop[@oor:name="#{setting_name}"],).each do |prop|
+          found = true
+          prop.xpath('value').children.first.content = new_value
+        end
+
+        unless found
+          item = Nokogiri::XML::DocumentFragment.parse(%Q~
+            <item oor:path="#{setting_path}">
+              <prop oor:name="#{setting_name}" oor:op="fuse">
+                <value>#{new_value}</value></prop></item>
+            ~)
+          doc.xpath('//oor:items').first << item
+        end
+      end
+
+      File.open(config_path, 'w') do |f|
+        f << doc.to_s
+      end
+    else
+      warn "Creating #{config_path}"
+
+      FileUtils.mkdir_p(File.dirname(config_path))
+      File.open(config_path, 'w') do |f|
+        f << BASE_CONTENTS
+      end
     end
-
-    unless found
-      item = Nokogiri::XML::DocumentFragment.parse(%Q~
-        <item oor:path="#{setting_path}">
-          <prop oor:name="#{setting_name}" oor:op="fuse">
-            <value>#{new_value}</value></prop></item>
-        ~)
-      doc.xpath('//oor:items').first << item
-    end
   end
+end
 
-  File.open(config_path, 'w') do |f|
-    f << doc.to_s
-  end
-else
-  warn "Creating #{config_path}"
-
-  FileUtils.mkdir_p(File.dirname(config_path))
-  File.open(config_path, 'w') do |f|
-    f << base_contents
-  end
+if __FILE__ == $0
+  OfficeConfigurator.new.run
 end
