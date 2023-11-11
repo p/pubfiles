@@ -3,6 +3,7 @@
 set -e
 
 # https://www.reddit.com/r/openbsd/comments/ived5q/solved_a_few_issues_recording_sound_audio_using/
+# https://unix.stackexchange.com/questions/686940/alsa-record-everything-on-given-sound-card
 
 audio_sys=
 audio_only=false
@@ -34,7 +35,9 @@ fi
 
 if test $audio_sys = pulse; then
   audio_backend=pulse
-  audio_device=`pacmd list-sources |grep name: |fgrep -v '.monitor>' |awk '{print $2}' |tr -d '<>'`
+  pacmd list-sources >/dev/null
+  #audio_device=`pacmd list-sources |grep name: |fgrep -v '.monitor>' |awk '{print $2}' |tr -d '<>'`
+  audio_device=`pacmd list-sources |grep name: |fgrep '.monitor>' |awk '{print $2}' |tr -d '<>'`
 else
   audio_backend=alsa
   if $use_dsnoop; then
@@ -54,7 +57,7 @@ if ! $audio_only; then
 fi
 
 exec ffmpeg $video_input \
-  -f $audio_backend -ac 2 -i $audio_device \
+  -f $audio_backend -ac 2 -i "$audio_device" \
   $video_processing \
   -c:a pcm_s16le \
   "$@"
