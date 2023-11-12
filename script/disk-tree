@@ -2,6 +2,14 @@
 
 require 'yaml'
 
+def blkid(device)
+  status = `blkid #{device}`
+  if status =~ /LABEL="([^"]+)/
+    label = $1
+  end
+  {label: label}
+end
+
 disks = (Dir['/dev/sd?'] + Dir['/dev/nvme?n?']).sort
 disk_infos = {}
 disks.each do |disk|
@@ -49,10 +57,7 @@ dms.each do |dm|
   else
     raise "cryptsetup failed for #{dm}"
   end
-  status = `blkid #{dm}`
-  if status =~ /LABEL="([^"]+)/
-    label = $1
-  end
+  blkid_status = blkid(dm)
 
   if device == '(null)'
     warn "warning: dm #{dm} has null device"
@@ -61,7 +66,7 @@ dms.each do |dm|
 
   dm_infos[dm] = {
     device: device,
-    label: label,
+    label: blkid_status[:label],
     device_num: dev_num,
   }
   parent = if device =~ /nvme/
@@ -72,22 +77,28 @@ dms.each do |dm|
     raise NotImplementedError
   end
   m = disk_infos[parent][:part_infos][device]
-  m.update(mapper: dm, mapper_label: label, mapper_device_num: dev_num)
+  m.update(mapper: dm, mapper_label: blkid_status[:label], mapper_device_num: dev_num)
 end
 
 disk_infos.each do |disk, di|
   puts
   puts "#{'%-10s' % File.basename(disk)}   #{'%10s' % di[:size]}  #{'%-20s' % di[:model]}      Serial: #{di[:serial]}"
   di[:part_infos].each do |part, pi|
+    blkid_status = blkid(part)
+
     final_part = pi[:mapper] || part
     status = `df -h #{final_part}`.split("\n")[1]
     fs, size, used, avail, perc, mounted = status.split(/\s+/)
     if fs == 'udev'
       fs, size, used, avail, perc, mounted = nil
     end
-    #p status
     mapper_info = if pi[:mapper]
-      " via #{'%-21s' % File.basename(pi[:mapper])} (#{pi[:mapper_device_num]})"
+      label = if blkid_status[:mapper_label]
+        " label=#{pi[:mapper_label]}"
+      else
+        ''
+      end
+      " via #{'%-21s' % File.basename(pi[:mapper])} #{label}(#{pi[:mapper_device_num]})"
     else
       ' ' * 33
     end
@@ -96,7 +107,12 @@ disk_infos.each do |disk, di|
     else
       ''
     end
-    puts "  #{'%-10s' % File.basename(part)} #{'%10s' % pi[:size]} #{mapper_info}#{mount_info}"
+    label = if blkid_status[:label]
+      " [#{blkid_status[:label]}]"
+    else
+      ''
+    end
+    puts "  #{'%-10s' % File.basename(part)} #{'%10s' % pi[:size]} #{label}#{mapper_info}#{mount_info}"
   end
 end
 puts
