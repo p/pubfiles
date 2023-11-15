@@ -4,6 +4,7 @@ require 'optparse'
 autoload :FileUtils, 'fileutils'
 autoload :Etc, 'etc'
 autoload :ERB, 'erb'
+require_relative 'lib/ruby/global_helpers'
 
 options = {}
 OptionParser.new do |opts|
@@ -15,6 +16,8 @@ OptionParser.new do |opts|
 end.parse!
 
 class Installer
+  include GlobalHelpers
+
   def initialize(**opts)
     @options = opts.dup.freeze
   end
@@ -115,18 +118,6 @@ class Installer
 
   def pub_root
     @pub_root ||= File.realpath(File.dirname(__FILE__))
-  end
-
-  def have?(bin)
-    ENV['PATH'].split(':').any? { |path| File.exist?(File.join(path, bin)) }
-  end
-
-  def laptop?
-    if have?('laptop-detect')
-      system('laptop-detect')
-    else
-      false
-    end
   end
 
   def headful?
