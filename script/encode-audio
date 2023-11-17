@@ -2,6 +2,25 @@
 
 set -e
 
+start=
+stop=
+
+while getopts s:S: opt; do
+  case $opt in
+  s)
+    start="$OPTARG"
+    ;;
+  S)
+    stop="$OPTARG"
+    ;;
+  *)
+    echo "Bogus option $opt" 1>&2
+    exit 10
+    ;;
+  esac
+done
+shift $((OPTIND-1))
+
 src="$1"
 
 if test -z "$src"; then
@@ -27,8 +46,16 @@ if echo "$info" |grep -q channels=2; then
   read x
   echo continuing
   
-  ffmpeg -hide_banner -i "$src" -codec:a libmp3lame  -qscale:a 1 "$name"-225.mp3
-  ffmpeg -hide_banner -i "$src" -codec:a libmp3lame  -qscale:a 3 "$name"-175.mp3
+  input_opts=
+  if test -n "$start"; then
+    input_opts="$input_opts -ss $start"
+  fi
+  if test -n "$stop"; then
+    input_opts="$input_opts -to $stop"
+  fi
+  
+  ffmpeg -hide_banner $input_opts -i "$src" -codec:a libmp3lame  -qscale:a 1 -threads 4 "$name"-225.mp3
+  ffmpeg -hide_banner $input_opts -i "$src" -codec:a libmp3lame  -qscale:a 3 -threads 4 "$name"-175.mp3
 else
   echo "Unhandled path" 1>&2
   exit 3
