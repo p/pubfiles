@@ -11,7 +11,7 @@ fi
 
 # https://stackoverflow.com/questions/5618363/is-there-a-way-to-use-ffmpeg-to-determine-the-encoding-of-a-file-before-transcod
 
-info=`ffprobe -show_streams "$src"`
+info=`ffprobe -hide_banner -show_streams "$src"`
 if test $? != 0; then
   echo ffprobe failed, bad file? 1>&2
   exit 2
@@ -27,8 +27,8 @@ if echo "$info" |grep -q channels=2; then
   read x
   echo continuing
   
-  ffmpeg -i "$src" -codec:a libmp3lame  -qscale:a 1 "$name"-225.mp3
-  ffmpeg -i "$src" -codec:a libmp3lame  -qscale:a 3 "$name"-175.mp3
+  ffmpeg -hide_banner -i "$src" -codec:a libmp3lame  -qscale:a 1 "$name"-225.mp3
+  ffmpeg -hide_banner -i "$src" -codec:a libmp3lame  -qscale:a 3 "$name"-175.mp3
 else
   echo "Unhandled path" 1>&2
   exit 3
