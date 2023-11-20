@@ -10,7 +10,7 @@ while getopts amr: opt; do
   a)
     mixer=alesis
     ;;
-  A)
+  m)
     mixer=mackie
     ;;
   r)
@@ -25,6 +25,7 @@ done
 shift $((OPTIND-1))
 
 if test -z "$mixer"; then
+  :
 fi
 
 if test -z "$rate"; then
@@ -35,6 +36,7 @@ case "$mixer" in
 alesis)
   # 44100 & 48000 sample rates are supported.
   ffmpeg -f alsa -sample_rate "$rate" -i hw:1 "$@"
+  ;;
 mackie)
   ffmpeg -f alsa -sample_rate "$rate" -acodec pcm_s32le -channels 32  -i hw:1 "$@"
   ;;
