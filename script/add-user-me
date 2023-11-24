@@ -25,7 +25,10 @@ if test -d /etc/sudoers.d; then
 fi
 
 if which bundle >/dev/null 2>&1; then
-  bundle config set --global path '~/.cache/vendor/bundle'
+#  bundle config set --global path '~/.cache/vendor/bundle'
+  mkdir -p /home/me/.bundle
+  chown me:me /home/me/.bundle
+  install -m 444 -o me -g me `dirname $0`/../home/bundle/config /home/me/.bundle/config
 fi
 
 for dir in .mozilla .waterfox .config/chromium; do
