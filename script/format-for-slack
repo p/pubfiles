@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+text = if ARGV.any?
+  File.open(ARGV.first).read
+else
+  STDIN.read
+end
+
+text.gsub!(%r,(?<!\n)\n(?![-\n]),, ' ')
+unless text.end_with?("\n")
+  text << "\n"
+end
+STDOUT << text
+
