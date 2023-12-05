@@ -20,30 +20,38 @@ disks.each do |disk|
   end
   parts = Dir[pattern].sort
   status = `fdisk -l #{disk}`
-  size = "#{status.split(/\s+/)[2]} #{status.split(/\s+/)[3].sub(',', '')}"
-  if status =~ /Disk model: ([^\n]+)/
-    model = $1
+  if status.strip.empty?
+    disk_infos[disk] = {
+      model: '???',
+      serial: '???',
+      part_infos: [],
+    }
+  else
+    size = "#{status.split(/\s+/)[2]} #{status.split(/\s+/)[3].sub(',', '')}"
+    if status =~ /Disk model: ([^\n]+)/
+      model = $1
+    end
+    part_infos = {}
+    parts.each do |part|
+      status = `fdisk -l #{part}`
+      part_size = "#{status.split(/\s+/)[2]} #{status.split(/\s+/)[3].sub(',', '')}"
+      part_infos[part] = {size: part_size}
+    end
+    status = `smartctl -a #{disk}`
+    if status =~ /Serial [nN]umber:\s+(\S+)/
+      serial = $1
+    end
+    if status =~ /Device Model:\s+(.+?)\n/
+      model = $1
+    end
+    disk_infos[disk] = {
+      parts: parts,
+      size: size,
+      part_infos: part_infos,
+      model: model,
+      serial: serial,
+    }
   end
-  part_infos = {}
-  parts.each do |part|
-    status = `fdisk -l #{part}`
-    part_size = "#{status.split(/\s+/)[2]} #{status.split(/\s+/)[3].sub(',', '')}"
-    part_infos[part] = {size: part_size}
-  end
-  status = `smartctl -a #{disk}`
-  if status =~ /Serial [nN]umber:\s+(\S+)/
-    serial = $1
-  end
-  if status =~ /Device Model:\s+(.+?)\n/
-    model = $1
-  end
-  disk_infos[disk] = {
-    parts: parts,
-    size: size,
-    part_infos: part_infos,
-    model: model,
-    serial: serial,
-  }
 end
 
 dms = Dir['/dev/mapper/*'].sort
