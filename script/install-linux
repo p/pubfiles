@@ -141,6 +141,8 @@ if is_headful; then
   else
     install_if_needed firefox-esr
   fi
+  
+  install -m 555 -o root -g root -t /etc/pm/sleep.d $BASE/../config/pm/sleep.d/screen
 fi
 
 install_if_needed firmware-linux
