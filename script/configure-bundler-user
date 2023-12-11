@@ -1,5 +1,0 @@
-#!/bin/sh
-
-set -e
-
-bundle config set --global path '~/.cache/vendor/bundle'
