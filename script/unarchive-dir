@@ -1,0 +1,49 @@
+#!/usr/bin/env ruby
+
+require 'fileutils'
+require 'shellwords'
+require 'find'
+
+Find.find('.') do |path|
+  if path =~ /\.zip$/
+    dir = path.sub(/\.zip$/, '')
+    FileUtils.mkdir_p(dir)
+    archive_abspath = File.realpath(path)
+    Dir.chdir(dir) do
+      system("unzip #{Shellwords.escape(archive_abspath)}")
+    end
+  elsif path =~ /\.rar$/
+    dir = path.sub(/\.rar$/, '')
+    FileUtils.mkdir_p(dir)
+    archive_abspath = File.realpath(path)
+    Dir.chdir(dir) do
+      system("unrar x #{Shellwords.escape(archive_abspath)}")
+    end
+  end
+end
+
+Find.find('.') do |path|
+  if File.basename(path) == '.DS_Store'
+    FileUtils.rm(path)
+  end
+end
+
+loop do
+  catch(:retry) do
+    Find.find('.') do |path|
+      if File.directory?(path)
+        entries = Dir.entries(path).reject { |e| e == '.' || e == '..' }
+        if entries.count == 1 && entries.first == File.basename(path)
+          sub_path = File.join(path, entries.first)
+          sub_entries = Dir.entries(sub_path).reject { |e| e == '.' || e == '..' }
+          sub_entries.each do |sube|
+            FileUtils.mv(File.join(sub_path, sube), File.join(path, sube))
+          end
+          FileUtils.rm_r(sub_path)
+          throw :retry
+        end
+      end
+    end
+  end
+  break
+end
