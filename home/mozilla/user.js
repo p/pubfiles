@@ -220,6 +220,11 @@ user_pref('browser.sessionstore.restore_tabs_lazily', false);
 // disable dns over https
 // https://wiki.mozilla.org/Trusted_Recursive_Resolver
 user_pref('network.trr.mode', 5);
+// This is set to a cloudflare URL by default
+user_pref('network.trr.default_provider_uri', '');
+// oblivious version - should be fine to have on if DOH is on
+user_pref('network.trr.use_ohttp', false);
+// There are many other network.trr prefs, investigate one day
 
 // https://www.maketecheasier.com/disable-video-autoplay-firefox-chrome/
 user_pref('media.autoplay.enabled', false);
