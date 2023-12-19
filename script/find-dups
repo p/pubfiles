@@ -6,15 +6,16 @@ require 'digest'
 require 'find'
 require 'fileutils'
 require 'mongo'
+require_relative '../lib/ruby/fs_helpers'
 
 module Conversions
 
   def relativize(path)
-    (path[start.length..] || '').sub(%r,\A/,, '')
+    FsHelpers.relativize(start, path)
   end
 
   def absolutize(path)
-    File.join(start, path)
+    FsHelpers.absolutize(start, path)
   end
 end
 
@@ -33,12 +34,6 @@ class Finder
   attr_reader :found_dirs
   attr_reader :done
 
-  def entries_in_dir(path)
-    Dir.entries(path).reject do |entry|
-      entry == '.' || entry == '..'
-    end.sort
-  end
-
   def run
     count = 0
     Find.find(start) do |path|
@@ -48,7 +43,7 @@ class Finder
         end
         rel_dir_path = relativize(path)
         if rel_dir_path != '' && !File.symlink?(path)
-          found_dirs << [rel_dir_path, entries_in_dir(path)]
+          found_dirs << [rel_dir_path, FsHelpers.entries_in_dir(path)]
         end
       elsif File.file?(path)
         rel = relativize(path)
