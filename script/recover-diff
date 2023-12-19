@@ -1,0 +1,48 @@
+#!/usr/bin/env ruby
+
+require 'find'
+require 'optparse'
+require_relative '../lib/ruby/fs_helpers'
+
+def check_bad_file(path, reference: false)
+  if File.stat(path).size == 0
+    puts "Zero size: #{path}"
+  end
+
+  if File.read(path).force_encoding('binary') =~ Regexp.new('\A\x00+\z'.force_encoding('binary'), Regexp::FIXEDENCODING)
+    puts "File comprised of all zero bytes: #{path}"
+  end
+end
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: recover-diff -r reference [path]"
+
+  opts.on("-r", "--reference=PATH", "Specify reference path") do |v|
+    options[:reference_path] = v
+  end
+end.parse!
+
+include FsHelpers
+
+root_path = ARGV.shift || '.'
+ref_root_path = options.fetch(:reference_path)
+
+Find.find(root_path) do |path|
+  next if File.directory?(path)
+
+  rel_path = FsHelpers.relativize(root_path, path)
+  ref_path = FsHelpers.absolutize(ref_root_path, rel_path)
+
+  unless File.exist?(ref_path)
+    puts "Reference missing: #{path}"
+    check_bad_file(path)
+    next
+  end
+
+  unless files_same_contents?(path, ref_path)
+    puts "Files differ: #{path}"
+    check_bad_file(path)
+    check_bad_file(ref_path, reference: true)
+  end
+end
