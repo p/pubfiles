@@ -41,7 +41,6 @@ module Sub
     rd, wr = IO.pipe
     apply_env(process, env)
     process.start
-    p 1
     p process.wait
   end
 
@@ -170,6 +169,9 @@ class Runner
 
     identify_interfaces
     @wireless_ifname = wireless_ifnames.first
+    unless wireless_ifname
+      raise "No wireless interfaces?"
+    end
 
     %w(ifdown ifup dhclient wpa_supplicant).each do |proc_name|
       Sub.uncheck_call(['pkill', '-9', proc_name])
@@ -365,7 +367,7 @@ EOT
       wpa_supplicant_log_path = '/tmp/wpa_supplicant.log'
       # TODO detach from controlling terminal here
       binary = 'wpa_supplicant'
-      binary = '/home/me/apps/exp/hostap/wpa_supplicant/wpa_supplicant'
+      #binary = '/home/me/apps/exp/hostap/wpa_supplicant/wpa_supplicant'
       @wpa_process_info = Sub.start_process_pipe([binary,
         '-D', 'nl80211,wext', '-i', wireless_ifname,
         #'-f', wpa_supplicant_log_path,
