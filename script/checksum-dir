@@ -1,0 +1,71 @@
+#!/usr/bin/env ruby
+
+require 'yaml'
+require 'digest/sha1'
+require 'find'
+require 'optparse'
+require_relative '../lib/ruby/fs_helpers'
+
+class Runner
+  include FsHelpers
+
+  def initialize(**opts)
+    @options = opts
+    @sums = {}
+  end
+
+  attr_reader :options
+  attr_reader :sums
+
+  def start_path
+    @start_path ||= begin
+      options.fetch(:start_path).tap do |path|
+        path.sub(%r,/*\z,, '').sub(/\A\z/, '/')
+      end
+    end
+  end
+
+  def run
+    Find.find(start_path) do |path|
+      next if File.directory?(path)
+
+      rel_path = relativize(path)
+      checksum = checksum(path)
+
+      sums[rel_path] = {
+        sha1: checksum,
+        size: File.stat(path).size,
+      }
+    end
+
+    @sums = Hash[sums.keys.sort.map do |k|
+      [k, sums[k].transform_keys(&:to_s)]
+    end]
+
+    payload = {
+      'sums' => sums,
+    }
+    puts YAML.dump(payload)
+  end
+
+  def checksum(path)
+    digest = Digest::SHA1.new
+    File.open(path) do |f|
+      while chunk = f.read(1024*1024)
+        digest.update(chunk)
+      end
+    end
+    digest.hexdigest
+  end
+end
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: checksum-dir [-w out-path] [dir]"
+
+  opts.on("-w", "--write=PATH", "Specify output file") do |v|
+    options[:out_path] = v
+  end
+end.parse!
+
+Runner.new(start_path: ARGV.shift || '', **options).run

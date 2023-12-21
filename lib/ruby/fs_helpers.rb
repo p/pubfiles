@@ -16,6 +16,10 @@ module FsHelpers
 
   CHUNK_SIZE = 65536
 
+  def relativize(path)
+    FsHelpers.relativize(start_path, path)
+  end
+
   def files_same_contents?(a_path, b_path)
     File.open(a_path, 'rb') do |fa|
       File.open(b_path, 'rb') do |fb|
