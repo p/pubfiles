@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+require 'ruby-progressbar'
 require 'yaml'
 require 'digest/sha1'
 require 'find'
@@ -26,8 +27,16 @@ class Runner
   end
 
   def run
+    count = 0
     Find.find(start_path) do |path|
-      next if File.directory?(path)
+      next unless File.file?(path)
+      count += 1
+    end
+
+    bar = ProgressBar.create(total: count, format: '%c/%C %e %w')
+
+    Find.find(start_path) do |path|
+      next unless File.file?(path)
 
       rel_path = relativize(path)
       checksum = checksum(path)
@@ -36,6 +45,8 @@ class Runner
         sha1: checksum,
         size: File.stat(path).size,
       }
+
+      bar.increment
     end
 
     @sums = Hash[sums.keys.sort.map do |k|
@@ -45,7 +56,12 @@ class Runner
     payload = {
       'sums' => sums,
     }
-    puts YAML.dump(payload)
+
+    puts 'Writing...'
+
+    File.open(options.fetch(:out_path), 'w') do |f|
+      f << YAML.dump(payload)
+    end
   end
 
   def checksum(path)
