@@ -90,6 +90,19 @@ fi
 
 apt-get remove tasksel popularity-contest
 
+# Junk that is invoked by browsers:
+# "desktop integration portal for Flatpak and Snap"
+# https://packages.debian.org/bookworm/xdg-desktop-portal
+apt-get remove xdg-desktop-portal
+
+# This is a security hole I think.
+apt-get remove pkexec
+# ... and normally I shouldn't need polkit.
+apt-get remove polkitd
+
+# Don't know what this is actually needed for.
+apt-get remove at-spi2-core
+
 apt-get install -y python3-pip || apt-get install -y python-pip
 
 if ! is_aws; then
