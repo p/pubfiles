@@ -26,11 +26,25 @@ class Runner
     options[:fix]
   end
 
+  NOT_EMPTY_EXTS_ = %w(
+    .gif .png .jpg .jpeg .mkv .wav .mp3 .mp4 .m3u .sfv .nfo
+  )
+  NOT_EMPTY_EXTS = NOT_EMPTY_EXTS_ + NOT_EMPTY_EXTS_.map { |ext| ext + '.part' }
+
   def run
     Find.find(start_path) do |path|
       if File.file?(path)
         if File.stat(path).size == 0
           puts "Empty file: #{path}"
+          if fix?
+            bn = File.basename(path).downcase
+            if NOT_EMPTY_EXTS.any? do |ext|
+              bn.end_with?(ext)
+            end then
+              puts "** RM #{path}"
+              FileUtils.rm(path)
+            end
+          end
         end
       elsif File.directory?(path) && !File.symlink?(path)
         if entries_in_path(path).empty?
