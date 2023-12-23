@@ -31,9 +31,20 @@ class Runner
   )
   NOT_EMPTY_EXTS = NOT_EMPTY_EXTS_ + NOT_EMPTY_EXTS_.map { |ext| ext + '.part' }
 
+  JUNK_BASENAMES = %w(Thumbs.db .DS_Store)
+
   def run
     Find.find(start_path) do |path|
       if File.file?(path)
+        bn = File.basename(path)
+        if JUNK_BASENAMES.include?(bn)
+          puts "JUNK: #{path}"
+          if fix?
+            puts "** RM #{path}"
+            FileUtils.rm(path)
+            next
+          end
+        end
         if File.stat(path).size == 0
           puts "Empty file: #{path}"
           if fix?
@@ -43,6 +54,7 @@ class Runner
             end then
               puts "** RM #{path}"
               FileUtils.rm(path)
+              next
             end
           end
         end
@@ -53,6 +65,7 @@ class Runner
             # IMPORTANT: do not use rm_r
             puts "** RMDIR #{path}"
             FileUtils.rmdir(path)
+            next
           end
         end
       end
