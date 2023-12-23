@@ -19,7 +19,7 @@ merge_defaults() {
 }
 
 common_init() {
-	xset dpms 0 0 600
+	#xset dpms 0 0 600
 	if test "`hostname -s`" = athena; then
 		layout=x41
 	else
