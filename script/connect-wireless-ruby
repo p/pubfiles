@@ -204,9 +204,9 @@ class Runner
       f << JSON.dump(@config)
     end
 
-    if options[:keep]
+    #if options[:keep]
       keep
-    end
+    #end
   end
 
   def keep
