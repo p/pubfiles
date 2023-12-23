@@ -1,0 +1,60 @@
+#!/usr/bin/env ruby
+
+autoload :FileUtils, 'fileutils'
+require 'find'
+require 'optparse'
+require_relative '../lib/ruby/fs_helpers'
+
+class Runner
+  include FsHelpers
+
+  def initialize(**opts)
+    @options = opts
+  end
+
+  attr_reader :options
+
+  def start_path
+    @start_path ||= begin
+      options.fetch(:start_path).tap do |path|
+        path.sub(%r,/*\z,, '').sub(/\A\z/, '/')
+      end
+    end
+  end
+
+  def fix?
+    options[:fix]
+  end
+
+  def run
+    Find.find(start_path) do |path|
+      if File.file?(path)
+        if File.stat(path).size == 0
+          puts "Empty file: #{path}"
+        end
+      elsif File.directory?(path) && !File.symlink?(path)
+        if entries_in_path(path).empty?
+          puts "Empty dir: #{path}"
+          if fix?
+            # IMPORTANT: do not use rm_r
+            puts "** RMDIR #{path}"
+            FileUtils.rmdir(path)
+          end
+        end
+      end
+    rescue Errno::EACCES
+      puts "No acccess: #{path}"
+    end
+  end
+end
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: recover-check [path]"
+
+  opts.on("-f", "--fix", "Fix identified issues") do
+    options[:fix] = true
+  end
+end.parse!
+
+Runner.new(start_path: ARGV.shift || '.', **options).run

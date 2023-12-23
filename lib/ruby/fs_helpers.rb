@@ -8,11 +8,16 @@ module FsHelpers
     File.join(start, path)
   end
 
-  module_function def entries_in_path(path)
-    Dir.entries(path).reject do |entry|
-      entry == '.' || entry == '..'
-    end.sort
+  module Functions
+    def entries_in_path(path)
+      Dir.entries(path).reject do |entry|
+        entry == '.' || entry == '..'
+      end.sort
+    end
   end
+
+  include Functions
+  extend Functions
 
   CHUNK_SIZE = 65536
 
