@@ -313,7 +313,7 @@ class Runner
   def start_wpa_supplicant
     if @wpa_process_info
       begin
-        Process.kill(@wpa_process_info.fetch(:pid))
+        Process.kill('TERM', @wpa_process_info.fetch(:pid))
       rescue SystemCallError
       end
       begin
