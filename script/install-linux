@@ -142,7 +142,11 @@ if is_headful; then
     install_if_needed firefox-esr
   fi
   
-  install -m 555 -o root -g root -t /etc/pm/sleep.d $BASE/../config/pm/sleep.d/screen
+  # Installed by pm-utils
+  if test -d /etc/pm/sleep.d; then
+    # Force wake up laptop's screen upon resume, unsure if this is working.
+    install -m 555 -o root -g root -t /etc/pm/sleep.d $BASE/../config/pm/sleep.d/screen
+  fi
 fi
 
 install_if_needed firmware-linux
