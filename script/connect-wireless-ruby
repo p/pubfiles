@@ -213,8 +213,14 @@ class Runner
   end
 
   def keep
+    need_start = false
     loop do
       begin
+        if need_start
+          start_wpa_supplicant
+          need_start = false
+        end
+
         get_current_state
 
         if state[:wpa_completed]
@@ -237,7 +243,7 @@ class Runner
         puts 'ssid: %s, wpa: %s, elapsed: %d' % [state[:ssid], state[:wpa_state], elapsed]
         sleep 3
       rescue WpaSupplicantFailed
-        start_wpa_supplicant
+        need_start = true
       end
     end
   end
