@@ -97,6 +97,9 @@ module Sub
     thread = Thread.new do
       loop do
         chunk = rd.readline
+        if chunk.nil?
+          break
+        end
         STDOUT << "[#{cmd_name}] #{chunk}"
       end
     end
