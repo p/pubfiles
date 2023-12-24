@@ -323,6 +323,7 @@ class Runner
       @wpa_process_info = nil
     end
     @wpa_exited = false
+    @wpa_process_info = {}
 
     dir = '/etc/network/interfaces.d'
     if File.exist?(dir)
@@ -380,7 +381,8 @@ EOT
       Thread.new do
         pid = wpa_process_info.fetch(:pid)
         exitstatus = Process.waitpid(pid)
-        wpa_process_info[:exitstatus] = $?.exitstatus
+        puts "wpa supplicant exited with #{$?.exitstatus}"
+        wpa_process_info[:exit_status] = $?.exitstatus
       ensure
         @wpa_exited = true
       end
@@ -402,7 +404,12 @@ EOT
         end
 
         if @wpa_exited
-          raise WpaSupplicantFailed, "wpa_supplicant unexpectedly terminated with exit code #{wpa_process_info.fetch(:exitstatus)}"
+          status = wpa_process_info[:exit_status]
+          if status
+            raise WpaSupplicantFailed, "wpa_supplicant unexpectedly terminated with exit code #{status}"
+          else
+            raise WpaSupplicantFailed, "wpa_supplicant unexpectedly terminated and exit code is not available"
+          end
         end
 
         puts 'ssid: %s, wpa: %s, elapsed: %d' % [state[:ssid], state[:wpa_state], elapsed]
