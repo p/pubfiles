@@ -214,29 +214,31 @@ class Runner
 
   def keep
     loop do
-      get_current_state
+      begin
+        get_current_state
 
-      if state[:wpa_completed]
+        if state[:wpa_completed]
+          sleep 3
+          next
+        end
+
+        if state[:no_ssid]
+          raise WpaSupplicantFailed, 'ssid is off/any, bad auth to wpa supplicant?'
+        end
+
+        if (elapsed = Utils.monotime - started_at) > options.fetch(:wpa_supplicant_timeout)
+          raise WpaSupplicantFailed, "Giving up on wpa association after #{options.fetch(:wpa_supplicant_timeout)} seconds"
+        end
+
+        if @wpa_exited
+          raise WpaSupplicantFailed, "wpa_supplicant unexpectedly terminated with exit code #{wpa_process.exit_code}"
+        end
+
+        puts 'ssid: %s, wpa: %s, elapsed: %d' % [state[:ssid], state[:wpa_state], elapsed]
         sleep 3
-        next
+      rescue WpaSupplicantFailed
+        start_wpa_supplicant
       end
-
-      if state[:no_ssid]
-        raise WpaSupplicantFailed, 'ssid is off/any, bad auth to wpa supplicant?'
-      end
-
-      if (elapsed = Utils.monotime - started_at) > options.fetch(:wpa_supplicant_timeout)
-        raise WpaSupplicantFailed, "Giving up on wpa association after #{options.fetch(:wpa_supplicant_timeout)} seconds"
-      end
-
-      if @wpa_exited
-        raise WpaSupplicantFailed, "wpa_supplicant unexpectedly terminated with exit code #{wpa_process.exit_code}"
-      end
-
-      puts 'ssid: %s, wpa: %s, elapsed: %d' % [state[:ssid], state[:wpa_state], elapsed]
-      sleep 3
-    rescue WpaSupplicantFailed
-      start_wpa_supplicant
     end
   end
 
