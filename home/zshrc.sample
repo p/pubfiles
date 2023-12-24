@@ -15,6 +15,7 @@ compinit
 . ~/apps/pubfiles/home/zshrc.git
 . ~/apps/pubfiles/home/zshrc.ruby
 . ~/apps/pubfiles/home/zshrc.node
+. ~/apps/pubfiles/home/zshrc.ssh-agent
 
 test -f ~/apps/pubfiles/home/zshrc.user.$USER && . ~/apps/pubfiles/home/zshrc.user.$USER
 
