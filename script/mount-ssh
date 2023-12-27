@@ -6,11 +6,17 @@
 
 set -e
 
+allow_all=false
+if test "$1" = -a; then
+  allow_all=true
+  shift
+fi
+
 src="$1"
 dest="$2"
 
 if test -z "$src"; then
-  echo "Usage: mount-ssh src [dest]" 1>&2
+  echo "Usage: mount-ssh [-a] src [dest]" 1>&2
   exit 1
 fi
 
@@ -26,5 +32,10 @@ if test -z "$dest"; then
   src="$src":
 fi
 
+opts=
+if $allow_all; then
+  opts="$opts -o allow_other,default_permissions"
+fi
+
 mkdir -p "$dest"
-sshfs "$src" "$dest"
+sshfs $opts "$src" "$dest"
