@@ -8,9 +8,11 @@ if test -z "$1"; then
 fi
 
 url="$1"
+opts=
 
 if echo "$url" |grep -q "^https://pdf1.alldatasheet.com/pdfjsview/web/viewer.html?file=//"; then
   url=`echo "$url" |sed -e s,'^https://pdf1.alldatasheet.com/pdfjsview/web/viewer.html?file=//,https://,'`
+  opts="$opts -H 'Referer:https://pdf1.alldatasheet.com/pdfjsview/web/viewer.html?file=//pdf1.alldatasheet.com/datasheet-pdf/view/'"
 fi
 
 if echo "$url" |grep -q "^pdf1.alldatasheet.com/datasheet/pdf"; then
@@ -19,4 +21,5 @@ fi
 
 bn="`basename $url`"
 
-curl -kLH User-Agent:Mozilla/5.0 -Haccept-language:en -o "$bn" "$url"
+curl -kL -H 'User-Agent:Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0' \
+	$opts -o "$bn" "$url"
