@@ -1,0 +1,54 @@
+#!/bin/sh
+
+set -e
+
+conv_opts=
+
+while getopts f:t: opt; do
+  case $opt in
+  f)
+    conv_opts="$conv_opts -ss $OPTARG"
+    ;;
+  t)
+    conv_opts="$conv_opts -to $OPTARG"
+    ;;
+  *)
+    echo "Bogus option $opt" 1>&2
+    exit 10
+    ;;
+  esac
+done
+shift $((OPTIND-1))
+
+path="$1"
+
+if test -z "$path"; then
+  echo "Usage: `basename $0` path" 1>&2
+  exit 1
+fi
+
+bn="`basename "$path"`"
+prefix="`echo "$bn" |sed -e s/\.wav$//`"
+
+channels=`ffprobe -hide_banner -show_entries stream=channels "$path" |grep ^channels= |awk -F= '{print $2}'`
+
+if test -z "$channels"; then
+  echo "Could not figure out channel count" 1>&2
+  exit 2
+fi
+
+if test "$channels" -ge 10; then
+  format=%02d
+else
+  format=%d
+fi
+
+echo "Detected $channels channels"
+
+for i in `seq $channels`; do
+  echo Extracting channel $i
+  ffmpeg -hide_banner $conv_opts \
+    -i "$path" \
+    -af "pan=1c|c0=c`expr $i - 1`" \
+    "$prefix"-`printf $format $i`.wav
+done
