@@ -105,6 +105,8 @@ module Sub
           break
         end
         STDOUT << "[#{cmd_name}] #{chunk}"
+      rescue EOFError
+        # swallow
       end
     end
 
@@ -248,6 +250,8 @@ class Runner
         sleep 3
       rescue WpaSupplicantFailed
         need_start = true
+        Sub.uncheck_call(%w(pkill -9 wpa_supplicant))
+        sleep 1
       end
     end
   end
@@ -432,6 +436,10 @@ EOT
         sleep 1
       end
     end
+  rescue CalledProcessError => exc
+    new_exc = WpaSupplicantFailed.new("#{exc.class}: #{exc}")
+    new_exc.backtrace = exc.backtrace
+    raise new_exc
   end
 
   attr_reader :state
