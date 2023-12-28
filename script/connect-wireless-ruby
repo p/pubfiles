@@ -36,6 +36,7 @@ module Sub
   end
 
   module_function def start_and_forward(cmd, env: nil)
+    puts "[CWR] Starting: #{cmd.join(' ')}"
     process = ChildProcess.new(*cmd)
     process.io.inherit!
     rd, wr = IO.pipe
@@ -50,6 +51,7 @@ module Sub
   end
 
   module_function def check_output(cmd, env: nil)
+    puts "[CWR] Get output: #{cmd.join(' ')}"
     process = ChildProcess.new(*cmd)
     process.io.inherit!
     process.io.stdout = Tempfile.new("child-output")
@@ -68,6 +70,7 @@ module Sub
   end
 
   module_function def start_process(cmd, env: nil)
+    puts "[CWR] Starting: #{cmd.join(' ')}"
     process = ChildProcess.new(*cmd)
     process.io.inherit!
     apply_env(process, env)
@@ -76,6 +79,7 @@ module Sub
   end
 
   module_function def start_process_pipe(cmd, env: nil)
+    puts "[CWR] Starting pipe: #{cmd.join(' ')}"
     rd, wr = IO.pipe
     pid = fork do
       rd.close
@@ -322,6 +326,7 @@ class Runner
   attr_reader :wpa_process_info
 
   def start_wpa_supplicant
+    puts "[CWR] Preparing to start wpa_supplicant for #{wireless_ifname}"
     if @wpa_process_info
       begin
         Process.kill('TERM', @wpa_process_info.fetch(:pid))
@@ -368,14 +373,14 @@ EOT
       end
 
       begin
-        Sub.check_call(%w(wpa_cli status))
+        Sub.check_call(%W(wpa_cli -i #{wireless_ifname} status))
       rescue CalledProcessError
       else
-        Sub.check_call(%w(wpa_cli terminate))
+        Sub.check_call(%W(wpa_cli -i #{wireless_ifname} terminate))
         sleep 1
       end
 
-      puts('Starting wpa_supplicant')
+      puts("Starting wpa_supplicant for #{wireless_ifname}")
       wpa_supplicant_log_path = '/tmp/wpa_supplicant.log'
       # TODO detach from controlling terminal here
       binary = 'wpa_supplicant'
@@ -449,7 +454,7 @@ EOT
 
     if password
       begin
-        output = Sub.check_output(%w(wpa_cli status))
+        output = Sub.check_output(%W(wpa_cli -i #{wireless_ifname} status))
       rescue CalledProcessError
       else
         if output =~ /\bwpa_state=(\w+)/
