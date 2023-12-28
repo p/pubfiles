@@ -13,10 +13,12 @@ class Runner
   def initialize(**opts)
     @options = opts
     @sums = {}
+    @error_count = 0
   end
 
   attr_reader :options
   attr_reader :sums
+  attr_reader :error_count
 
   def start_path
     @start_path ||= begin
@@ -39,12 +41,22 @@ class Runner
       next unless File.file?(path)
 
       rel_path = relativize(path)
-      checksum = checksum(path)
+      begin
+        checksum = checksum(path)
 
-      sums[rel_path] = {
-        sha1: checksum,
-        size: File.stat(path).size,
-      }
+        sums[rel_path] = {
+          sha1: checksum,
+          size: File.stat(path).size,
+        }
+      rescue IOError, SystemCallError => exc
+        STDERR.puts "Error checksumming #{path}: #{exc.class}: #{exc}"
+        @error_count += 1
+
+        sums[rel_path] = {
+          error: "#{exc.class}: #{exc}",
+          size: File.stat(path).size,
+        }
+      end
 
       bar.increment
     end
@@ -61,6 +73,11 @@ class Runner
 
     File.open(options.fetch(:out_path), 'w') do |f|
       f << YAML.dump(payload)
+    end
+
+    if error_count > 0
+      puts "#{error_count} errors encountered while checksumming"
+      exit 1
     end
   end
 
@@ -83,5 +100,7 @@ OptionParser.new do |opts|
     options[:out_path] = v
   end
 end.parse!
+
+options.fetch(:out_path)
 
 Runner.new(start_path: ARGV.shift || '', **options).run
