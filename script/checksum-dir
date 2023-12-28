@@ -17,12 +17,21 @@ class Runner
     @sums = {}
     @error_count = 0
     @last_write = monotime
+    @anything_summed = false
   end
 
   attr_reader :options
   attr_reader :sums
   attr_reader :last_write
   attr_reader :error_count
+
+  def out_path
+    options.fetch(:out_path)
+  end
+
+  def resume?
+    options[:resume]
+  end
 
   def start_path
     @start_path ||= begin
@@ -33,6 +42,12 @@ class Runner
   end
 
   def run
+    if resume?
+      File.open(out_path) do |f|
+        @sums = YAML.load(f).fetch('sums')
+      end
+    end
+
     count = 0
     Find.find(start_path) do |path|
       next unless File.file?(path)
@@ -45,6 +60,12 @@ class Runner
       next unless File.file?(path)
 
       rel_path = relativize(path)
+
+      if resume? && sums.key?(rel_path)
+        bar.increment
+        next
+      end
+
       begin
         checksum = checksum(path)
 
@@ -52,6 +73,7 @@ class Runner
           sha1: checksum,
           size: File.stat(path).size,
         }
+        @anything_summed = true
       rescue IOError, SystemCallError => exc
         STDERR.puts "Error checksumming #{path}: #{exc.class}: #{exc}"
         @error_count += 1
@@ -66,12 +88,17 @@ class Runner
       maybe_write_payload
     end
 
-    write_payload
+    if @anything_summed
+      write_payload
+    else
+      puts "Nothing was summed"
+    end
 
     if error_count > 0
       puts "#{error_count} errors encountered while checksumming"
       exit 1
     end
+
   end
 
   def maybe_write_payload
@@ -92,7 +119,7 @@ class Runner
 
     puts 'Writing...'
 
-    File.open(options.fetch(:out_path), 'w') do |f|
+    File.open(out_path, 'w') do |f|
       f << YAML.dump(payload)
     end
   end
@@ -111,6 +138,10 @@ end
 options = {}
 OptionParser.new do |opts|
   opts.banner = "Usage: checksum-dir [-w out-path] [dir]"
+
+  opts.on('-r', '--resume', 'Resume previous operation') do
+    options[:resume] = true
+  end
 
   opts.on("-w", "--write=PATH", "Specify output file") do |v|
     options[:out_path] = v
