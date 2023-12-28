@@ -6,18 +6,22 @@ require 'digest/sha1'
 require 'find'
 require 'optparse'
 require_relative '../lib/ruby/fs_helpers'
+require_relative '../lib/ruby/global_helpers'
 
 class Runner
   include FsHelpers
+  include GlobalHelpers
 
   def initialize(**opts)
     @options = opts
     @sums = {}
     @error_count = 0
+    @last_write = monotime
   end
 
   attr_reader :options
   attr_reader :sums
+  attr_reader :last_write
   attr_reader :error_count
 
   def start_path
@@ -59,8 +63,25 @@ class Runner
       end
 
       bar.increment
+      maybe_write_payload
     end
 
+    write_payload
+
+    if error_count > 0
+      puts "#{error_count} errors encountered while checksumming"
+      exit 1
+    end
+  end
+
+  def maybe_write_payload
+    if (now = monotime) - last_write > 3 * 60
+      write_payload
+      @last_write = now
+    end
+  end
+
+  def write_payload
     @sums = Hash[sums.keys.sort.map do |k|
       [k, sums[k].transform_keys(&:to_s)]
     end]
@@ -73,11 +94,6 @@ class Runner
 
     File.open(options.fetch(:out_path), 'w') do |f|
       f << YAML.dump(payload)
-    end
-
-    if error_count > 0
-      puts "#{error_count} errors encountered while checksumming"
-      exit 1
     end
   end
 

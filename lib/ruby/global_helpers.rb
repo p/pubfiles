@@ -11,4 +11,8 @@ module GlobalHelpers
       false
     end
   end
+
+  def monotime
+    Process.clock_gettime(Process::CLOCK_MONOTONIC)
+  end
 end
