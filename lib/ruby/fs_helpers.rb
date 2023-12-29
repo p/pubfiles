@@ -1,6 +1,9 @@
 module FsHelpers
 
   module_function def relativize(start, path)
+    unless path.start_with?(start)
+      raise ArgumentError, "Path '#{path}' does not begin with prefix '#{start}'"
+    end
     (path[start.length..] || '').sub(%r,\A/,, '')
   end
 
