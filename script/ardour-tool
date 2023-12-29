@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+
+autoload :FileUtils, 'fileutils'
+autoload :OptionParser, 'optparse'
+require_relative '../lib/ruby/fs_helpers'
+
+class Runner
+  include FsHelpers
+
+  def run
+    case ARGV.shift
+    when 'rename'
+      src = ARGV.shift
+      dest = ARGV.shift
+      unless dest
+        raise "Usage: ardour-tool rename src dest"
+      end
+
+      if src.include?('/')
+        raise 'Source cannot be a path, yet'
+      end
+
+      FileUtils.mv(src, dest)
+      entries_in_path(dest).each do |entry|
+        if entry.start_with?(src)
+          new_name = dest + entry[src.length..]
+          FileUtils.mv(File.join(dest, entry), File.join(dest, new_name))
+        end
+      end
+    end
+  end
+end
+
+Runner.new.run
