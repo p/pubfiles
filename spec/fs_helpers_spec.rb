@@ -7,8 +7,11 @@ describe FsHelpers do
 
     TABLE = [
       ['/a/b/c', '/a/b/x', 'x'],
-      #['/a/b/c', '/a/b', '..'],
+      ['/a/b/c', '/a/b', '..'],
+      ['/a/b/c/d', '/a/b', '../..'],
       ['/a/b/c', '/a/x/y', '../x/y'],
+      # This is illegal usage
+      #['/a/b/c', '/a/b/c/d', 'd'],
     ]
 
     TABLE.each do |link_, target_, rel_|
