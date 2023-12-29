@@ -1,0 +1,19 @@
+#!/bin/sh
+
+set -e
+
+user="$1"
+shift
+
+if test -z "$1"; then
+  echo "Usage: sudo-x user command args..." 1>&2
+  exit 1
+fi
+
+sudo -u $user id >/dev/null
+
+target_xauthority=/home/$user/.Xauthority
+
+xauth list |sed -e 's/^/add /' |sudo -u $user env XAUTHORITY=$target_xauthority xauth
+
+exec sudo -u $user env DISPLAY=$DISPLAY XAUTHORITY=$target_xauthority "$@"
