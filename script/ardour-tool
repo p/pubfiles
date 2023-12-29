@@ -31,6 +31,70 @@ class Runner
         FileUtils.mv(File.join(dest, entry), File.join(dest, new_name))
       end
     end
+
+    do_set_session_name(dest, dest)
+  end
+
+  def cp
+    src = ARGV.shift
+    dest = ARGV.shift
+    unless dest
+      raise "Usage: ardour-tool cp src dest"
+    end
+
+    if src.include?('/')
+      raise 'Source cannot be a path, yet'
+    end
+
+    FileUtils.cp_r(src, dest)
+    entries_in_path(dest).each do |entry|
+      if entry.start_with?(src)
+        new_name = dest + entry[src.length..]
+        FileUtils.mv(File.join(dest, entry), File.join(dest, new_name))
+      end
+    end
+
+    do_set_session_name(dest)
+  end
+
+  def set_session_name
+    path = ARGV.shift
+    unless path
+      raise "Usage: ardour-tool set-session-name path"
+    end
+
+    if path.include?('/')
+      raise 'Source cannot be a path, yet'
+    end
+
+    do_set_session_name(path)
+  end
+
+  private def do_set_session_name(path)
+    entries_in_path(path).each do |entry|
+      if File.extname(entry) == '.ardour'
+        require 'nokogiri'
+        entry_path = File.join(path, entry)
+        doc = File.open(entry_path) do |f|
+          Nokogiri::XML(f)
+        end
+        found = false
+        doc.xpath('/Session').each do |elt|
+          elt.set_attribute('name', path)
+          found = true
+          break
+        end
+        unless found
+          raise 'Did not find the Session tag'
+        end
+        # TODO write to temp file then move
+        File.open(entry_path, 'w') do |f|
+          f << doc.to_s
+        end
+        return
+      end
+    end
+    puts "No ardour project file found"
   end
 
   def symlink_exports
