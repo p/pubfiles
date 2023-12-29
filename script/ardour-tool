@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+autoload :Find, 'find'
 autoload :FileUtils, 'fileutils'
 autoload :OptionParser, 'optparse'
 require_relative '../lib/ruby/fs_helpers'
@@ -8,23 +9,48 @@ class Runner
   include FsHelpers
 
   def run
-    case ARGV.shift
-    when 'rename'
-      src = ARGV.shift
-      dest = ARGV.shift
-      unless dest
-        raise "Usage: ardour-tool rename src dest"
-      end
+    action = ARGV.shift
+    public_send(action.gsub('-', '_'))
+  end
 
-      if src.include?('/')
-        raise 'Source cannot be a path, yet'
-      end
+  def rename
+    src = ARGV.shift
+    dest = ARGV.shift
+    unless dest
+      raise "Usage: ardour-tool rename src dest"
+    end
 
-      FileUtils.mv(src, dest)
-      entries_in_path(dest).each do |entry|
-        if entry.start_with?(src)
-          new_name = dest + entry[src.length..]
-          FileUtils.mv(File.join(dest, entry), File.join(dest, new_name))
+    if src.include?('/')
+      raise 'Source cannot be a path, yet'
+    end
+
+    FileUtils.mv(src, dest)
+    entries_in_path(dest).each do |entry|
+      if entry.start_with?(src)
+        new_name = dest + entry[src.length..]
+        FileUtils.mv(File.join(dest, entry), File.join(dest, new_name))
+      end
+    end
+  end
+
+  def symlink_exports
+    Find.find('.') do |path|
+      if path.end_with?('.ardour')
+        dir = File.dirname(path)
+        export_dir = File.join(dir, 'export')
+        if File.exist?(export_dir) && !File.symlink?(export_dir)
+          if File.directory?(export_dir)
+            if entries_in_path(export_dir).empty?
+              FileUtils.rmdir(export_dir)
+              rel_path = FsHelpers.relativize('/home/ardour/sessions', File.realpath(dir))
+              dest = File.join('/home/ardour/mixes', rel_path)
+              puts "Symlink #{export_dir} -> #{dest}"
+              FileUtils.mkdir_p(dest)
+              FileUtils.ln_s(dest, export_dir)
+            else
+              puts "#{export_dir}: not empty"
+            end
+          end
         end
       end
     end
