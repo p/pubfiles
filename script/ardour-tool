@@ -41,19 +41,27 @@ class Runner
         if File.exist?(export_dir) && !File.symlink?(export_dir)
           if File.directory?(export_dir)
             if entries_in_path(export_dir).empty?
-              FileUtils.rmdir(export_dir)
-              rel_path = FsHelpers.relativize('/home/ardour/sessions', File.realpath(dir))
-              dest = File.join('/home/ardour/mixes', rel_path)
-              puts "Symlink #{export_dir} -> #{dest}"
-              FileUtils.mkdir_p(dest)
-              FileUtils.ln_s(dest, export_dir)
+              #FileUtils.rmdir(export_dir)
+              make_export_symlink(dir, export_dir)
             else
               puts "#{export_dir}: not empty"
             end
           end
+        else
+          make_export_symlink(dir, export_dir)
         end
       end
     end
+  end
+
+  private def make_export_symlink(dir, export_dir)
+    rel_path = FsHelpers.relativize('/home/ardour/sessions', File.realpath(dir))
+    dest = File.join('/home/ardour/mixes', rel_path)
+    puts "Symlink #{export_dir} -> #{dest}"
+    FileUtils.mkdir_p(dest)
+    dest_rel = relativize_symlink_target(dest, export_dir)
+    p dest_rel
+    #FileUtils.ln_s(dest, export_dir)
   end
 end
 

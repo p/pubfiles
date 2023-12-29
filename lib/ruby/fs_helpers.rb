@@ -17,6 +17,29 @@ module FsHelpers
         entry == '.' || entry == '..'
       end.sort
     end
+
+    def relativize_symlink_target(target, link_path)
+      unless target.start_with?('/')
+        raise "Target must be absolute: #{target}"
+      end
+      unless link_path.start_with?('/')
+        raise "Link path must be absolute: #{link_path}"
+      end
+      abs_target_comps = File.absolute_path(target).split('/')
+      abs_link_comps = File.absolute_path(link_path).split('/')
+      loop do
+        if abs_target_comps.any? &&
+          abs_target_comps.first == abs_link_comps.first
+        then
+          abs_target_comps.shift
+          abs_link_comps.shift
+        else
+          break
+        end
+      end
+      comps = ['..'] * (abs_link_comps.length - 1) + abs_target_comps
+      File.join(*comps)
+    end
   end
 
   include Functions
