@@ -37,7 +37,11 @@ module FsHelpers
           break
         end
       end
-      comps = ['..'] * (abs_link_comps.length - 1) + abs_target_comps
+      if abs_target_comps.empty?
+        comps = ['..'] * abs_link_comps.length
+      else
+        comps = ['..'] * (abs_link_comps.length - 1) + abs_target_comps
+      end
       File.join(*comps)
     end
   end
