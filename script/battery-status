@@ -1,0 +1,17 @@
+#!/bin/sh
+
+set -e
+
+bat_level=`cat /sys/class/power_supply/BAT0/capacity`
+
+if test "$bat_level" -le 15; then
+  set +e
+  brightnessctl -d tpacpi::power set 1
+  brightnessctl -dplatform::micmute  set 1
+  xsetroot -d :0 -solid '#808'
+else
+  set +e
+  brightnessctl -d tpacpi::power set 0
+  brightnessctl -dplatform::micmute  set 0
+  xsetroot -d :0 -solid '#000'
+fi
