@@ -31,6 +31,7 @@ bn="`basename "$path"`"
 prefix="`echo "$bn" |sed -e s/\.wav$//`"
 
 channels=`ffprobe -hide_banner -show_entries stream=channels "$path" |grep ^channels= |awk -F= '{print $2}'`
+codec=`ffprobe -hide_banner -show_entries stream=codec_name "$path" |grep ^codec_name= |awk -F= '{print $2}'`
 
 if test -z "$channels"; then
   echo "Could not figure out channel count" 1>&2
@@ -49,6 +50,6 @@ for i in `seq $channels`; do
   echo Extracting channel $i
   ffmpeg -hide_banner $conv_opts \
     -i "$path" \
-    -af "pan=1c|c0=c`expr $i - 1`" \
+    -af "pan=1c|c0=c`expr $i - 1`" -c:a "$codec" \
     "$prefix"-`printf $format $i`.wav
 done
