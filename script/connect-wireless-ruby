@@ -183,7 +183,7 @@ class Runner
     identify_interfaces
 
     done = false
-    if wired_ifnames.any?
+    if auto? && wired_ifnames.any?
       if @wired_ifname = find_active_wired_ifname
         puts "Wired interface up: #{wired_ifname}"
         connect_wired
