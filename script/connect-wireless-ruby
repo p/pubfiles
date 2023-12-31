@@ -192,46 +192,54 @@ class Runner
     end
 
     unless done
-      @wireless_ifname = wireless_ifnames.first
-      unless wireless_ifname
-        raise "No wireless interfaces?"
-      end
-
-      %w(ifdown ifup dhclient wpa_supplicant).each do |proc_name|
-        Sub.uncheck_call(['pkill', '-9', proc_name])
-      end
-
-      if have_ifdown = Utils.have('ifdown')
-        Sub.uncheck_call(['ifdown', wireless_ifname])
-        wired_ifnames.each do |ifname|
-          Sub.uncheck_call(['ifdown', ifname])
-        end
-      end
-
-      unblock_rfkill
-
-      start_wpa_supplicant
-
-      puts('Running dhclient')
-      Sub.check_call(['dhclient', '-v', wireless_ifname])
-
-      FileUtils.mkdir_p(state_dir)
-      path = File.join(state_dir, 'config.json')
-      @config = {
-        ssid: ssid,
-        password: password,
-        interface: wireless_ifname,
-        ip: get_if_ip(wireless_ifname),
-        gateway: get_default_gateway,
-      }
-      File.open(path, 'w') do |f|
-        f << JSON.dump(@config)
-      end
-
-      #if options[:keep]
-        keep
-      #end
+      connect_wireless
     end
+  end
+
+  def connect_wireless
+    wired_ifnames.each do |ifname|
+      Sub.uncheck_call(['ifconfig', ifname, 'down'])
+    end
+
+    @wireless_ifname = wireless_ifnames.first
+    unless wireless_ifname
+      raise "No wireless interfaces?"
+    end
+
+    %w(ifdown ifup dhclient wpa_supplicant).each do |proc_name|
+      Sub.uncheck_call(['pkill', '-9', proc_name])
+    end
+
+    if have_ifdown = Utils.have('ifdown')
+      Sub.uncheck_call(['ifdown', wireless_ifname])
+      wired_ifnames.each do |ifname|
+        Sub.uncheck_call(['ifdown', ifname])
+      end
+    end
+
+    unblock_rfkill
+
+    start_wpa_supplicant
+
+    puts('Running dhclient')
+    Sub.check_call(['dhclient', '-v', wireless_ifname])
+
+    FileUtils.mkdir_p(state_dir)
+    path = File.join(state_dir, 'config.json')
+    @config = {
+      ssid: ssid,
+      password: password,
+      interface: wireless_ifname,
+      ip: get_if_ip(wireless_ifname),
+      gateway: get_default_gateway,
+    }
+    File.open(path, 'w') do |f|
+      f << JSON.dump(@config)
+    end
+
+    #if options[:keep]
+      keep
+    #end
   end
 
   def find_active_wired_ifname
