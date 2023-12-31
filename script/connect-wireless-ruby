@@ -171,51 +171,82 @@ class Runner
     options.fetch(:state_dir)
   end
 
+  def auto?
+    !!options[:auto]
+  end
+
   def run
     %w(ifdown ifup dhclient wpa_supplicant).each do |proc_name|
       Sub.uncheck_call(['pkill', proc_name])
     end
 
     identify_interfaces
-    @wireless_ifname = wireless_ifnames.first
-    unless wireless_ifname
-      raise "No wireless interfaces?"
-    end
 
-    %w(ifdown ifup dhclient wpa_supplicant).each do |proc_name|
-      Sub.uncheck_call(['pkill', '-9', proc_name])
-    end
-
-    if have_ifdown = Utils.have('ifdown')
-      Sub.uncheck_call(['ifdown', wireless_ifname])
-      wired_ifnames.each do |ifname|
-        Sub.uncheck_call(['ifdown', ifname])
+    done = false
+    if wired_ifnames.any?
+      if @wired_ifname = find_active_wired_ifname
+        puts "Wired interface up: #{wired_ifname}"
+        connect_wired
+        done = true
       end
     end
 
-    unblock_rfkill
+    unless done
+      @wireless_ifname = wireless_ifnames.first
+      unless wireless_ifname
+        raise "No wireless interfaces?"
+      end
 
-    start_wpa_supplicant
+      %w(ifdown ifup dhclient wpa_supplicant).each do |proc_name|
+        Sub.uncheck_call(['pkill', '-9', proc_name])
+      end
 
-    puts('Running dhclient')
-    Sub.check_call(['dhclient', '-v', wireless_ifname])
+      if have_ifdown = Utils.have('ifdown')
+        Sub.uncheck_call(['ifdown', wireless_ifname])
+        wired_ifnames.each do |ifname|
+          Sub.uncheck_call(['ifdown', ifname])
+        end
+      end
 
-    FileUtils.mkdir_p(state_dir)
-    path = File.join(state_dir, 'config.json')
-    @config = {
-      ssid: ssid,
-      password: password,
-      interface: wireless_ifname,
-      ip: get_if_ip(wireless_ifname),
-      gateway: get_default_gateway,
-    }
-    File.open(path, 'w') do |f|
-      f << JSON.dump(@config)
+      unblock_rfkill
+
+      start_wpa_supplicant
+
+      puts('Running dhclient')
+      Sub.check_call(['dhclient', '-v', wireless_ifname])
+
+      FileUtils.mkdir_p(state_dir)
+      path = File.join(state_dir, 'config.json')
+      @config = {
+        ssid: ssid,
+        password: password,
+        interface: wireless_ifname,
+        ip: get_if_ip(wireless_ifname),
+        gateway: get_default_gateway,
+      }
+      File.open(path, 'w') do |f|
+        f << JSON.dump(@config)
+      end
+
+      #if options[:keep]
+        keep
+      #end
     end
+  end
 
-    #if options[:keep]
-      keep
-    #end
+  def find_active_wired_ifname
+    wired_ifnames.detect do |ifname|
+      path = "/sys/class/net/#{ifname}/operstate"
+      begin
+        File.read(path).strip == 'up'
+      rescue IOError, SystemCallError
+        false
+      end
+    end
+  end
+
+  def connect_wired
+    Sub.check_call(%W(dhclient -v #{wired_ifname}))
   end
 
   def keep
@@ -259,6 +290,7 @@ class Runner
   private
 
   attr_reader :wired_ifnames
+  attr_reader :wired_ifname
   attr_reader :wireless_ifnames
   attr_reader :wireless_ifname
 
@@ -505,6 +537,10 @@ options = {
 }
 OptionParser.new do |opts|
   opts.banner = "Usage: connect-wireless [options] ssid [password]"
+
+  opts.on("-a", "--auto", "Auto switch between wired & wireless") do
+    options[:auto] = true
+  end
 
   opts.on("-r", "--resume", "Restore configuration after wake-up") do
     options[:resume] = true
