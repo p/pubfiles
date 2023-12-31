@@ -1,0 +1,26 @@
+diff --git a/helpers/authproto_pam.c b/helpers/authproto_pam.c
+index de35730..5f87177 100644
+--- a/helpers/authproto_pam.c
++++ b/helpers/authproto_pam.c
+@@ -126,7 +126,7 @@ int CallPAMWithRetries(int (*pam_call)(pam_handle_t *, int), pam_handle_t *pam,
+       default:
+         // Let's try again then.
+         ++attempt;
+-        if (attempt >= 3) {
++        if (attempt >= 9) {
+           return status;
+         }
+         break;
+diff --git a/main.c b/main.c
+index d625278..c1a653a 100644
+--- a/main.c
++++ b/main.c
+@@ -1057,7 +1057,7 @@ int main(int argc, char **argv) {
+   // Need to flush the display so savers sure can access the window.
+   XFlush(display);
+ 
+-  enum WatchChildrenState xss_requested_saver_state = WATCH_CHILDREN_NORMAL;
++  enum WatchChildrenState xss_requested_saver_state = WATCH_CHILDREN_FORCE_AUTH;
+   int x11_fd = ConnectionNumber(display);
+ 
+   if (x11_fd == xss_sleep_lock_fd && xss_sleep_lock_fd != -1) {
