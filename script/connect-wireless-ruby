@@ -368,6 +368,7 @@ class Runner
   end
 
   attr_reader :wpa_process_info
+  attr_reader :started_at
 
   def start_wpa_supplicant
     puts "[CWR] Preparing to start wpa_supplicant for #{wireless_ifname}"
@@ -447,7 +448,7 @@ EOT
         @wpa_exited = true
       end
 
-      started_at = Utils.monotime
+      @started_at = Utils.monotime
       loop do
         get_current_state
 
