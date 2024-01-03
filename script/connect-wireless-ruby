@@ -155,9 +155,21 @@ end
 class Runner
   def initialize(**opts)
     @options = opts.dup.freeze
+
+    if auto?
+      @keep_wired_up = !!begin
+        Sub.check_output(%w(dmidecode -s system-family)).strip =~ /^ThinkPad X280/
+      rescue CalledProcessError
+        false
+      end
+    end
   end
 
   attr_reader :options
+
+  def keep_wired_up?
+    @keep_wired_up
+  end
 
   def ssid
     options.fetch(:ssid)
@@ -175,12 +187,26 @@ class Runner
     !!options[:auto]
   end
 
+  def connected_wired?
+    @connected == :wired
+  end
+
+  def connected_wireless?
+    @connected == :wireless
+  end
+
   def run
+    identify_interfaces
+
+    if auto? && keep_wired_up?
+      wired_ifnames.each do |ifname|
+        Sub.uncheck_call(['ifconfig', ifname, 'up'])
+      end
+    end
+
     %w(ifdown ifup dhclient wpa_supplicant).each do |proc_name|
       Sub.uncheck_call(['pkill', proc_name])
     end
-
-    identify_interfaces
 
     done = false
     if auto? && wired_ifnames.any?
@@ -196,9 +222,22 @@ class Runner
     end
   end
 
+  def remove_ips(ifname)
+    # https://superuser.com/questions/153559/how-can-i-clear-the-ip-address-of-ethernet-interface-without-cycling-the-interfa
+    Sub.check_call(['ip', 'addr', 'flush', 'dev', ifname])
+  end
+
   def connect_wireless
-    wired_ifnames.each do |ifname|
-      Sub.uncheck_call(['ifconfig', ifname, 'down'])
+    @connected = nil
+
+    if auto? && keep_wired_up?
+      wired_ifnames.each do |ifname|
+        remove_ips(ifname)
+      end
+    else
+      wired_ifnames.each do |ifname|
+        Sub.uncheck_call(['ifconfig', ifname, 'down'])
+      end
     end
 
     @wireless_ifname = wireless_ifnames.first
@@ -237,6 +276,8 @@ class Runner
       f << JSON.dump(@config)
     end
 
+    @connected = :wireless
+
     #if options[:keep]
       keep
     #end
@@ -254,7 +295,16 @@ class Runner
   end
 
   def connect_wired
-    Sub.check_call(%W(dhclient -v #{wired_ifname}))
+    @connected = nil
+    
+    wireless_ifnames.each do |ifname|
+      remove_ips(ifname)
+    end
+    
+    Sub.check_call(['dhclient', '-v', wired_ifname])
+    
+    # Assuming, should check that the connection actually worked.
+    @connected = :wired
   end
 
   def keep
@@ -267,6 +317,16 @@ class Runner
         end
 
         get_current_state
+
+        if auto? && ifname = state[:active_wired_ifname]
+          unless connected_wired?
+            @wired_ifname = ifname
+            connect_wired
+            sleep 3
+          end
+          sleep 3
+          next
+        end
 
         if state[:wpa_completed]
           sleep 3
@@ -513,7 +573,11 @@ EOT
       end
     end
 
-    @state = state
+    if auto?
+      state[:active_wired_ifname] = find_active_wired_ifname
+    end
+
+    @state = state.compact
   end
 
   def default_gw_ok?
