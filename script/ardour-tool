@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+autoload :Nokogiri, 'nokogiri'
 autoload :Find, 'find'
 autoload :FileUtils, 'fileutils'
 autoload :OptionParser, 'optparse'
@@ -42,19 +43,19 @@ class Runner
       raise "Usage: ardour-tool cp src dest"
     end
 
-    if src.include?('/')
-      raise 'Source cannot be a path, yet'
-    end
+    src_bn = File.basename(src)
 
     FileUtils.cp_r(src, dest)
     entries_in_path(dest).each do |entry|
-      if entry.start_with?(src)
-        new_name = dest + entry[src.length..]
+      if entry.start_with?(src_bn)
+        new_name = File.basename(dest) + entry[src_bn.length..]
         FileUtils.mv(File.join(dest, entry), File.join(dest, new_name))
       end
     end
 
     do_set_session_name(dest)
+
+    do_symlink_export(dest, replace: true)
   end
 
   def set_session_name
@@ -75,9 +76,7 @@ class Runner
       if File.extname(entry) == '.ardour'
         require 'nokogiri'
         entry_path = File.join(path, entry)
-        doc = File.open(entry_path) do |f|
-          Nokogiri::XML(f)
-        end
+        doc = read_xml(entry_path)
         found = false
         doc.xpath('/Session').each do |elt|
           elt.set_attribute('name', path)
@@ -87,10 +86,7 @@ class Runner
         unless found
           raise 'Did not find the Session tag'
         end
-        # TODO write to temp file then move
-        File.open(entry_path, 'w') do |f|
-          f << doc.to_s
-        end
+        write_xml(doc, entry_path)
         return
       end
     end
@@ -101,33 +97,90 @@ class Runner
     Find.find('.') do |path|
       if path.end_with?('.ardour')
         dir = File.dirname(path)
-        export_dir = File.join(dir, 'export')
-        if File.symlink?(export_dir)
-          # nothing
-        elsif File.exist?(export_dir)
-          if File.directory?(export_dir)
-            if entries_in_path(export_dir).empty?
-              FileUtils.rmdir(export_dir)
-              make_export_symlink(dir, export_dir)
-            else
-              puts "#{export_dir}: not empty"
-            end
-          end
-        else
-          make_export_symlink(dir, export_dir)
-        end
+        do_symlink_export(dir)
       end
     end
   end
 
+  private def do_symlink_export(dir, replace: false)
+    export_dir = File.join(dir, 'export')
+    if File.symlink?(export_dir)
+      if replace
+        FileUtils.rm(export_dir)
+        make_export_symlink(dir, export_dir)
+      else
+        return
+      end
+    elsif File.exist?(export_dir)
+      if File.directory?(export_dir)
+        if entries_in_path(export_dir).empty?
+          FileUtils.rmdir(export_dir)
+          make_export_symlink(dir, export_dir)
+        else
+          puts "#{export_dir}: not empty"
+        end
+      end
+    else
+      make_export_symlink(dir, export_dir)
+    end
+  end
+
   private def make_export_symlink(dir, export_dir)
-    rel_path = FsHelpers.relativize('/home/ardour/sessions', File.realpath(dir))
+    rel_path = FsHelpers.relativize('/home/ardour/projects', File.realpath(dir))
     dest = File.join('/home/ardour/mixes', rel_path)
     FileUtils.mkdir_p(dest)
     dest_rel = relativize_symlink_target(
       File.absolute_path(dest), File.absolute_path(export_dir))
     puts "Symlink #{export_dir} -> #{dest_rel}"
     FileUtils.ln_s(dest_rel, export_dir)
+  end
+
+  def cleanup
+    project_path = ARGV.shift or raise "Usage: ardour-tool rename-channels path-to-project"
+    project_file_path = project_file_path(project_path)
+    doc = read_xml(project_file_path)
+
+    doc.xpath('//Source').each do |node|
+      path = node.attr('origin')
+      if path && !File.exist?(path)
+        puts "rm #{path}"
+        node.remove
+      end
+    end
+
+    write_xml(doc, project_file_path)
+  end
+
+  def rename_channels
+    project_path = ARGV.shift or raise "Usage: ardour-tool rename-channels path-to-project"
+    project_file_path = project_file_path(project_path)
+    doc = read_xml(project_file_path)
+  end
+
+  private def project_file_path(project_path)
+    if project_path.end_with?('.ardour')
+      return project_path
+    end
+    entries = entries_in_path(project_path).select do |entry|
+      entry.end_with?('.ardour')
+    end
+    if entries.count != 1
+      raise "Unclear which project file to open"
+    end
+    File.join(project_path, entries.first)
+  end
+
+  private def read_xml(path)
+    File.open(path) do |f|
+      Nokogiri::XML(f)
+    end
+  end
+
+  private def write_xml(doc, path)
+    # TODO write to temp file then move
+    File.open(path, 'w') do |f|
+      f << doc.to_s
+    end
   end
 end
 
