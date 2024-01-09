@@ -14,6 +14,7 @@ fi
 
 if test -z "$SSH_AGENT_PID"; then
 	#rm -f "$AGENTRC"
+	mkdir -p `dirname "$AGENTRC"`
         ssh-agent >"$AGENTRC"
 	if false; then
 	try=0
