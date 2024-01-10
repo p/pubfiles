@@ -296,18 +296,24 @@ class Runner
 
   def connect_wired
     @connected = nil
-    
+
     wireless_ifnames.each do |ifname|
       remove_ips(ifname)
     end
-    
+
     Sub.check_call(['dhclient', '-v', wired_ifname])
-    
+
     # Assuming, should check that the connection actually worked.
     @connected = :wired
   end
 
   def keep
+    unless password
+      loop do
+        sleep 10
+      end
+    end
+
     need_start = false
     loop do
       begin
@@ -462,80 +468,86 @@ class Runner
     Sub.check_call(['iwconfig', wireless_ifname, 'essid', ssid])
 
     if password
-      contents = <<-EOT
-        ctrl_interface=/run/wpa_supplicant
-        #ap_scan=0
-        network={
-          scan_ssid=1
-          ssid="#{ssid}"
-          key_mgmt=WPA-PSK
-          psk="#{password}"
-        }
-EOT
-      wpa_conf_path = File.join('/etc/network/wpa_supplicant.conf.d', wireless_ifname)
-      File.open(wpa_conf_path, 'w') do |f|
-        f << contents
-      end
-
-      begin
-        Sub.check_call(%W(wpa_cli -i #{wireless_ifname} status))
-      rescue CalledProcessError
-      else
-        Sub.check_call(%W(wpa_cli -i #{wireless_ifname} terminate))
-        sleep 1
-      end
-
-      puts("Starting wpa_supplicant for #{wireless_ifname}")
-      wpa_supplicant_log_path = '/tmp/wpa_supplicant.log'
-      # TODO detach from controlling terminal here
-      binary = 'wpa_supplicant'
-      #binary = '/home/me/apps/exp/hostap/wpa_supplicant/wpa_supplicant'
-      @wpa_process_info = Sub.start_process_pipe([binary,
-        '-D', 'nl80211,wext', '-i', wireless_ifname,
-        #'-f', wpa_supplicant_log_path,
-        '-c', wpa_conf_path, '-d',
-      ])
-      if File.exist?(wpa_supplicant_log_path)
-        FileUtils.chmod(0o644, wpa_supplicant_log_path)
-      end
-
-      Thread.new do
-        pid = wpa_process_info.fetch(:pid)
-        exitstatus = Process.waitpid(pid)
-        puts "wpa supplicant exited with #{$?.exitstatus}"
-        wpa_process_info[:exit_status] = $?.exitstatus
-      ensure
-        @wpa_exited = true
-      end
-
+      continue_starting_wpa_supplicant
+    else
       @started_at = Utils.monotime
-      loop do
-        get_current_state
+    end
+  end
 
-        if state[:no_ssid]
-          raise WpaSupplicantFailed, 'ssid is off/any, bad auth to wpa supplicant?'
-        end
+  def continue_starting_wpa_supplicant
+    contents = <<-EOT
+      ctrl_interface=/run/wpa_supplicant
+      #ap_scan=0
+      network={
+        scan_ssid=1
+        ssid="#{ssid}"
+        key_mgmt=WPA-PSK
+        psk="#{password}"
+      }
+EOT
+    wpa_conf_path = File.join('/etc/network/wpa_supplicant.conf.d', wireless_ifname)
+    File.open(wpa_conf_path, 'w') do |f|
+      f << contents
+    end
 
-        if state[:wpa_completed]
-          break
-        end
+    begin
+      Sub.check_call(%W(wpa_cli -i #{wireless_ifname} status))
+    rescue CalledProcessError
+    else
+      Sub.check_call(%W(wpa_cli -i #{wireless_ifname} terminate))
+      sleep 1
+    end
 
-        if (elapsed = Utils.monotime - started_at) > options.fetch(:wpa_supplicant_timeout)
-          raise WpaSupplicantFailed, "Giving up on wpa association after #{options.fetch(:wpa_supplicant_timeout)} seconds"
-        end
+    puts("Starting wpa_supplicant for #{wireless_ifname}")
+    wpa_supplicant_log_path = '/tmp/wpa_supplicant.log'
+    # TODO detach from controlling terminal here
+    binary = 'wpa_supplicant'
+    #binary = '/home/me/apps/exp/hostap/wpa_supplicant/wpa_supplicant'
+    @wpa_process_info = Sub.start_process_pipe([binary,
+      '-D', 'nl80211,wext', '-i', wireless_ifname,
+      #'-f', wpa_supplicant_log_path,
+      '-c', wpa_conf_path, '-d',
+    ])
+    if File.exist?(wpa_supplicant_log_path)
+      FileUtils.chmod(0o644, wpa_supplicant_log_path)
+    end
 
-        if @wpa_exited
-          status = wpa_process_info[:exit_status]
-          if status
-            raise WpaSupplicantFailed, "wpa_supplicant unexpectedly terminated with exit code #{status}"
-          else
-            raise WpaSupplicantFailed, "wpa_supplicant unexpectedly terminated and exit code is not available"
-          end
-        end
+    Thread.new do
+      pid = wpa_process_info.fetch(:pid)
+      exitstatus = Process.waitpid(pid)
+      puts "wpa supplicant exited with #{$?.exitstatus}"
+      wpa_process_info[:exit_status] = $?.exitstatus
+    ensure
+      @wpa_exited = true
+    end
 
-        puts 'ssid: %s, wpa: %s, elapsed: %d' % [state[:ssid], state[:wpa_state], elapsed]
-        sleep 1
+    @started_at = Utils.monotime
+    loop do
+      get_current_state
+
+      if state[:no_ssid]
+        raise WpaSupplicantFailed, 'ssid is off/any, bad auth to wpa supplicant?'
       end
+
+      if state[:wpa_completed]
+        break
+      end
+
+      if (elapsed = Utils.monotime - started_at) > options.fetch(:wpa_supplicant_timeout)
+        raise WpaSupplicantFailed, "Giving up on wpa association after #{options.fetch(:wpa_supplicant_timeout)} seconds"
+      end
+
+      if @wpa_exited
+        status = wpa_process_info[:exit_status]
+        if status
+          raise WpaSupplicantFailed, "wpa_supplicant unexpectedly terminated with exit code #{status}"
+        else
+          raise WpaSupplicantFailed, "wpa_supplicant unexpectedly terminated and exit code is not available"
+        end
+      end
+
+      puts 'ssid: %s, wpa: %s, elapsed: %d' % [state[:ssid], state[:wpa_state], elapsed]
+      sleep 1
     end
   rescue CalledProcessError => exc
     new_exc = WpaSupplicantFailed.new("#{exc.class}: #{exc}")
