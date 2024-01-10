@@ -63,4 +63,10 @@ module Helpers
     end
     raise "No firefox in PATH"
   end
+
+  def browser_accounts
+    @browser_accounts ||= [].tap do |br|
+      br << BrowserAccount.new('Sandbox', 'sandbox', nil)
+    end
+  end
 end
