@@ -1,88 +1,42 @@
 #!/usr/bin/env ruby
 
-require 'erb'
-require 'pathname'
-require 'tempfile'
 require 'optparse'
+require_relative '../../../lib/ruby/global_helpers'
+require_relative '../../../lib/ruby/fs_helpers'
+require_relative '../lib/helpers'
+require_relative '../lib/browsers'
+require_relative '../lib/context'
+require_relative '../lib/builder'
+
+overrides_path = File.join(File.dirname(__FILE__), '../lib/overrides')
+if File.exist?(overrides_path)
+  FsHelpers.entries_in_path(overrides_path).each do |entry|
+    path = File.join(overrides_path, entry)
+    load(path)
+  end
+end
 
 options = {}
 OptionParser.new do |opts|
-  opts.banner = "Usage: build [-r]"
+  opts.banner = "Usage: build [-cr]"
+
+  opts.on("-c", "--check", "Check system") do
+    options[:check] = true
+  end
 
   opts.on("-r", "--reload", "Reload running openbox") do
     options[:reload] = true
   end
 end.parse!
 
-module Helpers
-  def src_base
-    @src_base ||= Pathname.new(__FILE__).dirname.join('..')
-  end
-
+builder_cls = begin
+  LocalBuilder
+rescue NameError
+  Builder
 end
-
-class Context
-  include Helpers
-
-  def render(template_path)
-    content = File.read(template_path)
-    template = ERB.new(content)
-    template.result(binding)
-  end
-
-  def partial(path)
-    template_path = src_base.join(path + '.erb')
-    render(template_path)
-  end
-end
-
-class Builder
-  include Helpers
-
-  def build
-    Dir.mktmpdir do |dir|
-      files = %w(rc.xml menu.xml)
-      files.each do |file|
-        transform_template(file, dir)
-      end
-      files.each do |file|
-        install_file(file, dir)
-      end
-    end
-  end
-
-  def transform_template(basename, dest_dir)
-    if File.exist?(template_path = src_base.join(basename + '.erb'))
-      result = Context.new.render(template_path)
-      File.open(tmp_rc_path = File.join(dest_dir, basename), 'w') do |f|
-        f << result
-      end
-    else
-      FileUtils.cp(src_base.join(basename), dest_dir)
-    end
-  end
-
-  def install_file(basename, tmp_dir)
-    FileUtils.mkdir_p(openbox_rc_root)
-    FileUtils.cp(File.join(tmp_dir, basename), openbox_rc_root.join(basename))
-  end
-
-  def openbox_rc_root
-    if path = ENV['XDG_CONFIG_HOME']
-    else
-      path = File.expand_path('~/.config')
-      #raise "XDG_CONFIG_HOME not set"
-    end
-    Pathname.new(path).join('openbox')
-  end
-end
-
-Builder.new.build
+builder = builder_cls.new(**options)
+builder.build
 
 if options[:reload]
-  output = `openbox --reconfigure`
-  if $?.exitstatus != 0
-    puts output
-    raise "Failed to reconfigure openbox"
-  end
+  builder.reload
 end

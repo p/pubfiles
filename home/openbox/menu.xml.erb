@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<openbox_menu xmlns="http://openbox.org/3.4/menu">
+
+<%= defined_menus %>
+
+<menu id="root-menu" label="Openbox 3">
+  <separator label="Openbox" />
+  <item label="Terminal">
+    <action name="Execute"><command>gtkterm2</command></action>
+  </item>
+  <item label="Mail">
+    <action name="Execute"><command>claws-mail</command></action>
+  </item>
+
+  <menu id="waterfox-classic-menu" />
+  <menu id="chromium-menu" />
+  <menu id="waterfox-menu" />
+  <menu id="firefox-menu" />
+  <menu id="kill-browsers-menu" />
+  
+  <item label="Scite">
+    <action name="Execute"><command>scite</command></action>
+  </item>
+  <% if have?('kdenlive') %>
+    <item label="Kdenlive">
+      <action name="Execute"><command>kdenlive</command></action>
+    </item>
+  <% end %>
+  <!--
+  <item label="Bluefish">
+    <action name="Execute"><command>bluefish</command></action>
+  </item>
+  -->
+  
+  <menu id="audio-menu" />
+  <menu id="lights-menu" />
+  
+  <% if have?('gimp') %>
+    <item label="Gimp">
+      <action name="Execute"><command>gimp</command></action>
+    </item>
+  <% end %>
+  <% if have?('abiword') %>
+  <item label="Abiword">
+    <action name="Execute"><command>abiword</command></action>
+  </item>
+  <% end %>
+  <% if have?('ardour') %>
+  <item label="Ardour">
+    <action name="Execute"><command>~/apps/pubfiles/script/sudo-x ardour ardour</command></action>
+  </item>
+  <% end %>
+  <% if have?('zoom') %>
+    <menu id="zoom-menu" />
+  <% end %>
+  <% if false %>
+  <menu id="comms-menu" />
+  <menu id="misc-menu" />
+  <!--(if h.have_bin('VirtualBox'))-->
+    <item label="VirtualBox">
+      <action name="Execute"><command>VirtualBox</command></action>
+    </item>
+  <!--(end)-->
+  <% end %>
+  <separator />
+  <menu id="client-list-menu" />
+  <!--
+  <separator />
+  <item label="Reconfigure">
+    <action name="Reconfigure" />
+  </item>
+  -->
+  <separator />
+  <menu id="settings-menu" />
+  <item label="Exit">
+    <action name="Exit" />
+  </item>
+  <% if laptop? %>
+    <item label="Lock &amp; Suspend">
+      <action name="Execute"><command>
+        env XSECURELOCK_PASSWORD_PROMPT=asterisks
+            XSECURELOCK_SHOW_HOSTNAME=1
+            XSECURELOCK_SHOW_USERNAME=1
+          xsecurelock -- sudo pm-suspend
+      </command></action>
+    </item>
+  <% else %>
+    <item label="Lock">
+      <action name="Execute"><command>
+        env XSECURELOCK_PASSWORD_PROMPT=asterisks
+            XSECURELOCK_SHOW_HOSTNAME=1
+            XSECURELOCK_SHOW_USERNAME=1
+          xsecurelock
+      </command></action>
+    </item>
+  <% end %>
+</menu>
+
+</openbox_menu>
