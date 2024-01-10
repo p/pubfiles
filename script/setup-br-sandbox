@@ -6,7 +6,7 @@ set -e
 
 if id me; then
   `dirname "$0"`/setup-br-sandbox-me
-elsif id w && test "$main_user" = w; then
+elif id w && test "$main_user" = w; then
   exec `dirname "$0"`/setup-br sandbox 2523 w
 else
   echo 'Not handled' 1>&2
