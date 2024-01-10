@@ -26,3 +26,8 @@ fi
 
 mkdir -p /home/w/bin
 chown w:w /home/w/bin
+
+if ! test -e /home/w/bin/pm-suspend && which pm-suspend >/dev/null 2>/dev/null; then
+  ln -s `which pm-suspend` /home/w/bin/pm-suspend
+  chown -h w:w /home/w/bin/pm-suspend
+fi
