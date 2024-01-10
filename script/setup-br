@@ -71,3 +71,6 @@ echo 'export XAUTHORITY=$HOME/.Xauthority' |sudo -u "$user" tee /home/"$user"/.z
 
 echo "$from_user ALL = ($user) NOPASSWD: ALL" >/etc/sudoers.d/"$from_user"-"$user"
 #sudo -u "$from_user" xauth list | sed -e 's/^/add /' | sudo -u "$user" env HOME=/home/"$user" XAUTHORITY=$xauthority_path xauth
+
+mkdir -p /home/br-downloads/"$user"
+chown "$user":"$user" /home/br-downloads/"$user"
