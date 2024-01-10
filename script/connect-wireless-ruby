@@ -334,6 +334,9 @@ class Runner
           next
         end
 
+        # Checking WPA state here even if password isn't set - the block
+        # should never activate since without password there won't be any
+        # WPA state to begin with.
         if state[:wpa_completed]
           sleep 3
           next
@@ -343,12 +346,17 @@ class Runner
           raise WpaSupplicantFailed, 'ssid is off/any, bad auth to wpa supplicant?'
         end
 
-        if (elapsed = Utils.monotime - started_at) > options.fetch(:wpa_supplicant_timeout)
-          raise WpaSupplicantFailed, "Giving up on wpa association after #{options.fetch(:wpa_supplicant_timeout)} seconds"
-        end
+        # TODO check that the current SSID is the one that was requested
+        # by the user.
 
-        if @wpa_exited
-          raise WpaSupplicantFailed, "wpa_supplicant unexpectedly terminated with exit code #{wpa_process.exit_code}"
+        if password
+          if (elapsed = Utils.monotime - started_at) > options.fetch(:wpa_supplicant_timeout)
+            raise WpaSupplicantFailed, "Giving up on wpa association after #{options.fetch(:wpa_supplicant_timeout)} seconds"
+          end
+
+          if @wpa_exited
+            raise WpaSupplicantFailed, "wpa_supplicant unexpectedly terminated with exit code #{wpa_process.exit_code}"
+          end
         end
 
         puts 'ssid: %s, wpa: %s, elapsed: %d' % [state[:ssid], state[:wpa_state], elapsed]
