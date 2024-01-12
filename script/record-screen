@@ -14,6 +14,9 @@ while getopts aAs opt; do
   a)
     audio_sys=alsa
     ;;
+  p)
+    audio_sys=pulse
+    ;;
   A)
     audio_only=true
     ;;
