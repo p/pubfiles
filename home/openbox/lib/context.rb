@@ -16,11 +16,12 @@ class Context
 
   def rc_partials
     generated = []
-    rc_d_path = File.join(File.dirname(__FILE__), '..', 'menu.d')
+    rc_d_path = File.join(File.dirname(__FILE__), '..', 'rc.d')
     ::FsHelpers.entries_in_path(rc_d_path).each do |basename|
       path = File.join(rc_d_path, basename)
       generated << render(path)
     end
+    generated.join("\n\n")
   end
 
   def defined_menus
