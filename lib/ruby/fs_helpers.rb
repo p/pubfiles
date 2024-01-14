@@ -44,6 +44,12 @@ module FsHelpers
       end
       File.join(*comps)
     end
+
+    def detect_existent_path(*paths)
+      paths.detect do |path|
+        File.exist?(path)
+      end
+    end
   end
 
   include Functions
