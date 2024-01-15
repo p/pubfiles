@@ -11,7 +11,7 @@ while getopts amr: opt; do
     mixer=alesis
     ;;
   m)
-    mixer=mackie
+    mixer=dl32r
     ;;
   r)
     rate="$OPTARG"
@@ -25,20 +25,29 @@ done
 shift $((OPTIND-1))
 
 if test -z "$mixer"; then
-  :
+  if grep -q DL32R /proc/asound/card*/id; then
+    mixer=dl32r
+  fi
 fi
 
 if test -z "$rate"; then
   rate=48000
 fi
 
+arecord -l
+echo
+echo ---
+echo
+
+ffmpeg='ffmpeg -hide_banner'
+
 case "$mixer" in
 alesis)
   # 44100 & 48000 sample rates are supported.
-  ffmpeg -f alsa -sample_rate "$rate" -i hw:1 "$@"
+  eval $ffmpeg -f alsa -sample_rate "$rate" -i hw:1 "$@"
   ;;
-mackie)
-  ffmpeg -f alsa -sample_rate "$rate" -acodec pcm_s32le -channels 32  -i hw:1 "$@"
+dl32r)
+  eval $ffmpeg -c:a pcm_s32le -f alsa -sample_rate "$rate" -channels 32  -i hw:1 -c copy "$@"
   ;;
 *)
   echo "Bogus mixer $mixer" 1>&2
