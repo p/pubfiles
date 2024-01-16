@@ -683,6 +683,9 @@ if options[:known]
   end
 
   dir = File.join(File.dirname(__FILE__), '../config/wireless-networks')
+  unless File.exist?(dir)
+    raise "Missing known networks directory: #{dir}"
+  end
   networks = {}
   Dir.entries(dir).each do |bn|
     next if bn == '.' || bn == '..'
@@ -696,7 +699,10 @@ if options[:known]
     end
   end
 
-  info = networks.fetch(ssid)
+  info = networks[ssid]
+  unless info
+    raise "Network alias #{ssid} not known"
+  end
   ssid = info.fetch('ssid')
   password = info['password']
 
