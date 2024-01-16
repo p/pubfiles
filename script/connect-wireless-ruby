@@ -2,6 +2,7 @@
 
 # Inspiration: https://github.com/dmelo/vswm
 
+autoload :YAML, 'yaml'
 autoload :FileUtils, 'fileutils'
 autoload :Tempfile, 'tempfile'
 autoload :JSON, 'json'
@@ -662,6 +663,10 @@ OptionParser.new do |opts|
     options[:wpa_supplicant_timeout] = Float(v)
   end
 
+  opts.on('-w', '--known', 'Resolve argument as a known network') do
+    options[:known] = true
+  end
+
   opts.on('--state-dir PATH', 'Path to state directory to use') do |v|
     options[:state_dir] = v
   end
@@ -670,6 +675,32 @@ end.parse!
 ssid, password = ARGV
 if ssid.nil?
   raise 'Usage'
+end
+
+if options[:known]
+  if password
+    raise "Password cannot be given when using a known network"
+  end
+
+  dir = File.join(File.dirname(__FILE__), '../config/wireless-networks')
+  networks = {}
+  Dir.entries(dir).each do |bn|
+    next if bn == '.' || bn == '..'
+    begin
+      this_contents = File.open(File.join(dir, bn)) do |f|
+        YAML.load(f)
+      end
+      networks.update(this_contents)
+    rescue Psych::Exception => exc
+      puts "Error loading #{bn}: #{exc.class}: #{exc}"
+    end
+  end
+
+  info = networks.fetch(ssid)
+  ssid = info.fetch('ssid')
+  password = info['password']
+
+  puts "Connecting to #{ssid}"
 end
 
 if options[:daemonize]
