@@ -17,20 +17,28 @@ class Context
   def rc_partials
     generated = []
     rc_d_path = File.join(File.dirname(__FILE__), '..', 'rc.d')
-    ::FsHelpers.entries_in_path(rc_d_path).each do |basename|
-      path = File.join(rc_d_path, basename)
-      generated << render(path)
+    if File.exist?(rc_d_path)
+      ::FsHelpers.entries_in_path(rc_d_path).each do |basename|
+        path = File.join(rc_d_path, basename)
+        generated << render(path)
+      end
+      generated.join("\n\n")
+    else
+      ''
     end
-    generated.join("\n\n")
   end
 
   def defined_menus
     generated = []
     menu_d_path = File.join(File.dirname(__FILE__), '..', 'menu.d')
-    ::FsHelpers.entries_in_path(menu_d_path).each do |basename|
-      path = File.join(menu_d_path, basename)
-      generated << Context.new.render(path)
+    if File.exist?(menu_d_path)
+      ::FsHelpers.entries_in_path(menu_d_path).each do |basename|
+        path = File.join(menu_d_path, basename)
+        generated << Context.new.render(path)
+      end
+      generated.join("\n\n")
+    else
+      ''
     end
-    generated.join("\n\n")
   end
 end
