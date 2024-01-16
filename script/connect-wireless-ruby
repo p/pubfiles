@@ -408,6 +408,9 @@ class Runner
     output = Sub.check_output(['ip', '-j', 'address', 'show', ifname])
     result = JSON.parse(output)
     if ai = result.first['addr_info']
+      if ai.empty?
+        raise NoIpAddress, "Empty addr_info for #{ifname}"
+      end
       ai = ai.first
       unless (family = ai.fetch('family')) == 'inet'
         raise "Unhandled family: #{family}"
