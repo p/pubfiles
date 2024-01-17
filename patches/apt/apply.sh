@@ -25,7 +25,7 @@ else
   src=/home/me/apps/exp/pubfiles/patches/apt
 fi
 
-version=`dpkg-query -l apt |grep ^ii |awk '{print $3}'`
+version=`dpkg-query -l apt |grep ^ii |awk '{print $3}' |sed -Ee s/'^([0-9]+\.[0-9]+).*/\1'/`
 if test -z "$version"; then
   echo 'No apt installed?' 1>&2
   exit 10
@@ -35,8 +35,10 @@ if test `expr "$version" '<' 1.0` = 1; then
   patch_version=0.9.9
 elif test `expr "$version" '<' 1.3` = 1; then
   patch_version=1.0
-else
+elif test `expr "$version" '<' 1.4` = 1; then
   patch_version=1.3
+else
+  patch_version=1.4.3
 fi
 
 cd "$tmpdir"
