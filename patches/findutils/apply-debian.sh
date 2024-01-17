@@ -30,7 +30,9 @@ version=`head -n 1 debian/changelog |egrep -o '\(.*?\)' |tr -d '()'`
 dch -v "$version"+o "Oleg's patches"
 
 # http://askubuntu.com/questions/226495/how-to-solve-dpkg-source-source-problem-when-building-a-package
-dpkg-buildpackage -b
+# https://iomem.com/archives/18-Avoiding-tests-when-building-Debian-packages.html
+# Out of memory test is failing on some systems.
+DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage -b
 cp ../findutils_*.deb "$cwd"
 
 if test "$1" = -u; then
