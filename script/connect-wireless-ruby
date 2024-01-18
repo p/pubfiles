@@ -201,6 +201,39 @@ module Helpers
       end
     end
   end
+
+  def get_iwconfig(ifname)
+    output = Sub.check_output(['iwconfig', ifname])
+    state = {associated: false}
+    if output =~ /\bESSID:"([^"]*)"/
+      state[:ssid] = $1
+    elsif output =~ /\bESSID:([^\s]+)/
+      state[:ssid] = $1
+    end
+    if state[:ssid] == 'off/any'
+      state[:no_ssid] = true
+    end
+
+    if output =~ /Access Point: (?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}/
+      state[:associated] = true
+    end
+
+    state
+  end
+
+  def get_wpa_state(ifname)
+    state = {}
+    begin
+      output = Sub.check_output(['wpa_cli', '-i', ifname, 'status'])
+    rescue CalledProcessError
+    else
+      if output =~ /\bwpa_state=(\w+)/
+        state[:wpa_state] = $1
+      end
+      state[:wpa_completed] = state[:wpa_state] == 'COMPLETED'
+    end
+    state
+  end
 end
 
 class Runner
@@ -489,7 +522,22 @@ class Runner
     if password
       continue_starting_wpa_supplicant
     else
+      really_set_ssid(ssid)
       @started_at = Utils.monotime
+    end
+  end
+
+  def really_set_ssid(ssid)
+    loop do
+      state = get_iwconfig(wireless_ifname)
+      if state[:ssid] == ssid && state[:associated]
+        break
+      end
+
+      puts "Resetting ssid for #{wireless_ifname}"
+
+      Sub.check_call(['iwconfig', wireless_ifname, 'essid', ssid])
+      sleep 1
     end
   end
 
@@ -576,33 +624,18 @@ EOT
 
   attr_reader :state
 
-  def get_current_state
-    output = Sub.check_output(['iwconfig', wireless_ifname])
-    state = {associated: false}
-    if output =~ /\bESSID:"([^"]*)"/
-      state[:ssid] = $1
-    elsif output =~ /\bESSID:([^\s]+)/
-      state[:ssid] = $1
-    end
-    if state[:ssid] == 'off/any'
-      state[:no_ssid] = true
-    end
-
-    if output =~ /Access Point: (?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}/
-      state[:associated] = true
-    end
+  def get_wireless_state
+    state = get_iwconfig(wireless_ifname)
 
     if password
-      begin
-        output = Sub.check_output(%W(wpa_cli -i #{wireless_ifname} status))
-      rescue CalledProcessError
-      else
-        if output =~ /\bwpa_state=(\w+)/
-          state[:wpa_state] = $1
-        end
-        state[:wpa_completed] = state[:wpa_state] == 'COMPLETED'
-      end
+      state.update(get_wpa_state(wireless_ifname))
     end
+
+    state
+  end
+
+  def get_current_state
+    state = get_wireless_state
 
     if auto?
       state[:active_wired_ifname] = find_active_wired_ifname
