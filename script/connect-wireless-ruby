@@ -682,7 +682,7 @@ if options[:known]
     raise "Password cannot be given when using a known network"
   end
 
-  dir = File.join(File.dirname(__FILE__), '../config/wireless-networks')
+  dir = File.join(File.dirname(__FILE__), '../config/wireless-networks.d')
   unless File.exist?(dir)
     raise "Missing known networks directory: #{dir}"
   end
