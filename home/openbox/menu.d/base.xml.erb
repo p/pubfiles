@@ -63,17 +63,17 @@
     <% end %>
     
     <item label="<%= br.name %> all">
-      <action name='Execute'><command>sudo pkill -9 -u br-<%= br.short_username %></command></action>
+      <action name='Execute'><command>sudo -nu br-<%= br.short_username %> pkill -9 -u br-<%= br.short_username %></command></action>
     </item>
     <item label="<%= br.name %> chromium">
       <action name='Execute'><command>sh -c '
-        sudo -u br-<%= br.short_username %> pkill -9 -u br-<%= br.short_username %> chromium;
-        sudo -u br-<%= br.short_username %> pkill -9 -u br-<%= br.short_username %> chrome;
-        sudo -u br-<%= br.short_username %> pkill -9 -u br-<%= br.short_username %> pulseaudio;
+        sudo -nu br-<%= br.short_username %> pkill -9 -u br-<%= br.short_username %> chromium;
+        sudo -nu br-<%= br.short_username %> pkill -9 -u br-<%= br.short_username %> chrome;
+        sudo -nu br-<%= br.short_username %> pkill -9 -u br-<%= br.short_username %> pulseaudio;
       '</command></action>
     </item>
     <item label="<%= br.name %> waterfox">
-      <action name='Execute'><command>sudo pkill -9 -u br-<%= br.short_username %> waterfox</command></action>
+      <action name='Execute'><command>sudo -nu br-<%= br.short_username %> pkill -9 -u br-<%= br.short_username %> waterfox</command></action>
     </item>
   <% end %>
 </menu>
@@ -121,6 +121,6 @@
     <action name='Execute'><command>~/apps/pubfiles/script/run-as-user-x11 zoom zoom</command></action>
   </item>
   <item label='Kill'>
-    <action name='Execute'><command>sudo -u zoom pkill -9 zoom</command></action>
+    <action name='Execute'><command>sudo -nu zoom pkill -9 zoom</command></action>
   </item>
 </menu>
