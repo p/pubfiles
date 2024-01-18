@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+
+require_relative '../lib/ruby/system_config'
+require 'erb'
+
+TEMPLATE = <<-EOT
+<%= main_user %> ALL = (ardour) NOPASSWD: ALL
+EOT
+
+class Context
+  def main_user
+    SystemConfig.main_user
+  end
+  
+  def _binding
+    binding
+  end
+end
+
+puts "Configuring ardour for #{SystemConfig.main_user}"
+
+result = ERB.new(TEMPLATE).result(Context.new._binding)
+
+File.open('/etc/sudoers.d/ardour', 'w') do |f|
+  f << result
+end
