@@ -153,7 +153,59 @@ module Utils
   end
 end
 
+module Helpers
+
+  private
+
+  def clear_interface_ips(ifname)
+    # https://superuser.com/questions/153559/how-can-i-clear-the-ip-address-of-ethernet-interface-without-cycling-the-interfa
+    Sub.check_call(['ip', 'addr', 'flush', 'dev', ifname])
+  end
+
+  def get_interface_ip(ifname)
+    output = Sub.check_output(['ip', '-j', 'address', 'show', ifname])
+    result = JSON.parse(output)
+    if ai = result.first['addr_info']
+      if ai.empty?
+        raise NoIpAddress, "Empty addr_info for #{ifname}"
+      end
+      ai = ai.first
+      unless (family = ai.fetch('family')) == 'inet'
+        raise "Unhandled family: #{family}"
+      end
+      ai.fetch('local')
+    else
+      raise NoIpAddress, "No IP address for #{ifname}"
+    end
+  end
+
+  def get_default_gateway
+    lines = Sub.check_output(%w(netstat -rn)).split("\n")
+    lines.each do |line|
+      if line.start_with?('0.0.0.0')
+        return line.split(/\s+/, 2).first
+      end
+    end
+    raise NoDefaultGateway
+  end
+
+  def unblock_rfkill
+    if Utils.have('rfkill')
+      output = Sub.check_output(%w(rfkill))
+      output.split("\n").each do |line|
+        id, type, device, soft, hard = line.strip.split(/\s+/)
+        if type == 'wlan' && soft == 'blocked'
+          puts("Unblocking rfkill")
+          Sub.check_call(['rfkill', 'unblock', id])
+        end
+      end
+    end
+  end
+end
+
 class Runner
+  include Helpers
+
   def initialize(**opts)
     @options = opts.dup.freeze
 
@@ -223,17 +275,12 @@ class Runner
     end
   end
 
-  def remove_ips(ifname)
-    # https://superuser.com/questions/153559/how-can-i-clear-the-ip-address-of-ethernet-interface-without-cycling-the-interfa
-    Sub.check_call(['ip', 'addr', 'flush', 'dev', ifname])
-  end
-
   def connect_wireless
     @connected = nil
 
     if auto? && keep_wired_up?
       wired_ifnames.each do |ifname|
-        remove_ips(ifname)
+        clear_interface_ips(ifname)
       end
     else
       wired_ifnames.each do |ifname|
@@ -270,7 +317,7 @@ class Runner
       ssid: ssid,
       password: password,
       interface: wireless_ifname,
-      ip: get_if_ip(wireless_ifname),
+      ip: get_interface_ip(wireless_ifname),
       gateway: get_default_gateway,
     }
     File.open(path, 'w') do |f|
@@ -299,7 +346,7 @@ class Runner
     @connected = nil
 
     wireless_ifnames.each do |ifname|
-      remove_ips(ifname)
+      clear_interface_ips(ifname)
     end
 
     Sub.check_call(['dhclient', '-v', wired_ifname])
@@ -403,46 +450,6 @@ class Runner
 
     @wired_ifnames = wired
     @wireless_ifnames = wireless
-  end
-
-  def get_if_ip(ifname)
-    output = Sub.check_output(['ip', '-j', 'address', 'show', ifname])
-    result = JSON.parse(output)
-    if ai = result.first['addr_info']
-      if ai.empty?
-        raise NoIpAddress, "Empty addr_info for #{ifname}"
-      end
-      ai = ai.first
-      unless (family = ai.fetch('family')) == 'inet'
-        raise "Unhandled family: #{family}"
-      end
-      ai.fetch('local')
-    else
-      raise NoIpAddress, "No IP address for #{ifname}"
-    end
-  end
-
-  def get_default_gateway
-    lines = Sub.check_output(%w(netstat -rn)).split("\n")
-    lines.each do |line|
-      if line.start_with?('0.0.0.0')
-        return line.split(/\s+/, 2).first
-      end
-    end
-    raise NoDefaultGateway
-  end
-
-  def unblock_rfkill
-    if Utils.have('rfkill')
-      output = Sub.check_output(%w(rfkill))
-      output.split("\n").each do |line|
-        id, type, device, soft, hard = line.strip.split(/\s+/)
-        if type == 'wlan' && soft == 'blocked'
-          puts("Unblocking rfkill")
-          Sub.check_call(['rfkill', 'unblock', id])
-        end
-      end
-    end
   end
 
   attr_reader :wpa_process_info
