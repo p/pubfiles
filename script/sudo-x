@@ -14,6 +14,6 @@ sudo -nu $user id >/dev/null
 
 target_xauthority=/home/$user/.Xauthority
 
-xauth list |sed -e 's/^/add /' |sudo -nu $user env XAUTHORITY=$target_xauthority xauth
+xauth extract - $DISPLAY |sudo -nu $user env XAUTHORITY=$target_xauthority xauth merge -
 
 exec sudo -u $user env DISPLAY=$DISPLAY XAUTHORITY=$target_xauthority "$@"
