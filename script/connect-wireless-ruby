@@ -704,7 +704,7 @@ if options[:known]
     raise "Network alias #{ssid} not known"
   end
   ssid = info.fetch('ssid')
-  password = info['password']
+  password = info['psk']
 
   puts "Connecting to #{ssid}"
 end
