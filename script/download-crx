@@ -17,9 +17,12 @@ require 'open-uri'
 class Downloader
   def initialize(id_or_url)
     case id_or_url
-    when %r,\Ahttps://chrome.google.com/webstore/detail/([^/]+)/([a-z0-9]+)(?:\?[^?]+)?\z,
+    when %r,\Ahttps://chrome\.google\.com/webstore/detail/([^/]+)/([a-z0-9]+)(?:\?[^?]+)?\z,
       @slug = $1
       @id = $2
+    when %r,\Ahttps://chromewebstore\.google\.com/detail/([a-z0-9]+)(?:\?[^?]+)?\z,
+      @slug = nil
+      @id = $1
     when %r,\A([a-z0-9]+)\z,
       @slug = nil
       @id = $1
