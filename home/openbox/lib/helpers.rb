@@ -84,9 +84,21 @@ module Helpers
     array_to_cmd(cmd)
   end
 
+  def lock_and_suspend_command
+    lock_command('sudo', '-n', 'pm-suspend')
+  end
+
   def array_to_cmd(bits)
     bits.map do |bit|
       Shellwords.escape(bit)
     end.join(' ')
+  end
+
+  def command_action(str)
+    %Q,
+      <action name="Execute"><command>
+        #{str}
+      </command></action>
+    ,
   end
 end
