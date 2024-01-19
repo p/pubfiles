@@ -14,9 +14,9 @@ class Context
     render(template_path)
   end
 
-  def rc_partials
+  def rc_keyboard_partials
     generated = []
-    rc_d_path = File.join(File.dirname(__FILE__), '..', 'rc.d')
+    rc_d_path = File.join(File.dirname(__FILE__), '..', 'rc.keyboard.d')
     if File.exist?(rc_d_path)
       ::FsHelpers.entries_in_path(rc_d_path).each do |basename|
         path = File.join(rc_d_path, basename)
