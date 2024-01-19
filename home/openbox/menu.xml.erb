@@ -79,19 +79,13 @@
   <% if laptop? %>
     <item label="Lock &amp; Suspend">
       <action name="Execute"><command>
-        env XSECURELOCK_PASSWORD_PROMPT=asterisks
-            XSECURELOCK_SHOW_HOSTNAME=1
-            XSECURELOCK_SHOW_USERNAME=1
-          xsecurelock -- sudo -n pm-suspend
+        <%= lock_command('sudo', '-n', 'pm-suspend') %>
       </command></action>
     </item>
   <% else %>
     <item label="Lock">
       <action name="Execute"><command>
-        env XSECURELOCK_PASSWORD_PROMPT=asterisks
-            XSECURELOCK_SHOW_HOSTNAME=1
-            XSECURELOCK_SHOW_USERNAME=1
-          xsecurelock
+        <%= lock_command %>
       </command></action>
     </item>
   <% end %>
