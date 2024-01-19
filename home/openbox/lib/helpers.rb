@@ -1,4 +1,5 @@
 autoload :Socket, 'socket'
+autoload :Shellwords, 'shellwords'
 autoload :Timeout, 'timeout'
 autoload :JSON, 'json'
 autoload :Pathname, 'pathname'
@@ -68,5 +69,24 @@ module Helpers
     @browser_accounts ||= [].tap do |br|
       br << BrowserAccount.new('Sandbox', 'sandbox', nil)
     end
+  end
+
+  def lock_command(*args)
+    cmd = %w(
+      env XSECURELOCK_PASSWORD_PROMPT=asterisks
+        XSECURELOCK_SHOW_HOSTNAME=1
+        XSECURELOCK_SHOW_USERNAME=1
+      xsecurelock)
+    if args.any?
+      cmd << '--'
+      cmd += args
+    end
+    array_to_cmd(cmd)
+  end
+
+  def array_to_cmd(bits)
+    bits.map do |bit|
+      Shellwords.escape(bit)
+    end.join(' ')
   end
 end
