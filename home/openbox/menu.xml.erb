@@ -78,15 +78,11 @@
   </item>
   <% if laptop? %>
     <item label="Lock &amp; Suspend">
-      <action name="Execute"><command>
-        <%= lock_command('sudo', '-n', 'pm-suspend') %>
-      </command></action>
+      <%= command_action(lock_and_suspend_command) %>
     </item>
   <% else %>
     <item label="Lock">
-      <action name="Execute"><command>
-        <%= lock_command %>
-      </command></action>
+      <%= command_action(lock_command) %>
     </item>
   <% end %>
 </menu>
