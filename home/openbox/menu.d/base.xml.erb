@@ -121,6 +121,6 @@
     <action name='Execute'><command>~/apps/pubfiles/script/sudo-x zoom zoom</command></action>
   </item>
   <item label='Kill'>
-    <action name='Execute'><command>sudo -nu zoom pkill -9 zoom</command></action>
+    <action name='Execute'><command>pkill -9 zoom; sudo -nu zoom pkill -9 zoom</command></action>
   </item>
 </menu>
