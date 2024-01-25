@@ -9,6 +9,7 @@ autoload :JSON, 'json'
 autoload :OptionParser, 'optparse'
 #gem 'childprocess'
 autoload :ChildProcess, 'childprocess'
+require_relative '../lib/ruby/global_helpers'
 
 class Error < StandardError
 end
@@ -238,6 +239,7 @@ end
 
 class Runner
   include Helpers
+  include GlobalHelpers
 
   def initialize(**opts)
     @options = opts.dup.freeze
@@ -359,9 +361,14 @@ class Runner
 
     @connected = :wireless
 
-    #if options[:keep]
+    # On a desktop once a connection is established it will stay up,
+    # unless it requires auth in which case we need to babysit
+    # wpa_supplicant.
+    # On a laptop connection will be broken after suspend & resume,
+    # therefore we need to keep it.
+    if laptop?
       keep
-    #end
+    end
   end
 
   def find_active_wired_ifname
