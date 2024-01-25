@@ -396,12 +396,6 @@ class Runner
   end
 
   def keep
-    unless password
-      loop do
-        sleep 10
-      end
-    end
-
     need_start = false
     loop do
       begin
@@ -437,17 +431,22 @@ class Runner
         # TODO check that the current SSID is the one that was requested
         # by the user.
 
+        elapsed = Utils.monotime - started_at
+
         if password
-          if (elapsed = Utils.monotime - started_at) > options.fetch(:wpa_supplicant_timeout)
+          if elapsed > options.fetch(:wpa_supplicant_timeout)
             raise WpaSupplicantFailed, "Giving up on wpa association after #{options.fetch(:wpa_supplicant_timeout)} seconds"
           end
 
           if @wpa_exited
             raise WpaSupplicantFailed, "wpa_supplicant unexpectedly terminated with exit code #{wpa_process.exit_code}"
           end
+
+          puts 'ssid: %s, wpa: %s, elapsed: %d' % [state[:ssid], state[:wpa_state], elapsed]
+        else
+          puts 'ssid: %s, elapsed: %d' % [state[:ssid], elapsed]
         end
 
-        puts 'ssid: %s, wpa: %s, elapsed: %d' % [state[:ssid], state[:wpa_state], elapsed]
         sleep 3
       rescue WpaSupplicantFailed
         need_start = true
@@ -497,19 +496,18 @@ class Runner
 
   def start_wpa_supplicant
     puts "[CWR] Preparing to start wpa_supplicant for #{wireless_ifname}"
-    if @wpa_process_info
+    if wpa_process_info
       begin
-        Process.kill('TERM', @wpa_process_info.fetch(:pid))
+        Process.kill('TERM', wpa_process_info.fetch(:pid))
       rescue SystemCallError
       end
       begin
-        @wpa_process_info.fetch(:thread).kill
+        wpa_process_info.fetch(:thread).kill
       rescue ThreadError
       end
       @wpa_process_info = nil
     end
     @wpa_exited = false
-    @wpa_process_info = {}
 
     dir = '/etc/network/interfaces.d'
     if File.exist?(dir)
