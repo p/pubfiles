@@ -1,0 +1,76 @@
+#!/usr/bin/env ruby
+
+require 'redcarpet'
+autoload :FileUtils, 'fileutils'
+autoload :Find, 'find'
+autoload :OptionParser, 'optparse'
+require_relative '../lib/ruby/fs_helpers'
+
+class Runner
+  include FsHelpers
+
+  def initialize(**opts)
+    @options = opts
+  end
+
+  attr_reader :options
+
+  def root
+    options.fetch(:root)
+  end
+
+  alias :start_path :root
+
+  def output_root
+    options.fetch(:output_path)
+  end
+
+  def run
+    Find.find(root) do |path|
+      next if File.directory?(path)
+
+      if File.extname(path) == '.md'
+        render_markdown(path)
+      else
+        dest = File.join(output_root, relativize(path))
+        FileUtils.mkdir_p(File.dirname(dest))
+        FileUtils.cp(path, dest)
+      end
+    end
+  end
+
+  private
+
+  def render_markdown(path)
+    out_path = File.join(output_root, relativize(path).sub(/\.md/, '.html'))
+    rendered = markdown.render(File.read(path))
+    rendered = "<!doctype html><html><head><meta charset='utf-8'></head><body>#{rendered}</body></html>"
+    FileUtils.mkdir_p(File.dirname(out_path))
+    File.open(out_path, 'w') do |f|
+      f << rendered
+    end
+  end
+
+  def markdown
+    @markdown ||= Redcarpet::Markdown.new(Redcarpet::Render::HTML,
+      autolink: true, tables: true)
+  end
+end
+
+options = {
+}
+OptionParser.new do |opts|
+  opts.banner = "Usage: render-markdown-tree [options]"
+
+  opts.on('-w', '--write PATH', 'Specify output directory') do |v|
+    options[:output_path] = v
+  end
+
+end.parse!
+
+path = ARGV.first
+if path.nil?
+  raise 'Usage'
+end
+
+Runner.new(root: path, **options).run
