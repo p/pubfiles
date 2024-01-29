@@ -1,0 +1,19 @@
+#!/bin/sh
+
+set -e
+
+if ! test -d /etc/acpi/actions; then
+  echo "Missing /etc/acpi/actions" 1>&2
+  exit 1
+fi
+
+if ! test -d /etc/acpi/events; then
+  echo "Missing /etc/acpi/events" 1>&2
+  exit 1
+fi
+
+BASE=`dirname $0`/..
+
+# X280
+install -m 555 -o root -g root -t /etc/acpi "$BASE"/config/acpi/sleep-key.sh
+install -m 444 -o root -g root -t /etc/acpi/events "$BASE"/config/acpi/events/sleep-key

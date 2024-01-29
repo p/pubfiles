@@ -393,6 +393,10 @@ if is_headful; then
   done
 fi
 
+if is_laptop; then
+  "$BASE"/configure-sleep-key
+fi
+
 mkdir -p /root/bin
 if test -e /root/.zshrc; then
   if ! diff -q /root/.zshrc $BASE/../home/zshrc.root; then
