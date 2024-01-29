@@ -1,10 +1,29 @@
 #!/usr/bin/env ruby
 
-require 'redcarpet'
 autoload :FileUtils, 'fileutils'
 autoload :Find, 'find'
 autoload :OptionParser, 'optparse'
 require_relative '../lib/ruby/fs_helpers'
+
+class RedcarpetRenderer
+  def initialize
+    require 'redcarpet'
+  end
+
+  def render(text)
+    markdown.render(text)
+  end
+
+  def markdown
+    @markdown ||= Redcarpet::Markdown.new(Redcarpet::Render::HTML,
+      autolink: true, tables: true)
+  end
+end
+
+class PostProcessor
+  def process(text)
+  end
+end
 
 class Runner
   include FsHelpers
@@ -43,7 +62,7 @@ class Runner
 
   def render_markdown(path)
     out_path = File.join(output_root, relativize(path).sub(/\.md/, '.html'))
-    rendered = markdown.render(File.read(path))
+    rendered = renderer.render(File.read(path))
     rendered = "<!doctype html><html><head><meta charset='utf-8'></head><body>#{rendered}</body></html>"
     FileUtils.mkdir_p(File.dirname(out_path))
     File.open(out_path, 'w') do |f|
@@ -51,9 +70,8 @@ class Runner
     end
   end
 
-  def markdown
-    @markdown ||= Redcarpet::Markdown.new(Redcarpet::Render::HTML,
-      autolink: true, tables: true)
+  def renderer
+    @renderer ||= RedcarpetRenderer.new
   end
 end
 
