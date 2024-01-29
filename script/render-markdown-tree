@@ -61,26 +61,27 @@ class PostProcessor
       next if title.empty?
       # All headings should have generated id's
       next unless h.attr('id')
-      {element: h, title: title, children: []}
+      {element: h, title: title, children: [], level: Integer(h.name[1..])}
     end.compact
+    stack = []
     headings.each do |h|
       elt = h.fetch(:element)
-      parent = elt.parent
-      loop do
-        break if parent.nil?
-        if parent.name =~ /\Ah(\d+)\z/ && Integer($1) <= depth
-          parent_entry = headings.detect do |h|
-            h.fetch(:element) == parent
-          end
-          parent_entry[:children] << h
-          h[:top_level] = false
-          break
-        end
-        break unless parent.respond_to?(:parent)
-        parent = parent.parent
+      while stack.last && stack.last.fetch(:level) >= h.fetch(:level)
+        stack.pop
       end
+      if parent = stack.last
+        parent_entry = headings.detect do |h|
+          h.fetch(:element) == parent.fetch(:element)
+        end
+        parent_entry[:children] << h
+        h[:top_level] = false
+      end
+      stack << h
     end
-    toc = make_list(headings, doc)
+    top_headings = headings.select do |h|
+      h[:top_level] != false
+    end
+    toc = make_list(top_headings, doc)
     toc.set_attribute('class', 'toc')
     doc.xpath('//body').first.prepend_child(toc)
     css = Nokogiri::XML::Node.new('link', doc)
@@ -95,7 +96,6 @@ class PostProcessor
   def make_list(headings, doc)
     ul = Nokogiri::XML::Node.new('ul', doc)
     headings.each do |h|
-      next if h[:top_level] == false
       a = Nokogiri::XML::Node.new('a', doc)
       a.set_attribute('href', '#' + h.fetch(:element).attr(:id))
       a.content = h.fetch(:title)
