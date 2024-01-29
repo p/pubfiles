@@ -96,11 +96,14 @@ class PostProcessor
     ul = Nokogiri::XML::Node.new('ul', doc)
     headings.each do |h|
       next if h[:top_level] == false
+      a = Nokogiri::XML::Node.new('a', doc)
+      a.set_attribute('href', '#' + h.fetch(:element).attr(:id))
+      a.content = h.fetch(:title)
       node = Nokogiri::XML::Node.new('li', doc)
+      node.add_child(a)
       if children = h[:children]
         node.add_child(make_list(children, doc))
       end
-      node.content = h.fetch(:title)
       ul.add_child(node)
     end
     ul
