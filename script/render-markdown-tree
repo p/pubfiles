@@ -5,18 +5,40 @@ autoload :Find, 'find'
 autoload :OptionParser, 'optparse'
 require_relative '../lib/ruby/fs_helpers'
 
-class RedcarpetRenderer
+class RendererBase
+  def render_path(markdown_path)
+    render_text(File.read(markdown_path))
+  end
+end
+
+class RedcarpetRenderer < RendererBase
   def initialize
     require 'redcarpet'
   end
 
-  def render(text)
+  def render_text(text)
     markdown.render(text)
   end
 
   def markdown
     @markdown ||= Redcarpet::Markdown.new(Redcarpet::Render::HTML,
       autolink: true, tables: true)
+  end
+end
+
+class PandocRenderer < RendererBase
+  def initialize
+    require 'tmpdir'
+  end
+
+  def render_path(markdown_path)
+    Dir.mktmpdir do |path|
+      rendered_path = File.join(path, 'rendered.html')
+      cmd = ['pandoc', markdown_path, '-o', rendered_path]
+      pid = Process.spawn(*cmd)
+      p pid
+      Process.waitpid(pid)
+    end
   end
 end
 
@@ -62,7 +84,7 @@ class Runner
 
   def render_markdown(path)
     out_path = File.join(output_root, relativize(path).sub(/\.md/, '.html'))
-    rendered = renderer.render(File.read(path))
+    rendered = renderer.render_path(path)
     rendered = "<!doctype html><html><head><meta charset='utf-8'></head><body>#{rendered}</body></html>"
     FileUtils.mkdir_p(File.dirname(out_path))
     File.open(out_path, 'w') do |f|
@@ -70,8 +92,14 @@ class Runner
     end
   end
 
+  def renderer_class
+    @renderer_class ||= begin
+      Object.const_get((options[:renderer] || 'pandoc').sub(/./) { |m| m.upcase } + 'Renderer')
+    end
+  end
+
   def renderer
-    @renderer ||= RedcarpetRenderer.new
+    @renderer ||= renderer_class.new
   end
 end
 
