@@ -74,6 +74,7 @@ class PostProcessor
           end
           parent_entry[:children] << h
           h[:top_level] = false
+          break
         end
         break unless parent.respond_to?(:parent)
         parent = parent.parent
@@ -82,6 +83,10 @@ class PostProcessor
     toc = make_list(headings, doc)
     toc.set_attribute('class', 'toc')
     doc.xpath('//body').first.prepend_child(toc)
+    css = Nokogiri::XML::Node.new('link', doc)
+    css.set_attribute('rel', 'stylesheet')
+    css.set_attribute('href', 'style.css')
+    doc.xpath('//head').first.add_child(css)
     doc.to_s
   end
 
@@ -133,6 +138,10 @@ class Runner
         FileUtils.cp(path, dest)
       end
     end
+
+    File.open(File.join(output_root, 'style.css'), 'w') do |f|
+      f << STYLE
+    end
   end
 
   private
@@ -162,6 +171,10 @@ class Runner
     @postprocessor ||= PostProcessor.new
   end
 end
+
+STYLE = <<-EOT
+  .toc { float: right }
+EOT
 
 options = {
 }
