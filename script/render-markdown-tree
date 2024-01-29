@@ -42,16 +42,63 @@ class PandocRenderer < RendererBase
 end
 
 class PostProcessor
-  def initialize
+  def initialize(**opts)
     require 'nokogiri'
+    @options = opts
+  end
+
+  attr_reader :options
+
+  def depth
+    options[:depth] || 3
   end
 
   def process(text)
     doc = Nokogiri::HTML(text)
-    doc.xpath('//h1').each do |h1|
-      p h1.text
+    xpath_expr = 1.upto(depth).map { |i| "self::h#{i}" }.join(' or ')
+    headings = doc.xpath("//*[#{xpath_expr}]").map do |h|
+      title = h.text.strip
+      next if title.empty?
+      # All headings should have generated id's
+      next unless h.attr('id')
+      {element: h, title: title, children: []}
+    end.compact
+    headings.each do |h|
+      elt = h.fetch(:element)
+      parent = elt.parent
+      loop do
+        break if parent.nil?
+        if parent.name =~ /\Ah(\d+)\z/ && Integer($1) <= depth
+          parent_entry = headings.detect do |h|
+            h.fetch(:element) == parent
+          end
+          parent_entry[:children] << h
+          h[:top_level] = false
+        end
+        break unless parent.respond_to?(:parent)
+        parent = parent.parent
+      end
     end
+    toc = make_list(headings, doc)
+    toc.set_attribute('class', 'toc')
+    doc.xpath('//body').first.prepend_child(toc)
     doc.to_s
+  end
+
+  private
+
+  def make_list(headings, doc)
+    ul = Nokogiri::XML::Node.new('ul', doc)
+    headings.each do |h|
+      next if h[:top_level] == false
+      node = Nokogiri::XML::Node.new('li', doc)
+      if children = h[:children]
+        node.add_child(make_list(children, doc))
+      end
+      node.content = h.fetch(:title)
+      ul.add_child(node)
+    end
+    ul
   end
 end
 
