@@ -42,7 +42,16 @@ class PandocRenderer < RendererBase
 end
 
 class PostProcessor
+  def initialize
+    require 'nokogiri'
+  end
+
   def process(text)
+    doc = Nokogiri::HTML(text)
+    doc.xpath('//h1').each do |h1|
+      p h1.text
+    end
+    doc.to_s
   end
 end
 
@@ -85,6 +94,7 @@ class Runner
     out_path = File.join(output_root, relativize(path).sub(/\.md/, '.html'))
     rendered = renderer.render_path(path)
     rendered = "<!doctype html><html><head><meta charset='utf-8'></head><body>#{rendered}</body></html>"
+    rendered = postprocessor.process(rendered)
     FileUtils.mkdir_p(File.dirname(out_path))
     File.open(out_path, 'w') do |f|
       f << rendered
@@ -99,6 +109,10 @@ class Runner
 
   def renderer
     @renderer ||= renderer_class.new
+  end
+
+  def postprocessor
+    @postprocessor ||= PostProcessor.new
   end
 end
 
