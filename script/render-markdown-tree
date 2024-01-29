@@ -86,8 +86,17 @@ class PostProcessor
     doc.xpath('//body').first.prepend_child(toc)
     css = Nokogiri::XML::Node.new('link', doc)
     css.set_attribute('rel', 'stylesheet')
-    css.set_attribute('href', 'style.css')
-    doc.xpath('//head').first.add_child(css)
+    css.set_attribute('href', 'toc.css')
+    head = doc.xpath('//head').first
+    head.add_child(css)
+    if styles = options[:styles]
+      styles.each do |style|
+        elt = Nokogiri::XML::Node.new('link', doc)
+        elt.set_attribute('rel', 'stylesheet')
+        elt.set_attribute('href', style)
+        head.add_child(elt)
+      end
+    end
     doc.to_s
   end
 
@@ -142,7 +151,7 @@ class Runner
       end
     end
 
-    File.open(File.join(output_root, 'style.css'), 'w') do |f|
+    File.open(File.join(output_root, 'toc.css'), 'w') do |f|
       f << STYLE
     end
   end
@@ -171,7 +180,7 @@ class Runner
   end
 
   def postprocessor
-    @postprocessor ||= PostProcessor.new
+    @postprocessor ||= PostProcessor.new(**options)
   end
 end
 
@@ -183,6 +192,11 @@ options = {
 }
 OptionParser.new do |opts|
   opts.banner = "Usage: render-markdown-tree [options]"
+
+  opts.on('-s', '--style PATH', 'Add stylesheet reference') do |v|
+    options[:styles] ||= []
+    options[:styles] << v
+  end
 
   opts.on('-w', '--write PATH', 'Specify output directory') do |v|
     options[:output_path] = v
