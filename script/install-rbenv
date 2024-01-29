@@ -11,13 +11,13 @@ fi
 if test -d ~/.rbenv/plugins/ruby-build; then
   (cd ~/.rbenv/plugins/ruby-build && git pull)
 else
-  git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build
+  git clone https://github.com/rbenv/ruby-build ~/.rbenv/plugins/ruby-build
 fi
 
 if test -d ~/.rbenv/plugins/rbenv-aliases; then
   (cd ~/.rbenv/plugins/rbenv-aliases && git pull)
 else
-  git clone git://github.com/tpope/rbenv-aliases.git ~/.rbenv/plugins/rbenv-aliases
+  git clone https://github.com/tpope/rbenv-aliases ~/.rbenv/plugins/rbenv-aliases
 fi
 
 eval "`~/.rbenv/bin/rbenv init -`"
