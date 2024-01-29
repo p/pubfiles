@@ -28,17 +28,16 @@ end
 
 class PandocRenderer < RendererBase
   def initialize
-    require 'tmpdir'
   end
 
   def render_path(markdown_path)
-    Dir.mktmpdir do |path|
-      rendered_path = File.join(path, 'rendered.html')
-      cmd = ['pandoc', markdown_path, '-o', rendered_path]
-      pid = Process.spawn(*cmd)
-      p pid
-      Process.waitpid(pid)
-    end
+    cmd = ['pandoc', markdown_path]
+    rd, wr = IO.pipe
+    pid = Process.spawn(*cmd, out: wr)
+    wr.close
+    output = rd.read
+    Process.waitpid(pid)
+    output
   end
 end
 
