@@ -2,22 +2,28 @@
 
 set -e
 
+BASE=`dirname $0`/..
+
+. $BASE/script/common.sh
+
+if ! is_laptop; then
+  echo 'error: not a laptop' 1>&2
+  exit 1
+fi
+
 if ! test -d /etc/acpi/actions; then
   echo "Missing /etc/acpi/actions" 1>&2
+  if ! dpkg-query -s acpi-support >/dev/null 2>&1; then
+    echo Possible reason: acpi-support is not installed 1>&2
+  fi
   exit 1
 fi
 
 if ! test -d /etc/acpi/events; then
   echo "Missing /etc/acpi/events" 1>&2
-  exit 1
-fi
-
-BASE=`dirname $0`/..
-
-. $BASE/script/common.sh
-
-if is_laptop; then
-  echo 'error: not a laptop' 1>&2
+  if ! dpkg-query -s acpi-support >/dev/null 2>&1; then
+    echo Possible reason: acpi-support is not installed 1>&2
+  fi
   exit 1
 fi
 
