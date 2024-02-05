@@ -11,12 +11,16 @@ if ! is_laptop; then
   exit 1
 fi
 
+if false; then
+# There isn't /etc/acpi/actions (any more?).
+# The next check for events covers actions too.
 if ! test -d /etc/acpi/actions; then
   echo "Missing /etc/acpi/actions" 1>&2
   if ! dpkg-query -s acpi-support >/dev/null 2>&1; then
     echo Possible reason: acpi-support is not installed 1>&2
   fi
   exit 1
+fi
 fi
 
 if ! test -d /etc/acpi/events; then
