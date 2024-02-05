@@ -14,6 +14,13 @@ fi
 
 BASE=`dirname $0`/..
 
+. $BASE/script/common.sh
+
+if is_laptop; then
+  echo 'error: not a laptop' 1>&2
+  exit 1
+fi
+
 # X280
 install -m 555 -o root -g root -t /etc/acpi "$BASE"/config/acpi/sleep-key.sh
 install -m 444 -o root -g root -t /etc/acpi/events "$BASE"/config/acpi/events/sleep-key
