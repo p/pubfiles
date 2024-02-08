@@ -50,11 +50,18 @@ alesis)
   eval $ffmpeg -f alsa -sample_rate "$rate" -i hw:1 "$@"
   ;;
 m-audio)
+  card=1
+  for f in /proc/asound/card*/id; do
+    if grep -q ^Pro$ $f; then
+      card=`basename $(dirname $f) |sed -e s/card//`
+      break
+    fi
+  done
   # 44100 & 48000 sample rates are supported.
-  eval $ffmpeg -f alsa -sample_rate "$rate" -i hw:1 "$@"
+  eval $ffmpeg -hide_banner -f alsa -sample_rate "$rate" -i hw:$card "$@"
   ;;
 dl32r)
-  eval $ffmpeg -c:a pcm_s32le -f alsa -sample_rate "$rate" -channels 32  -i hw:1 -c copy "$@"
+  eval $ffmpeg -hide_banner -c:a pcm_s32le -f alsa -sample_rate "$rate" -channels 32  -i hw:1 -c copy "$@"
   ;;
 *)
   echo "Bogus mixer $mixer" 1>&2
