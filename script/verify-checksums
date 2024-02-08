@@ -1,0 +1,63 @@
+#!/usr/bin/env ruby
+
+require 'yaml'
+require 'optparse'
+
+class Runner
+  def initialize(**opts)
+    @options = opts
+  end
+
+  attr_reader :options
+
+  def run
+    puts 'Reading checksums...'
+    checksums = File.open(options.fetch(:path)) do |f|
+      YAML.load(f)
+    end.fetch('sums')
+
+    puts 'Reading reference...'
+    ref_checksums = File.open(options.fetch(:ref_path)) do |f|
+      YAML.load(f)
+    end.fetch('sums')
+
+    checksums.each do |path, info|
+      if (ref_info = ref_checksums[path]) &&
+        info.fetch('sha1') == ref_info.fetch('sha1') &&
+        info.fetch('size') == ref_info.fetch('size')
+      then
+        next
+      end
+
+      found = false
+      bn = File.basename(path)
+      ref_checksums.each do |ref_path, ref_info|
+        if File.basename(ref_path) == bn &&
+          ref_info.fetch('size') == info.fetch('size') &&
+          ref_info.fetch('sha1') == info.fetch('sha1')
+        then
+          found = true
+          break
+        end
+      end
+
+      next if found
+
+      require'byebug';byebug
+      1
+    end
+  end
+end
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: verify-checksums [-r ref-path] path"
+
+  opts.on('-r', '--reference=PATH', 'Reference path') do |v|
+    options[:ref_path] = v
+  end
+end.parse!
+
+options.fetch(:ref_path)
+
+Runner.new(path: ARGV.shift, **options).run
