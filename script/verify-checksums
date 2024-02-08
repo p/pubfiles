@@ -43,8 +43,7 @@ class Runner
 
       next if found
 
-      require'byebug';byebug
-      1
+      puts "Missing in reference: #{path}"
     end
   end
 end
