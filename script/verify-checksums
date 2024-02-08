@@ -37,6 +37,9 @@ class Runner
           ref_info.fetch('sha1') == info.fetch('sha1')
         then
           found = true
+          if options[:verbose]
+            puts "OK: #{path}"
+          end
           break
         end
       end
@@ -54,6 +57,10 @@ OptionParser.new do |opts|
 
   opts.on('-r', '--reference=PATH', 'Reference path') do |v|
     options[:ref_path] = v
+  end
+
+  opts.on('-v', '--verbose', 'Be more verbose') do
+    options[:verbose] = true
   end
 end.parse!
 
