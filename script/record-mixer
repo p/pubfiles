@@ -28,8 +28,10 @@ done
 shift $((OPTIND-1))
 
 if test -z "$mixer"; then
-  if grep -q DL32R /proc/asound/card*/id; then
+  if fgrep -qx DL32R /proc/asound/card*/id; then
     mixer=dl32r
+  elif fgrep -qx Pro /proc/asound/card*/id; then
+    mixer=m-audio
   fi
 fi
 
@@ -44,24 +46,33 @@ echo
 
 ffmpeg='ffmpeg -hide_banner'
 
+id2card() {
+  id="$1"
+  for f in /proc/asound/card*/id; do
+    if fgrep -qx "$id" $f; then
+      card=`basename $(dirname $f) |sed -e s/card//`
+      echo "$card"
+      return 0
+    fi
+  done
+  return 1
+}
+
 case "$mixer" in
 alesis)
   # 44100 & 48000 sample rates are supported.
   eval $ffmpeg -f alsa -sample_rate "$rate" -i hw:1 "$@"
   ;;
 m-audio)
-  card=1
-  for f in /proc/asound/card*/id; do
-    if grep -q ^Pro$ $f; then
-      card=`basename $(dirname $f) |sed -e s/card//`
-      break
-    fi
-  done
+  card=`id2card Pro || echo 1`
   # 44100 & 48000 sample rates are supported.
-  eval $ffmpeg -hide_banner -f alsa -sample_rate "$rate" -i hw:$card "$@"
+  eval $ffmpeg -f alsa -sample_rate "$rate" -i hw:$card "$@"
   ;;
 dl32r)
-  eval $ffmpeg -hide_banner -c:a pcm_s32le -f alsa -sample_rate "$rate" -channels 32  -i hw:1 -c copy "$@"
+  card=`id2card DL32R || echo 1`
+  eval $ffmpeg \
+    -c:a pcm_s32le -f alsa -sample_rate "$rate" -channels 32  -i hw:1 \
+    -c copy "$@"
   ;;
 *)
   echo "Bogus mixer $mixer" 1>&2
