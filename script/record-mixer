@@ -5,12 +5,15 @@ set -e
 mixer=
 rate=
 
-while getopts amr: opt; do
+while getopts admr: opt; do
   case $opt in
   a)
     mixer=alesis
     ;;
   m)
+    mixer=m-audio
+    ;;
+  d)
     mixer=dl32r
     ;;
   r)
@@ -43,6 +46,10 @@ ffmpeg='ffmpeg -hide_banner'
 
 case "$mixer" in
 alesis)
+  # 44100 & 48000 sample rates are supported.
+  eval $ffmpeg -f alsa -sample_rate "$rate" -i hw:1 "$@"
+  ;;
+m-audio)
   # 44100 & 48000 sample rates are supported.
   eval $ffmpeg -f alsa -sample_rate "$rate" -i hw:1 "$@"
   ;;
