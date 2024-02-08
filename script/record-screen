@@ -59,7 +59,7 @@ if ! $audio_only; then
   video_processing="-c:v libx264rgb -crf 0 -preset ultrafast -color_range 2"
 fi
 
-exec ffmpeg $video_input \
+exec ffmpeg -hide_banner $video_input \
   -f $audio_backend -ac 2 -i "$audio_device" \
   $video_processing \
   -c:a pcm_s16le \
