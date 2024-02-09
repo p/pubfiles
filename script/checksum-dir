@@ -33,6 +33,10 @@ class Runner
     options[:resume]
   end
 
+  def subdirs
+    options[:subdirs]
+  end
+
   def start_path
     @start_path ||= begin
       options.fetch(:start_path).tap do |path|
@@ -50,16 +54,23 @@ class Runner
 
     count = 0
     Find.find(start_path) do |path|
+      rel_path = relativize(path)
+
+      maybe_prune(rel_path)
+
       next unless File.file?(path)
+
       count += 1
     end
 
     bar = ProgressBar.create(total: count, format: '%c/%C %e %w')
 
     Find.find(start_path) do |path|
-      next unless File.file?(path)
-
       rel_path = relativize(path)
+
+      maybe_prune(rel_path)
+
+      next unless File.file?(path)
 
       if resume? && sums.key?(rel_path)
         bar.increment
@@ -133,6 +144,15 @@ class Runner
     end
     digest.hexdigest
   end
+
+  def maybe_prune(rel_path)
+    if subdirs
+      top_comp = rel_path.sub(%r,/.*,, '')
+      if !top_comp.empty? && !subdirs.include?(top_comp)
+        Find.prune
+      end
+    end
+  end
 end
 
 options = {}
@@ -141,6 +161,11 @@ OptionParser.new do |opts|
 
   opts.on('-r', '--resume', 'Resume previous operation') do
     options[:resume] = true
+  end
+
+  opts.on("-s", "--subdir=DIR", "Checksum only specified subdir (may be repeated)") do |v|
+    options[:subdirs] ||= []
+    options[:subdirs] << v
   end
 
   opts.on("-w", "--write=PATH", "Specify output file") do |v|
