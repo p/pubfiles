@@ -2,6 +2,7 @@
 
 require_relative '../lib/ruby/system_config'
 require 'erb'
+require 'etc'
 
 TEMPLATE = <<-EOT
 <%= main_user %> ALL = (ardour) NOPASSWD: ALL
@@ -11,7 +12,7 @@ class Context
   def main_user
     SystemConfig.main_user
   end
-  
+
   def _binding
     binding
   end
@@ -23,4 +24,20 @@ result = ERB.new(TEMPLATE).result(Context.new._binding)
 
 File.open('/etc/sudoers.d/ardour', 'w') do |f|
   f << result
+end
+
+begin
+  Etc.getpwnam('ardour')
+rescue ArgumentError
+raise
+  system("useradd -m -s /bin/zsh -G audio -u 2533 ardour")
+end
+
+text = <<-EOT
+@audio - rtprio 95
+@audio - memlock 409600
+EOT
+
+File.open('/etc/security/limits.d/audio.conf', 'w') do |f|
+  f << text
 end
