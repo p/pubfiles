@@ -29,7 +29,6 @@ end
 begin
   Etc.getpwnam('ardour')
 rescue ArgumentError
-raise
   system("useradd -m -s /bin/zsh -G audio -u 2533 ardour")
 end
 
