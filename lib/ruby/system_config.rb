@@ -10,6 +10,7 @@ module SystemConfig
         next if line =~ /^\s*#/
 
         k, v = line.split('=', 2)
+        next unless v
         k.strip!
         _v = v.strip
 
