@@ -344,6 +344,12 @@ if test -f /etc/setup.conf; then
   fi
 fi
 
+if ! fgrep -qx GRUB_TERMINAL=console /etc/default/grub; then
+  sed -i.bak s/^GRUB_TERMINAL=/#GRUB_TERMINAL=/ /etc/default/grub
+  (echo; echo GRUB_TERMINAL=console) |tee -a /etc/default/grub
+  update-grub
+fi
+
 if dmidecode -t system |grep -q 'ThinkPad T550'; then
   echo 'pm_suspend_args=--quirk-dpms-on' |tee -a /etc/system.conf
 fi
