@@ -5,7 +5,7 @@ set -e
 mixer=
 rate=
 
-while getopts admr: opt; do
+while getopts admpr: opt; do
   case $opt in
   a)
     mixer=alesis
@@ -15,6 +15,9 @@ while getopts admr: opt; do
     ;;
   d)
     mixer=dl32r
+    ;;
+  p)
+    mixer=presonus
     ;;
   r)
     rate="$OPTARG"
@@ -32,6 +35,14 @@ if test -z "$mixer"; then
     mixer=dl32r
   elif fgrep -qx Pro /proc/asound/card*/id; then
     mixer=m-audio
+  elif fgrep -qx 'AudioBox USB' /proc/asound/card*/midi0; then
+    mixer=presonus
+  fi
+  
+  if test -n "$mixer"; then
+    echo "Detected mixer: $mixer"
+  else
+    echo "Mixer not specified and not detected" 1>&2
   fi
 fi
 
@@ -46,9 +57,10 @@ echo
 
 ffmpeg='ffmpeg -hide_banner'
 
-id2card() {
+find_card() {
   id="$1"
-  for f in /proc/asound/card*/id; do
+  filename="${2:-id}"
+  for f in /proc/asound/card*/"$filename"; do
     if fgrep -qx "$id" $f; then
       card=`basename $(dirname $f) |sed -e s/card//`
       echo "$card"
@@ -64,14 +76,20 @@ alesis)
   eval $ffmpeg -f alsa -sample_rate "$rate" -i hw:1 "$@"
   ;;
 m-audio)
-  card=`id2card Pro || echo 1`
+  card=`find_card Pro || echo 1`
   # 44100 & 48000 sample rates are supported.
   eval $ffmpeg -f alsa -sample_rate "$rate" -i hw:$card "$@"
   ;;
 dl32r)
-  card=`id2card DL32R || echo 1`
+  card=`find_card DL32R || echo 1`
   eval $ffmpeg \
-    -c:a pcm_s32le -f alsa -sample_rate "$rate" -channels 32  -i hw:1 \
+    -c:a pcm_s32le -f alsa -sample_rate "$rate" -channels 32  -i hw:$card \
+    -c copy "$@"
+  ;;
+presonus)
+  card=`find_card 'AudioBox USB' midi0 || echo 1`
+  eval $ffmpeg \
+    -c:a pcm_s24le -f alsa -sample_rate "$rate" -i hw:$card \
     -c copy "$@"
   ;;
 *)
