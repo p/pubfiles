@@ -1,0 +1,51 @@
+#!/bin/sh
+
+set -e
+
+input=/dev/fd/0
+output=/dev/fd/1
+decrypt=false
+
+while getopts di:o: opt; do
+  case $opt in
+  d)
+    decrypt=true
+    ;;
+  i)
+    input="$OPTARG"
+    ;;
+  o)
+    output="$OPTARG"
+    ;;
+  *)
+    echo "Bogus option $opt" 1>&2
+    exit 10
+    ;;
+  esac
+done
+shift $((OPTIND-1))
+
+if basename "$(echo "$0")" |fgrep -q decrypt; then
+  decrypt=true
+fi
+
+if test -n "$1"; then
+  input="$1"
+  shift
+fi
+
+if test -n "$1"; then
+  output="$1"
+  shift
+fi
+
+opts="-salt -pbkdf2"
+if $decrypt; then
+  opts="-d"
+fi
+
+# If the passphrase is wrong, or if the key derivation doesn't match how
+# the file was encrypted, openssl starts by producing output and eventually
+# dies. But is it possible for openssl to exit successfully when the key
+# is wrong and thus the result is garbage?
+exec openssl enc -aes-256-cbc $opts -pbkdf2 -in "$input" -out "$output"
