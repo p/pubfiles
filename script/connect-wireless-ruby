@@ -448,7 +448,7 @@ class Runner
         end
 
         sleep 3
-      rescue WpaSupplicantFailed
+      rescue WpaSupplicantFailed, NoIpAddress
         need_start = true
         Sub.uncheck_call(%w(pkill -9 wpa_supplicant))
         sleep 1
