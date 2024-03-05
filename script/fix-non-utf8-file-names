@@ -55,9 +55,10 @@ paths.each do |start|
     changed = false
     options[:replacements].each do |from, to|
       if bn_bin.include?(from)
-        fixed_bn = bn.gsub(from, to)
+        fixed_bn = bn_bin.gsub(from, to)
         puts "Rename #{bn_bin.inspect} -> #{fixed_bn.inspect}"
         unless options[:dry]
+          FileUtils.mv(File.join(dn, bn_bin), File.join(dn, fixed_bn))
         end
         bn_bin = fixed_bn
         changed = true
@@ -68,7 +69,7 @@ paths.each do |start|
       next if bn.valid_encoding?
       puts "#{bn.inspect} still not valid after replacements"
     elsif options[:replacements].any?
-      puts "#{bn.inspect} did not match any replacements"
+      puts "In #{dn}: #{bn.inspect} did not match any replacements"
     end
 
     begin
