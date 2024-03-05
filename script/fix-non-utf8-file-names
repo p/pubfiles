@@ -1,0 +1,44 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'find'
+require 'fileutils'
+
+options = {
+  dry: false,
+}
+OptionParser.new do |opts|
+  opts.banner = "Usage: fix-non-utf8-file-names [options] path..."
+
+  opts.on("-n", "--dry-run", "Do not make any changes") do
+    options[:dry] = true
+  end
+end.parse!
+
+paths = if ARGV.empty?
+  '.'
+else
+  ARGV
+end
+
+paths.each do |start|
+  Find.find(start) do |path|
+    bn = File.basename(path)
+    dn = File.dirname(path)
+    begin
+      bn.encode('utf-16')
+    rescue Encoding::InvalidByteSequenceError
+      p dn
+      bn.force_encoding('iso8859-1')
+      p bn.encoding
+      fixed_bn = bn.encode('utf-8')
+      #puts "In #{dn}: #{bn} -> #{fixed_bn}"
+      STDOUT << "In #{dn}: #{bn} ->"
+      puts fixed_bn
+      unless options[:dry]
+        puts 'fixing'
+        #FileUtils.mv(path, File.join(dn, fixed_bn))
+      end
+    end
+  end
+end
