@@ -6,6 +6,7 @@ require 'fileutils'
 
 options = {
   dry: false,
+  replacements: {},
 }
 OptionParser.new do |opts|
   opts.banner = "Usage: fix-non-utf8-file-names [options] path..."
@@ -13,7 +14,26 @@ OptionParser.new do |opts|
   opts.on("-n", "--dry-run", "Do not make any changes") do
     options[:dry] = true
   end
+
+  opts.on("-r", "--replace=X:Y", "Replace X with Y") do |v|
+    from, to = v.split(':')
+    if to.nil?
+      raise 'Usage'
+    end
+    if from.length > 1
+      from = Integer(from, 16).chr
+    end
+    if to.length > 1
+      to = Integer(to, 16).chr
+    end
+    puts "Replacing #{from.inspect} with #{to.inspect}"
+    options[:replacements][from] = to
+  end
 end.parse!
+
+unless ''.encoding == (utf_8 = Encoding.find('utf-8'))
+  raise "Default encoding not good"
+end
 
 paths = if ARGV.empty?
   '.'
@@ -23,18 +43,40 @@ end
 
 paths.each do |start|
   Find.find(start) do |path|
+    if path.encoding != utf_8
+      raise "Weird encoding: #{path.encoding}"
+    end
+
     bn = File.basename(path)
+    next if bn.valid_encoding?
     dn = File.dirname(path)
+
+    bn_bin = bn.force_encoding('ascii-8bit')
+    changed = false
+    options[:replacements].each do |from, to|
+      if bn_bin.include?(from)
+        fixed_bn = bn.gsub(from, to)
+        puts "Rename #{bn_bin.inspect} -> #{fixed_bn.inspect}"
+        unless options[:dry]
+        end
+        bn_bin = fixed_bn
+        changed = true
+      end
+    end
+    if changed
+      bn = bn_bin.force_encoding('utf-8')
+      next if bn.valid_encoding?
+      puts "#{bn.inspect} still not valid after replacements"
+    elsif options[:replacements].any?
+      puts "#{bn.inspect} did not match any replacements"
+    end
+
     begin
       bn.encode('utf-16')
     rescue Encoding::InvalidByteSequenceError
-      p dn
-      bn.force_encoding('iso8859-1')
-      p bn.encoding
       fixed_bn = bn.encode('utf-8')
       #puts "In #{dn}: #{bn} -> #{fixed_bn}"
-      STDOUT << "In #{dn}: #{bn} ->"
-      puts fixed_bn
+      STDOUT << "In #{dn}: #{bn.inspect} -> #{fixed_bn.inspect}"
       unless options[:dry]
         puts 'fixing'
         #FileUtils.mv(path, File.join(dn, fixed_bn))
