@@ -51,12 +51,12 @@ paths.each do |start|
     next if bn.valid_encoding?
     dn = File.dirname(path)
 
-    bn_bin = bn.force_encoding('ascii-8bit')
+    bn_bin = bn.dup.force_encoding('ascii-8bit')
     changed = false
     options[:replacements].each do |from, to|
       if bn_bin.include?(from)
         fixed_bn = bn_bin.gsub(from, to)
-        puts "Rename #{bn_bin.inspect} -> #{fixed_bn.inspect}"
+        puts "In #{dn}: rename #{bn_bin.inspect} -> #{fixed_bn.inspect}"
         unless options[:dry]
           FileUtils.mv(File.join(dn, bn_bin), File.join(dn, fixed_bn))
         end
@@ -77,7 +77,7 @@ paths.each do |start|
     rescue Encoding::InvalidByteSequenceError
       fixed_bn = bn.encode('utf-8')
       #puts "In #{dn}: #{bn} -> #{fixed_bn}"
-      STDOUT << "In #{dn}: #{bn.inspect} -> #{fixed_bn.inspect}"
+      puts "In #{dn}: #{bn.inspect} -> #{fixed_bn.inspect}"
       unless options[:dry]
         puts 'fixing'
         #FileUtils.mv(path, File.join(dn, fixed_bn))
