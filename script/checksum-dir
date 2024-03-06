@@ -52,12 +52,16 @@ class Runner
 
   def run
     if resume?
+      if File.stat(out_path).size > 5000000
+        puts 'Reading snapshot...'
+      end
       File.open(out_path) do |f|
         @sums = YAML.load(f).fetch('sums')
       end
     end
 
     count = 0
+    STDOUT << 'Reading directory tree: '
     Find.find(start_path) do |path|
       rel_path = relativize(path)
 
@@ -66,7 +70,12 @@ class Runner
       next unless File.file?(path)
 
       count += 1
+
+      if count % 1000 == 0
+        STDOUT << '.'
+      end
     end
+    puts ' done.'
 
     bar = ProgressBar.create(total: count, format: '%c/%C %e %w')
 
