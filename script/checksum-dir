@@ -14,8 +14,8 @@ class Runner
   include FsHelpers
   include GlobalHelpers
 
-  MIN_WRITE_INTERVAL = 3 * 60
-  MIN_WRITE_FACTOR = 5
+  MIN_WRITE_INTERVAL = 4 * 60
+  MIN_WRITE_FACTOR = 10
 
   def initialize(**opts)
     @options = opts
