@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+autoload :Benchmark, 'benchmark'
 autoload :FileUtils, 'fileutils'
 require 'ruby-progressbar'
 require 'yaml'
@@ -13,17 +14,20 @@ class Runner
   include FsHelpers
   include GlobalHelpers
 
+  MIN_WRITE_INTERVAL = 3 * 60
+  MIN_WRITE_FACTOR = 5
+
   def initialize(**opts)
     @options = opts
     @sums = {}
     @error_count = 0
-    @last_write = monotime
+    @next_write = monotime + MIN_WRITE_INTERVAL
     @anything_summed = false
   end
 
   attr_reader :options
   attr_reader :sums
-  attr_reader :last_write
+  attr_reader :next_write
   attr_reader :error_count
 
   def out_path
@@ -114,9 +118,11 @@ class Runner
   end
 
   def maybe_write_payload
-    if (now = monotime) - last_write > 3 * 60
-      write_payload
-      @last_write = now
+    if (now = monotime) > next_write
+      write_time = Benchmark.realtime do
+        write_payload
+      end
+      @next_write = monotime + [MIN_WRITE_INTERVAL, write_time * MIN_WRITE_FACTOR].max
     end
   end
 
