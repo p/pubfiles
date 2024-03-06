@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+autoload :FileUtils, 'fileutils'
 require 'ruby-progressbar'
 require 'yaml'
 require 'digest/sha1'
@@ -130,9 +131,10 @@ class Runner
 
     puts 'Writing...'
 
-    File.open(out_path, 'w') do |f|
+    File.open(out_path + '.part', 'w') do |f|
       f << YAML.dump(payload)
     end
+    FileUtils.mv(out_path + '.part', out_path)
   end
 
   def checksum(path)
