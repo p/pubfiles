@@ -21,7 +21,6 @@ class Runner
     @options = opts
     @sums = {}
     @error_count = 0
-    @next_write = monotime + MIN_WRITE_INTERVAL
     @anything_summed = false
   end
 
@@ -78,6 +77,11 @@ class Runner
     puts ' done.'
 
     bar = ProgressBar.create(total: count, format: '%c/%C %e %w')
+
+    # Next write time initialization should be here because reading the
+    # snapshot could take a long time, and scanning the tree can also take
+    # some time.
+    @next_write = monotime + MIN_WRITE_INTERVAL
 
     Find.find(start_path) do |path|
       rel_path = relativize(path)
