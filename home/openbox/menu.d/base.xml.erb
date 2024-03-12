@@ -78,31 +78,61 @@
   <% end %>
 </menu>
 
-<menu id="chromium-menu" label="Chromium">
-  <% browser_accounts.each_with_index do |br, index| %>
-    <% if index > 0 %>
-      <separator/>
+<% if have?('chromium') || have?('chrome') %>
+  <menu id="chromium-menu" label="Chromium">
+    <% browser_accounts.each_with_index do |br, index| %>
+      <% if index > 0 %>
+        <separator/>
+      <% end %>
+      
+      <item label="<%= br.name %>">
+        <action name='Execute'><command>
+          <%= br.chromium_command %>
+        </command></action>
+      </item>
+      
+      <item label="<%= br.name %> restore">
+        <action name='Execute'><command>
+          <%= br.restore_chromium_command %>
+        </command></action>
+      </item>
+      
+      <item label="<%= br.name %> fresh">
+        <action name='Execute'><command>
+          <%= br.fresh_chromium_command %>
+        </command></action>
+      </item>
     <% end %>
-    
-    <item label="<%= br.name %>">
-      <action name='Execute'><command>
-        <%= br.chromium_command %>
-      </command></action>
-    </item>
-    
-    <item label="<%= br.name %> restore">
-      <action name='Execute'><command>
-        <%= br.restore_chromium_command %>
-      </command></action>
-    </item>
-    
-    <item label="<%= br.name %> fresh">
-      <action name='Execute'><command>
-        <%= br.fresh_chromium_command %>
-      </command></action>
-    </item>
-  <% end %>
-</menu>
+  </menu>
+<% end %>
+
+<% if have?('google-chrome') %>
+  <menu id="chromium-menu" label="Google Chrome">
+    <% browser_accounts.each_with_index do |br, index| %>
+      <% if index > 0 %>
+        <separator/>
+      <% end %>
+      
+      <item label="<%= br.name %>">
+        <action name='Execute'><command>
+          <%= br.chromium_command('google-chrome') %>
+        </command></action>
+      </item>
+      
+      <item label="<%= br.name %> restore">
+        <action name='Execute'><command>
+          <%= br.restore_chromium_command('google-chrome') %>
+        </command></action>
+      </item>
+      
+      <item label="<%= br.name %> fresh">
+        <action name='Execute'><command>
+          <%= br.fresh_chromium_command('google-chrome') %>
+        </command></action>
+      </item>
+    <% end %>
+  </menu>
+<% end %>
 
 <menu id='settings-menu' label='Settings'>
   <separator label='Lock timeout'/>

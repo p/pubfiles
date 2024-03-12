@@ -37,7 +37,7 @@ class BrowserAccount
     @src_base ||= Pathname.new(__FILE__).dirname.join('..').realpath
   end
 
-  def chromium_command
+  def chromium_command(browser = nil)
     binary_path = [
       '/usr/local/lib/brl/bin/launch-chromium',
       File.expand_path('~/apps/brl/bin/launch-chromium'),
@@ -45,23 +45,25 @@ class BrowserAccount
     if binary_path.nil?
       raise "No binary to launch"
     end
-    %Q,
-      #{binary_path}
-      -G -f
-      -u #{short_username}
-      #{chromium_options(profile_name || short_username)}
-      -p #{profile_name || short_username}
-    ,.gsub(/\s+/, ' ').strip.tap do |cmd|
+    cmd = [binary_path,
+      '-G', '-f', '-u', short_username,
+      chromium_options(profile_name || short_username),
+      '-p', profile_name || short_username,
+    ]
+    if browser
+      cmd += ['-b', browser]
+    end
+    cmd.join(' ').gsub(/\s+/, ' ').strip.tap do |cmd|
       puts "Chromium - #{name}:\n#{cmd}"
     end
   end
 
-  def fresh_chromium_command
-    "#{chromium_command} -n -R"
+  def fresh_chromium_command(browser = nil)
+    "#{chromium_command(browser)} -n -R"
   end
 
-  def restore_chromium_command
-    "#{chromium_command} -r"
+  def restore_chromium_command(browser = nil)
+    "#{chromium_command(browser)} -r"
   end
 
   def chromium_options(profile_name)
