@@ -104,4 +104,13 @@ module Helpers
       </command></action>
     ,
   end
+
+  def default_terminal
+    %w(x-terminal-emulator gtkterm2 gnome-terminal urxvt xterm).each do |prog|
+      if have?(prog)
+        return prog
+      end
+    end
+    raise "No suitable terminal emulator"
+  end
 end
