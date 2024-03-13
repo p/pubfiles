@@ -98,7 +98,7 @@ apt-get remove xdg-desktop-portal
 # This is a security hole I think.
 apt-get remove pkexec
 # ... and normally I shouldn't need polkit.
-apt-get remove polkitd
+apt-get remove polkitd policykit-1 policykit-1-gnome
 
 # Don't know what this is actually needed for.
 apt-get remove at-spi2-core
