@@ -88,7 +88,7 @@ elif is_debian && ! is_ubuntu; then
  install_sources $BASE/../config/apt/debian/$release/sources.list
 fi
 
-apt-get remove tasksel popularity-contest
+apt-get remove tasksel popularity-contest installation-report
 
 # Junk that is invoked by browsers:
 # "desktop integration portal for Flatpak and Snap"
