@@ -1,5 +1,12 @@
 require 'tempfile'
 autoload :Pathname, 'pathname'
+begin
+  require 'nokogiri'
+  HAVE_NOKOGIRI = true
+rescue LoadError => exc
+  puts "Error loading nokogiri: #{exc.class}: #{exc}"
+  HAVE_NOKOGIRI = false
+end
 
 class SystemConfigurationError < StandardError
 end
@@ -41,8 +48,17 @@ class Builder
   end
 
   def transform_template(basename, dest_dir)
-    if File.exist?(template_path = src_base.join(basename + '.erb'))
+    if File.exist?(template_path = src_base.join(template_name = basename + '.erb'))
       result = Context.new.render(template_path)
+      if HAVE_NOKOGIRI
+        doc = Nokogiri::XML(result)
+        unless doc.errors.empty?
+          errors = doc.errors.map do |e|
+            "#{e.class}: #{e}"
+          end.join(', ')
+          raise "#{template_name} generated malformed XML: #{errors}"
+        end
+      end
       File.open(tmp_rc_path = File.join(dest_dir, basename), 'w') do |f|
         f << result
       end
