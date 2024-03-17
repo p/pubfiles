@@ -49,7 +49,7 @@ class Builder
 
   def transform_template(basename, dest_dir)
     if File.exist?(template_path = src_base.join(template_name = basename + '.erb'))
-      result = Context.new.render(template_path)
+      result = Context.new(**options).render(template_path)
       if HAVE_NOKOGIRI
         doc = Nokogiri::XML(result)
         unless doc.errors.empty?

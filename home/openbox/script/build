@@ -24,6 +24,10 @@ OptionParser.new do |opts|
     options[:check] = true
   end
 
+  opts.on("-N", "--skip-network", "Do not perform network operations") do
+    options[:network] = false
+  end
+
   opts.on("-r", "--reload", "Reload running openbox") do
     options[:reload] = true
   end
