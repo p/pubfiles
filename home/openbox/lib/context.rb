@@ -3,6 +3,16 @@ autoload :ERB, 'erb'
 class Context
   include Helpers
 
+  def initialize(**opts)
+    @options = opts.dup.freeze
+  end
+
+  attr_reader :options
+
+  def network?
+    options[:network] != false
+  end
+
   def render(template_path)
     content = File.read(template_path)
     template = ERB.new(content)
@@ -34,7 +44,7 @@ class Context
     if File.exist?(menu_d_path)
       ::FsHelpers.entries_in_path(menu_d_path).each do |basename|
         path = File.join(menu_d_path, basename)
-        generated << Context.new.render(path)
+        generated << Context.new(**options).render(path)
       end
       generated.join("\n\n")
     else
