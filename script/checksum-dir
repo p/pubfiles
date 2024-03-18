@@ -1,5 +1,11 @@
 #!/usr/bin/env ruby
 
+# Note regarding progress bar increment: if files are added to the filesystem
+# after checksumming started, progress bar could grow beyond original
+# max size.
+# WARNING: Your progress bar is currently at 15415 out of 15415 and cannot be incremented. In v2.0.0 this will become a ProgressBar::InvalidProgressError.
+# This should be rescued and ignored.
+
 autoload :Benchmark, 'benchmark'
 autoload :FileUtils, 'fileutils'
 require 'ruby-progressbar'
