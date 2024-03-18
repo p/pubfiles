@@ -31,12 +31,6 @@ common_init() {
 	#forward_xauth
 }
 
-forward_xauth() {
-	if id browser && which sudo && test -x `which sudo`; then
-		xauth list |xargs -L1 -t sudo -iHu browser xauth -f /home/browser/.Xauthority add
-	fi
-}
-
 have_screen() {
 	screen="$1"
 	DISPLAY=:0.$screen xdpyinfo >/dev/null 2>&1
