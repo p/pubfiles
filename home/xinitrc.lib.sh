@@ -77,7 +77,7 @@ init_as_configured() {
 #have xscreensaver && xscreensaver -no-splash &
 
 skip_lock=false
-if test -e /etc/setup.conf && grep -q no_lock=true /etc/setup.conf; then
+if test -e /etc/setup.conf && grep -q skip_lock=true /etc/setup.conf; then
   skip_lock=true
 fi
 if ! $skip_lock; then
