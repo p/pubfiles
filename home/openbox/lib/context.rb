@@ -1,4 +1,5 @@
 autoload :ERB, 'erb'
+autoload :Slim, 'slim'
 
 class Context
   include Helpers
@@ -15,13 +16,27 @@ class Context
 
   def render(template_path)
     content = File.read(template_path)
-    template = ERB.new(content)
-    template.result(binding)
+    ext = File.extname(template_path)
+    case ext
+    when '.erb'
+      template = ERB.new(content)
+      template.result(binding)
+    when '.slim'
+      template = Slim::Template.new(template_path)
+      template.render(self)
+    else
+      raise "Unknown extension: #{ext}"
+    end
   end
 
   def partial(path)
-    template_path = src_base.join(path + '.erb')
-    render(template_path)
+    %w(erb slim).each do |suffix|
+      template_path = src_base.join(path + '.' + suffix)
+      if File.exist?(template_path)
+        return render(template_path)
+      end
+    end
+    raise "Missing template: #{path}"
   end
 
   def rc_keyboard_partials
