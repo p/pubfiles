@@ -1,5 +1,8 @@
 #!/usr/bin/env ruby
 
+# TODO: connecting to network without password after boot
+# doesn't bring up the wireless interface? run ifconfig up manually?
+
 # Inspiration: https://github.com/dmelo/vswm
 
 autoload :YAML, 'yaml'
