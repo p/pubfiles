@@ -27,7 +27,8 @@ common_init() {
 	fi
 	setxkbmap us $layout
 	
-	forward_xauth
+	# This needs to be done for each br-* account
+	#forward_xauth
 }
 
 forward_xauth() {
