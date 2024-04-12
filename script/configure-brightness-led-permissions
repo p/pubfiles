@@ -1,0 +1,17 @@
+#!/bin/sh
+
+set -e
+
+# https://bbs.archlinux.org/viewtopic.php?id=262630
+# https://unix.stackexchange.com/questions/20125/how-can-i-change-the-permissions-in-sys-to-alter-the-state-of-a-led-light-using
+
+GROUP=video
+
+cat <<-EOT >/etc/udev/rules.d/backlight.rules
+SUBSYSTEM=="backlight", KERNEL=="intel_backlight", ACTION=="add", RUN+="/bin/chgrp -R $GROUP /sys%p", RUN+="/bin/chmod -R g=u /sys%p"
+EOT
+
+cat <<-EOT >/etc/udev/rules.d/led.rules
+SUBSYSTEM=="leds", ACTION=="add", RUN+="/bin/chgrp -R $GROUP /sys%p", RUN+="/bin/chmod -R g=u /sys%p"
+SUBSYSTEM=="leds", ACTION=="change", ENV{TRIGGER}!="none", RUN+="/bin/chgrp -R $GROUP /sys%p", RUN+="/bin/chmod -R g=u /sys%p"
+EOT
