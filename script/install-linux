@@ -267,7 +267,11 @@ fi
 
 # disable beep
 # https://linuxconfig.org/turn-off-beep-bell-on-linux-terminal
-echo 'blacklist pcspkr' >> /etc/modprobe.d/blacklist.conf
+echo 'blacklist pcspkr' |tee /etc/modprobe.d/blacklist-pcspkr.conf
+
+# Disable bluetooth - it makes suspend & resume take a long time
+# at least on X280 Thinkpads.
+echo 'blacklist bluetooth' |tee /etc/modprobe.d/blacklist-bluetooth.conf
 
 if is_laptop; then
   $BASE/disable-lid-suspend
