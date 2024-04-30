@@ -344,6 +344,8 @@ class Runner
 
     unblock_rfkill
 
+    Sub.check_call(['ifconfig', wireless_ifname, 'up'])
+
     start_wpa_supplicant
 
     puts('Running dhclient')
@@ -391,6 +393,8 @@ class Runner
     wireless_ifnames.each do |ifname|
       clear_interface_ips(ifname)
     end
+
+    Sub.check_call(['ifconfig', wired_ifname, 'up'])
 
     Sub.check_call(['dhclient', '-v', wired_ifname])
 
