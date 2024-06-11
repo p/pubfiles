@@ -1,8 +1,8 @@
 #!/bin/sh
 
-set -e
+`dirname $0`/docker-rm-containers -f
 
 ids=$(docker image ls -a |tail +2 |awk '{print $3}')
 if test -n "$ids"; then
-  docker image rm $ids
+  docker image rm $ids -f
 fi
