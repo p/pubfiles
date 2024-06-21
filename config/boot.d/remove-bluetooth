@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# Yubikey I think requires thunderbolt, not bluetooth?
+
+rmmod btusb btrtl btmtk btintel btbcm bluetooth
