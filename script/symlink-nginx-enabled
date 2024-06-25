@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -e
+
+dirs=`find . -name sites-available`
+for dir in $dirs; do
+  for f in $dir/*; do
+    bn=`basename $f`
+    target=$dir/../sites-enabled/$bn
+    if ! test -e $target; then
+      echo $target
+      mkdir -p `dirname $target`
+      ln -s ../sites-available/$bn $target
+    fi
+  done
+done
