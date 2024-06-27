@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+mkdir -p $HOME/bin
+
+curl -fLo $HOME/bin/cbindgen https://github.com/mozilla/cbindgen/releases/download/0.26.0/cbindgen
+
+chmod +x $HOME/bin/cbindgen
