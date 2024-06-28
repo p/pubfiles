@@ -1,0 +1,48 @@
+#!/usr/bin/env ruby
+
+require 'fileutils'
+
+ROOT = File.expand_path('~/disk-health')
+FileUtils.mkdir_p(ROOT)
+
+Dir.entries('/dev/').each do |entry|
+  if entry =~ /^(nvme\d+|sd\w)$/
+    p entry
+
+    path = "/dev/#{entry}"
+    output = `smartctl -a #{path}`
+    if $?.exitstatus != 0
+      warn "#{path}: smartctl failed"
+      next
+    end
+
+    vendor = nil
+    if output =~ /^(Model Number|Product):\s+(.+?)\n/
+      model = $2
+      if $1 == 'Product'
+        if output =~ /Vendor:\s+(\S+)/
+          vendor = $1
+        end
+      end
+    else
+      warn "#{path}: no model number detected"
+      next
+    end
+
+    if output =~ /^Serial [nN]umber:\s+(\S+)/
+      serial = $1
+    else
+      warn "#{path}: no serial number detected"
+      next
+    end
+
+    name = [vendor, model, serial].compact.map do |part|
+      part.gsub(' ', '_')
+    end.join('-')
+    File.open(File.join(ROOT, name), 'w') do |f|
+      f << output
+    end
+
+    puts "#{path}: #{serial}: OK"
+  end
+end
