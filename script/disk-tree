@@ -24,7 +24,7 @@ disks.each do |disk|
     disk_infos[disk] = {
       model: '???',
       serial: '???',
-      part_infos: [],
+      part_infos: {},
     }
   else
     size = "#{status.split(/\s+/)[2]} #{status.split(/\s+/)[3].sub(',', '')}"
@@ -84,7 +84,7 @@ dms.each do |dm|
   else
     raise NotImplementedError
   end
-  m = disk_infos[parent][:part_infos][device]
+  m = disk_infos[parent][:part_infos][device] || {}
   m.update(mapper: dm, mapper_label: blkid_status[:label], mapper_device_num: dev_num)
 end
 
