@@ -11,17 +11,19 @@ Dir.entries('/dev/').each do |entry|
 
     path = "/dev/#{entry}"
     output = `smartctl -a #{path}`
-    if $?.exitstatus != 0
+    if $?.exitstatus == 64
+      warn "#{path}: smartctl: errors in SMART data; continuing"
+    elsif $?.exitstatus != 0
       warn "#{path}: smartctl failed"
       next
     end
 
     vendor = nil
-    if output =~ /^(Model Number|Product):\s+(.+?)\n/
+    if output =~ /^(Model Number|Product|Device Model):\s+(.+?)\n/
       model = $2
-      if $1 == 'Product'
-        if output =~ /Vendor:\s+(\S+)/
-          vendor = $1
+      if $1 == 'Product' || $1 == 'Device Model'
+        if output =~ /(Vendor|Model Family):\s+(.+?)\n/
+          vendor = $2
         end
       end
     else
