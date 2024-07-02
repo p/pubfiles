@@ -1,4 +1,6 @@
 require 'tempfile'
+autoload :Shellwords, 'shellwords'
+autoload :FileUtils, 'fileutils'
 autoload :Pathname, 'pathname'
 begin
   require 'nokogiri'
@@ -68,8 +70,21 @@ class Builder
         raise "#{template_name} generated malformed XML: #{errors}"
       end
     end
-    File.open(tmp_rc_path = File.join(dest_dir, basename), 'w') do |f|
-      f << result
+    tmp_rc_path = File.join(dest_dir, basename)
+    if options[:pretty]
+      File.open(tmp_rc_path + '.part', 'w') do |f|
+        f << result
+      end
+      escaped = Shellwords.shellescape(tmp_rc_path)
+      output = system("xmllint --format -o #{escaped} #{escaped}.part")
+      if $?.exitstatus != 0
+        raise "xmllint failed - not installed?\n#{output}"
+        FileUtils.rm(tmp_rc_path + '.part')
+      end
+    else
+      File.open(tmp_rc_path, 'w') do |f|
+        f << result
+      end
     end
   end
 
