@@ -1,0 +1,96 @@
+openbox_menu[xmlns="http://openbox.org/3.4/menu"]
+  == defined_menus
+  menu#root-menu[label="Openbox 3"]
+    separator[label="Openbox"]
+    
+    item[label="Terminal"]
+      action[name="Execute"]
+        command
+          = default_terminal
+    
+    item[label="Mail"]
+      action[name="Execute"]
+        command
+          | claws-mail
+    
+    menu#waterfox-classic-menu
+
+    menu#chromium-menu
+
+    menu#waterfox-menu
+
+    menu#firefox-menu
+
+    menu#kill-browsers-menu
+    
+    item[label="Scite"]
+      action[name="Execute"]
+        command
+          | scite
+    
+    - if have?('kdenlive')
+      item[label="Kdenlive"]
+        action[name="Execute"]
+          command
+            | kdenlive
+    
+    /  <item label="Bluefish">
+    /    <action name="Execute"><command>bluefish</command></action>
+    /  </item>
+
+    menu#audio-menu
+
+    menu#lights-menu
+    
+    - if have?('gimp')
+      item[label="Gimp"]
+        action[name="Execute"]
+          command
+            | gimp
+    
+    - if have?('abiword')
+      item[label="Abiword"]
+        action[name="Execute"]
+          command
+            | abiword
+    
+    - if have?('ardour')
+      item[label="Ardour"]
+        action[name="Execute"]
+          command
+            | ~/apps/pubfiles/script/sudo-x ardour ardour
+    
+    - if have?('zoom')
+      menu#zoom-menu
+
+    - if false
+      menu#comms-menu
+
+      menu#misc-menu
+        / (if h.have_bin('VirtualBox'))
+        item[label="VirtualBox"]
+          action[name="Execute"]
+            command
+              | VirtualBox
+        / (end)
+    separator
+  
+    menu#client-list-menu
+    
+    /  <separator />
+    /  <item label="Reconfigure">
+    /    <action name="Reconfigure" />
+    /  </item>
+
+    separator
+  
+    menu#settings-menu
+    
+    item[label="Exit"]
+      action[name="Exit"]
+    - if laptop?
+      item[label="Lock & Suspend"]
+        == command_action(lock_and_suspend_command)
+    - else
+      item[label="Lock"]
+        == command_action(lock_command)
