@@ -23,7 +23,9 @@ class Context
       template.result(binding)
     when '.slim'
       template = Slim::Template.new(template_path)
-      template.render(self)
+      out = template.render(self)
+      # Slim does not produce XML preamble
+      "<?xml version='1.0' encoding='UTF-8'?>\n#{out}"
     else
       raise "Unknown extension: #{ext}"
     end
