@@ -18,10 +18,14 @@ end
 
 options = {}
 OptionParser.new do |opts|
-  opts.banner = "Usage: build [-cNr]"
+  opts.banner = "Usage: build [-cNr] [-d path]"
 
   opts.on("-c", "--check", "Check system") do
     options[:check] = true
+  end
+
+  opts.on("-d", "--dest=PATH", "Write resulting files into this directory (default: $XDG_CONFIG_HOME/.openbox or if not set, ~/.config/openbox)") do |v|
+    options[:dest_path] = v
   end
 
   opts.on("-N", "--skip-network", "Do not perform network operations") do
