@@ -18,7 +18,7 @@ end
 
 options = {}
 OptionParser.new do |opts|
-  opts.banner = "Usage: build [-cr]"
+  opts.banner = "Usage: build [-cNr]"
 
   opts.on("-c", "--check", "Check system") do
     options[:check] = true
