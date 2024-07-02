@@ -4,7 +4,7 @@ begin
   require 'nokogiri'
   HAVE_NOKOGIRI = true
 rescue LoadError => exc
-  puts "Error loading nokogiri: #{exc.class}: #{exc}"
+  raise "Error loading nokogiri: #{exc.class}: #{exc}"
   HAVE_NOKOGIRI = false
 end
 
