@@ -35,6 +35,10 @@ OptionParser.new do |opts|
   opts.on("-r", "--reload", "Reload running openbox") do
     options[:reload] = true
   end
+
+  opts.on("-P", "--pretty", "Prettify generated XML") do
+    options[:pretty] = true
+  end
 end.parse!
 
 builder_cls = begin
