@@ -643,6 +643,14 @@ EOT
       state.update(get_wpa_state(wireless_ifname))
     end
 
+    if state[:wpa_completed] && !state[:associated]
+      # Funny state that wpa_supplicant ends up in, where it thinks everything
+      # is fine but the interface is not associated
+      # (and because wpa_supplicant thinks everything is fine, it does not
+      # do anything to fix the situation).
+      state.delete(:wpa_completed)
+    end
+
     state
   end
 
