@@ -1,5 +1,17 @@
 #!/usr/bin/env ruby
 
+require 'optparse'
+
+options = {
+}
+OptionParser.new do |opts|
+  opts.banner = "Usage: disk-health [-d dir] [device...]"
+
+  opts.on("-d", "--dir PATH", "Path to directory with output file(s)") do |v|
+    options[:out_dir_path] = v
+  end
+end.parse!
+
 require 'fileutils'
 
 devices = ARGV.map do |arg|
@@ -18,8 +30,16 @@ if devices.empty?
   end
 end
 
-ROOT = File.expand_path('~/disk-health')
-FileUtils.mkdir_p(ROOT)
+root = if dir = options[:out_dir_path]
+  unless File.exist?(dir)
+    raise "Specified destination directory does not exist: #{dir}"
+  end
+  dir
+else
+  File.expand_path('~/disk-health').tap do |root|
+    FileUtils.mkdir_p(root)
+  end
+end
 
 devices.each do |path|
   output = `smartctl -a #{path}`
@@ -53,7 +73,7 @@ devices.each do |path|
   name = [vendor, model, serial].compact.map do |part|
     part.gsub(' ', '_')
   end.join('-')
-  File.open(File.join(ROOT, name), 'w') do |f|
+  File.open(File.join(root, name), 'w') do |f|
     f << output
   end
 
