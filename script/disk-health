@@ -2,49 +2,60 @@
 
 require 'fileutils'
 
+devices = ARGV.map do |arg|
+  if arg =~ /\A\w+\z/
+    "/dev/#{arg}"
+  else
+    arg
+  end
+end
+
+if devices.empty?
+  devices = Dir.entries('/dev/').select do |entry|
+    entry =~ /\A(nvme\d+|sd\w)\z/
+  end.map do |entry|
+    "/dev/#{entry}"
+  end
+end
+
 ROOT = File.expand_path('~/disk-health')
 FileUtils.mkdir_p(ROOT)
 
-Dir.entries('/dev/').each do |entry|
-  if entry =~ /^(nvme\d+|sd\w)$/
-    p entry
-
-    path = "/dev/#{entry}"
-    output = `smartctl -a #{path}`
-    if $?.exitstatus == 64
-      warn "#{path}: smartctl: errors in SMART data; continuing"
-    elsif $?.exitstatus != 0
-      warn "#{path}: smartctl failed"
-      next
-    end
-
-    vendor = nil
-    if output =~ /^(Model Number|Product|Device Model):\s+(.+?)\n/
-      model = $2
-      if $1 == 'Product' || $1 == 'Device Model'
-        if output =~ /(Vendor|Model Family):\s+(.+?)\n/
-          vendor = $2
-        end
-      end
-    else
-      warn "#{path}: no model number detected"
-      next
-    end
-
-    if output =~ /^Serial [nN]umber:\s+(\S+)/
-      serial = $1
-    else
-      warn "#{path}: no serial number detected"
-      next
-    end
-
-    name = [vendor, model, serial].compact.map do |part|
-      part.gsub(' ', '_')
-    end.join('-')
-    File.open(File.join(ROOT, name), 'w') do |f|
-      f << output
-    end
-
-    puts "#{path}: #{serial}: OK"
+devices.each do |path|
+  output = `smartctl -a #{path}`
+  if $?.exitstatus == 64
+    warn "#{path}: smartctl: errors in SMART data; continuing"
+  elsif $?.exitstatus != 0
+    warn "#{path}: smartctl failed"
+    next
   end
+
+  vendor = nil
+  if output =~ /^(Model Number|Product|Device Model):\s+(.+?)\n/
+    model = $2
+    if $1 == 'Product' || $1 == 'Device Model'
+      if output =~ /(Vendor|Model Family):\s+(.+?)\n/
+        vendor = $2
+      end
+    end
+  else
+    warn "#{path}: no model number detected"
+    next
+  end
+
+  if output =~ /^Serial [nN]umber:\s+(\S+)/
+    serial = $1
+  else
+    warn "#{path}: no serial number detected"
+    next
+  end
+
+  name = [vendor, model, serial].compact.map do |part|
+    part.gsub(' ', '_')
+  end.join('-')
+  File.open(File.join(ROOT, name), 'w') do |f|
+    f << output
+  end
+
+  puts "#{path}: #{serial}: OK"
 end
