@@ -70,6 +70,11 @@ class Runner
     count = 0
     STDOUT << 'Reading directory tree: '
     Find.find(start_path) do |path|
+      unless path.valid_encoding?
+        path.force_encoding('iso-8859-1')
+        warn "invalid filesystem file name encoding: #{path}"
+      end
+
       rel_path = relativize(path)
 
       maybe_prune(rel_path)
