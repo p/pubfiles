@@ -17,7 +17,7 @@ require 'open-uri'
 class Downloader
   def initialize(id_or_url)
     case id_or_url
-    when %r,\Ahttps://chrome\.google\.com/webstore/detail/([^/]+)/([a-z0-9]+)(?:\?[^?]+)?\z,
+    when %r,\Ahttps://(?:chrome\.google\.com/webstore|chromewebstore\.google\.com)/detail/([^/]+)/([a-z0-9]+)(?:\?[^?]+)?\z,
       @slug = $1
       @id = $2
     when %r,\Ahttps://chromewebstore\.google\.com/detail/([a-z0-9]+)(?:\?[^?]+)?\z,
@@ -86,6 +86,8 @@ class Downloader
     if name =~ /\A__MSG_(\w+)__\z/
       key = $1
       en_messages.fetch(key).fetch('message')
+    else
+      name
     end
   end
 
