@@ -81,3 +81,7 @@ alias pk='pkill -f'
 cdiff() {
   diff "$@" |colordiff |less -R
 }
+
+gr() {
+  git reset "$@" && git checkout "$@"
+}
