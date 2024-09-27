@@ -16,7 +16,7 @@ sudo apt-get install \
   lsb-release
 
 id=$(. /etc/os-release; echo "$ID" |sed -e s/devuan/debian/)
-release=$(lsb_release -cs |sed -e s/bullseye/buster/ -e s/ascii/stretch/ -e s,n/a,buster,)
+release=$(lsb_release -cs |sed -e s/bullseye/buster/ -e s/ascii/stretch/ -e 's/excalibur ceres/bookworm/' -e s,n/a,buster,)
 
 curl -fsSL https://download.docker.com/linux/$id/gpg | sudo apt-key add -
 
@@ -35,7 +35,11 @@ echo "deb https://download.docker.com/linux/$id \
 
 sudo apt-get update
 
-#sudo apt-get install docker-ce
+# Removes docker.io, possibly docker-cli on newer systems?
+sudo apt-get install docker-ce docker-ce-cli
+
+# For some reason /etc/init.d/docker is not executable
+chmod +x /etc/init.d/docker
 
 sudo groupmod docker || sudo groupadd docker
 
