@@ -36,7 +36,7 @@ echo "deb https://download.docker.com/linux/$id \
 sudo apt-get update
 
 # Removes docker.io, possibly docker-cli on newer systems?
-sudo apt-get install docker-ce docker-ce-cli
+sudo apt-get install docker-ce docker-ce-cli docker-buildx-plugin
 
 # For some reason /etc/init.d/docker is not executable
 chmod +x /etc/init.d/docker
