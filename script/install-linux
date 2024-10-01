@@ -271,7 +271,9 @@ echo 'blacklist pcspkr' |tee /etc/modprobe.d/blacklist-pcspkr.conf
 
 # Disable bluetooth - it makes suspend & resume take a long time
 # at least on X280 Thinkpads.
-echo 'blacklist bluetooth' |tee /etc/modprobe.d/blacklist-bluetooth.conf
+for mod in bluetooth btrtl btmtk btintel btbcm btusb; do
+  echo "blacklist $mod"
+done |tee /etc/modprobe.d/blacklist-bluetooth.conf
 
 if is_laptop; then
   $BASE/disable-lid-suspend
