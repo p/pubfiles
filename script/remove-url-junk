@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+
+require 'addressable'
+require 'nokogiri'
+
+def process_stream(io)
+  doc = Nokogiri::HTML(io)
+  doc.xpath('//a').each do |a|
+    href = a.attr('href')
+    if href&.start_with?('https://www.google.com/url')
+      url = Addressable::URI.parse(href)
+      q = url.query_values.fetch('q')
+      a.set_attribute('href', q)
+    end
+  end
+  doc.to_s
+end
+
+def process_file(path)
+  out = File.open(path) do |f|
+    process_stream(f)
+  end
+  File.open(path, 'w') do |f|
+    f << out
+  end
+end
+
+if ARGV.any?
+  ARGV.each do |path|
+    process_file(path)
+  end
+else
+  process_stream(STDIN)
+end
