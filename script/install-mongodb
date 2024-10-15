@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# It looks like the repo now forces HTTPS which does not work with
+# apt-cache-ng. Therefore this script should not be used, a 5.0 version
+# of mongodb is now maintained in the mirror subdir of local deb repo.
+
 set -e
 
 if test "`id -u`" != 0; then
@@ -34,7 +38,7 @@ relname=bookworm
 #echo "deb http://repo.mongodb.org/apt/debian $relname/mongodb-org/3.6 main" | tee /etc/apt/sources.list.d/mongodb-org.list
 #echo "deb http://repo.mongodb.org/apt/debian $relname/mongodb-org/4.0 main" | sudo tee /etc/apt/sources.list.d/mongodb-org.list
 #echo "deb http://repo.mongodb.org/apt/debian $relname/mongodb-org/4.2 main" | tee /etc/apt/sources.list.d/mongodb-org.list
-echo "deb http://repo.mongodb.org/apt/debian $relname/mongodb-org/5.0 main" | tee /etc/apt/sources.list.d/mongodb-org.list
+echo "deb https://repo.mongodb.org/apt/debian $relname/mongodb-org/5.0 main" | tee /etc/apt/sources.list.d/mongodb-org.list
 
 apt-get update
 apt-get install mongodb-org
