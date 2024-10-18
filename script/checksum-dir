@@ -45,6 +45,10 @@ class Runner
     options[:resume]
   end
 
+  def retry_errors?
+    options[:retry_errors]
+  end
+
   def subdirs
     options[:subdirs]
   end
@@ -104,8 +108,10 @@ class Runner
       next unless File.file?(path)
 
       if resume? && sums.key?(rel_path)
-        bar.increment
-        next
+        unless sums[rel_path]['error'] && retry_errors?
+          bar.increment
+          next
+        end
       end
 
       begin
@@ -195,6 +201,10 @@ OptionParser.new do |opts|
 
   opts.on('-r', '--resume', 'Resume previous operation') do
     options[:resume] = true
+  end
+
+  opts.on('-R', '--retry-errors', 'Re-read files that had errors') do
+    options[:retry_errors] = true
   end
 
   opts.on("-s", "--subdir=DIR", "Checksum only specified subdir (may be repeated)") do |v|
