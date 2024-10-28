@@ -20,7 +20,7 @@ compinit
 test -f ~/apps/pubfiles/home/zshrc.user.$USER && . ~/apps/pubfiles/home/zshrc.user.$USER
 
 if which rbenv >/dev/null 2>&1; then
-  rbenv shell 2.7
+  rbenv shell 3.3
 fi
 
 iw() { palemoon -ProfileManager -no-remote }
