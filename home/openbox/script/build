@@ -39,6 +39,10 @@ OptionParser.new do |opts|
   opts.on("-P", "--pretty", "Prettify generated XML") do
     options[:pretty] = true
   end
+
+  opts.on('--vb', 'Output browser command lines') do
+    options[:verbose_browsers] = true
+  end
 end.parse!
 
 builder_cls = begin

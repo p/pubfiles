@@ -4,6 +4,7 @@ BrowserAccount = Struct.new('BrowserAccount',
   :name,
   :short_username,
   :profile_name,
+  :verbose_browsers,
 )
 
 Browser = Struct.new('Browser',
@@ -29,8 +30,14 @@ class BrowserAccount
       -u #{short_username}
       -p #{profile_name || short_username}
     ,.gsub(/\s+/, ' ').strip.tap do |cmd|
-      puts "#{browser.display_name} - #{name}:\n#{cmd}"
+      if verbose_browsers?
+        puts "#{browser.display_name} - #{name}:\n#{cmd}"
+      end
     end
+  end
+
+  def verbose_browsers?
+    !!@verbose_browsers
   end
 
   def src_base
@@ -54,7 +61,9 @@ class BrowserAccount
       cmd += ['-b', browser]
     end
     cmd.join(' ').gsub(/\s+/, ' ').strip.tap do |cmd|
-      puts "Chromium - #{name}:\n#{cmd}"
+      if verbose_browsers?
+        puts "Chromium - #{name}:\n#{cmd}"
+      end
     end
   end
 
