@@ -67,9 +67,9 @@ module Helpers
 
   def browser_accounts
     @browser_accounts ||= [].tap do |br|
-      br << BrowserAccount.new('Sandbox', 'sandbox', nil)
+      br << BrowserAccount.new('Sandbox', 'sandbox', nil, options[:verbose_browsers])
       if have_user?('br-shop')
-        br << BrowserAccount.new('Shop', 'br-shop', nil)
+        br << BrowserAccount.new('Shop', 'br-shop', nil, options[:verbose_browsers])
       end
     end
   end
