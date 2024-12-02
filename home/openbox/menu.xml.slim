@@ -42,6 +42,12 @@ openbox_menu[xmlns="http://openbox.org/3.4/menu"]
 
     menu#lights-menu
     
+    - if have?('scrot')
+      item[label="Screenshot"]
+        action[name="Execute"]
+          command
+            | ~/apps/pubfiles/script/screenshot
+    
     - if have?('gimp')
       item[label="Gimp"]
         action[name="Execute"]
