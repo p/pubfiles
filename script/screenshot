@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e
+
+opts=
+
+if which optipng >/dev/null 2>&1; then
+  opts="$opts -e '"'optipng -o4 $f'"'"
+fi
+
+mkdir -p /tmp/screenshot
+
+scrot -s -F '/tmp/screenshot/%Y-%m-%d_%H-%M-%S.png'
