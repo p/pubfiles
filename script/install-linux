@@ -76,6 +76,7 @@ echo Release: $release
 echo Headful: `is_headful; yesno $?`
 echo Multimedia: `install_mm; yesno $?`
 echo Wireless: `yesnoauto $wireless`
+echo Laptop: `is_laptop; yesno $?`
 
 if test "$DEBIAN_FRONTEND" != noninteractive; then
   echo Press any key to continue
@@ -117,7 +118,7 @@ fi
 install_if_needed \
   console-setup console-setup-linux openssh-server \
   zsh sudo man-db dnsutils netcat-openbsd \
-  git curl wget make gcc ruby \
+  git curl wget make gcc ruby ruby-childprocess ruby-byebug ruby-progressbar \
   zip unzip net-tools rsync tmux python-is-python3 zstd
 
 # libglib2.0-bin: gsettings (for disabling recent files)
@@ -129,7 +130,8 @@ if is_headful; then
     evince gimp \
     xinit xauth openbox xsecurelock xss-lock xautolock \
     x11-xserver-utils x11-utils xserver-xorg \
-    xfonts-terminus fonts-terminus-otb libnss3-tools libglib2.0-bin
+    xfonts-terminus fonts-terminus-otb libnss3-tools libglib2.0-bin \
+    ruby-slim
 
   if ! is_ubuntu; then
     # Does not exist in ubuntu 20.04
@@ -226,11 +228,8 @@ fi
 
 # This contains the scripts needed for machine to turn off when
 # the power button is pressed.
-# Laptops apparently don't need this package - power button must be handled
-# differently on them.
-if ! is_laptop; then
-  install_if_needed acpi-support
-fi
+# x280 laptops also need acpi-support for my custom sleep command (fn+f1).
+install_if_needed acpi-support
 
 if ! $skip_wireless && (is_laptop || lspci |grep -q Wireless || $need_wireless); then
   install_if_needed wireless-tools rfkill iw wpasupplicant wireless-regdb

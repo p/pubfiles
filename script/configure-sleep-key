@@ -11,26 +11,33 @@ if ! is_laptop; then
   exit 1
 fi
 
-if false; then
-# There isn't /etc/acpi/actions (any more?).
-# The next check for events covers actions too.
-if ! test -d /etc/acpi/actions; then
-  echo "Missing /etc/acpi/actions" 1>&2
-  if ! dpkg-query -s acpi-support >/dev/null 2>&1; then
-    echo Possible reason: acpi-support is not installed 1>&2
+check_deps() {
+  if false; then
+  # There isn't /etc/acpi/actions (any more?).
+  # The next check for events covers actions too.
+  if ! test -d /etc/acpi/actions; then
+    echo "Missing /etc/acpi/actions" 1>&2
+    if ! dpkg-query -s acpi-support >/dev/null 2>&1; then
+      echo Possible reason: acpi-support is not installed 1>&2
+    fi
+    exit 1
   fi
-  exit 1
-fi
-fi
-
-if ! test -d /etc/acpi/events; then
-  echo "Missing /etc/acpi/events" 1>&2
-  if ! dpkg-query -s acpi-support >/dev/null 2>&1; then
-    echo Possible reason: acpi-support is not installed 1>&2
   fi
-  exit 1
-fi
 
-# X280
-install -m 555 -o root -g root -t /etc/acpi "$BASE"/config/acpi/sleep-key.sh
-install -m 444 -o root -g root -t /etc/acpi/events "$BASE"/config/acpi/events/sleep-key
+  if ! test -d /etc/acpi/events; then
+    echo "Missing /etc/acpi/events" 1>&2
+    if ! dpkg-query -s acpi-support >/dev/null 2>&1; then
+      echo Possible reason: acpi-support is not installed 1>&2
+    fi
+    exit 1
+  fi
+}
+
+if dmidecode -t system |grep -q 'ThinkPad X280'; then
+  echo 'Installing for ThinkPad X280'
+  check_deps
+  install -m 555 -o root -g root -t /etc/acpi "$BASE"/config/acpi/sleep-key.sh
+  install -m 444 -o root -g root -t /etc/acpi/events "$BASE"/config/acpi/events/sleep-key
+else
+  echo 'Not installing - system not recognized'
+fi
