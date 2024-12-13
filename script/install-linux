@@ -228,8 +228,8 @@ fi
 
 # This contains the scripts needed for machine to turn off when
 # the power button is pressed.
-# x280 laptops also need acpi-support for my custom sleep command (fn+f1).
-install_if_needed acpi-support
+# x280 laptops also need acpid & acpi-support for my custom sleep command (fn+f1).
+install_if_needed acpi-support acpid
 
 if ! $skip_wireless && (is_laptop || lspci |grep -q Wireless || $need_wireless); then
   install_if_needed wireless-tools rfkill iw wpasupplicant wireless-regdb
