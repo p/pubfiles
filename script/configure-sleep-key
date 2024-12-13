@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# Check acpi events with acpi_listen.
+
 set -e
 
 BASE=`dirname $0`/..
@@ -34,3 +36,5 @@ fi
 # X280
 install -m 555 -o root -g root -t /etc/acpi "$BASE"/config/acpi/sleep-key.sh
 install -m 444 -o root -g root -t /etc/acpi/events "$BASE"/config/acpi/events/sleep-key
+update-rc.d acpid defaults
+/etc/init.d/acpid start
