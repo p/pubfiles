@@ -93,20 +93,33 @@ elif is_debian && ! is_ubuntu; then
  install_sources $BASE/../config/apt/debian/$release/sources.list
 fi
 
-apt-get remove tasksel popularity-contest installation-report
+if ! apt-cache show gcc >/dev/null 2>&1; then
+  echo 'Failed to apt-cache show gcc' 1>&2
+  exit 1
+fi
+
+remove_packages() {
+  for pkg in "$@"; do
+    if apt-cache show "$pkg" >/dev/null 2>&1; then
+      apt-get remove "$pkg"
+    fi
+  done
+}
+
+remove_packages tasksel popularity-contest installation-report
 
 # Junk that is invoked by browsers:
 # "desktop integration portal for Flatpak and Snap"
 # https://packages.debian.org/bookworm/xdg-desktop-portal
-apt-get remove xdg-desktop-portal
+remove_packages xdg-desktop-portal
 
 # This is a security hole I think.
-apt-get remove pkexec
+remove_packages pkexec
 # ... and normally I shouldn't need polkit.
-apt-get remove polkitd policykit-1 policykit-1-gnome
+remove_packages polkitd policykit-1 policykit-1-gnome
 
 # Don't know what this is actually needed for.
-apt-get remove at-spi2-core
+remove_packages at-spi2-core
 
 apt-get install -y python3-pip || apt-get install -y python-pip
 
@@ -199,7 +212,7 @@ fi
 #chmod 0400 /etc/sudoers.d/sudo-group
 
 install_if_needed nvi
-apt-get remove vim-common nano
+remove_packages vim-common nano
 update-alternatives --set editor /usr/bin/nvi
 update-alternatives --set vi /usr/bin/nvi
 
@@ -251,7 +264,7 @@ if is_laptop; then
 fi
 
 if true; then
-  apt-get remove needrestart
+  remove_packages needrestart
 else
   if false; then
     # Disable shared library warnings on current devuan
