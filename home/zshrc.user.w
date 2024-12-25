@@ -1,3 +1,3 @@
-alias x() {
+mdb_x() {
   exec startx -- :4
 }
