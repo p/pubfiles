@@ -2,8 +2,7 @@ if false; then
 # This is very slow, for some reason (about 880 milliseconds?).
 # See https://github.com/nvm-sh/nvm/issues/2724.
 # A solution is to lazily load nvm, which I think I can do
-# because I explicitly add the binary directory to PATH below which
-# would make scripts, etc. work (thus this block only loads nvm itself).
+# if I explicitly add the (only) node binary directory to PATH myself.
 # See also: https://github.com/lukechilds/zsh-nvm
 # Alternative node manager: fnm (https://github.com/Schniz/fnm)
 NVM_DIR="`realpath ~`/.nvm"
@@ -14,8 +13,9 @@ fi
 fi
 
 if which n 1>/dev/null 2>&1; then
+  export N_PREFIX=$HOME/.n
   version=`n ls |tail -1`
   if test -n "$version"; then
-    export PATH=/usr/local/n/versions/$version/bin:$PATH
+    export PATH=$N_PREFIX/n/versions/$version/bin:$PATH
   fi
 fi
