@@ -1,7 +1,14 @@
+if false; then
+# This is very slow, for some reason (about 880 milliseconds?).
+# See https://github.com/nvm-sh/nvm/issues/2724.
+# A solution is to lazily load nvm, which I think I can do
+# because I explicitly add the binary directory to PATH below which
+# would make scripts, etc. work (thus this block only loads nvm itself).
 NVM_DIR="`realpath ~`/.nvm"
 if test -d $NVM_DIR; then
   export NVM_DIR
   [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
+fi
 fi
 
 if which n 1>/dev/null 2>&1; then
