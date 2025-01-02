@@ -11,3 +11,6 @@ else
 fi
 
 chmod +x $HOME/bin/n
+
+# disable npm updates:
+# npm config set update-notifier false
