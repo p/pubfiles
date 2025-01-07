@@ -36,6 +36,10 @@
 F11 -> Page Up
 F12 -> Page Down
 
+## Disable IPv6
+
+https://linuxconfig.org/how-to-disable-ipv6-on-linux
+
 ## Common Commands
 
 ### Hold Debian Package
