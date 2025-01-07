@@ -41,6 +41,8 @@ def get_upstream_remote_name():
 
     if 'upstream' in names:
         name = 'upstream'
+    elif 'u' in names:
+        name = 'u'
     elif 'origin' in names:
         name = 'origin'
     else:
