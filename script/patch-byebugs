@@ -32,4 +32,6 @@ for root in $roots; do
     sed -e 's/input = readline("Really quit? (y.n) ", false)/input = "y"/' -i {} \;
   find "$root" -name debug.rb -path '*/jruby-*' -exec \
     sed -e 's/input = readline("Really quit? (y.n) ", false)/input = "y"/' -i {} \;
+  find "$root" -name session.rb -path '*/ruby/*' -exec \
+    sed -e "s/if ask 'Really quit?'/if true/" -i {} \;
 done
