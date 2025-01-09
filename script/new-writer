@@ -2,8 +2,11 @@
 
 # If libreoffice-writer is not installed, soffice runs fine with the
 # --writer switch and shows a format selector dialog which doesn't have any
-# text editor-looking options.
-# The program really is braindead.
+# text editor-looking options, in some situations.
+# Installing some dependencies of libreoffice-writer (but not writer itself)
+# produces an error. Apparently some of those components get loaded and then
+# fail to load writer.
+# Libreoffice really is braindead in many ways.
 
 set -e
 
