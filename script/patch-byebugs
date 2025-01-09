@@ -26,4 +26,10 @@ for root in $roots; do
 
   find "$root" -name quit.rb -path '*/ruby-debug/*' -exec \
     sed -e 's/confirm("Really quit.*")/true/' -i {} \;
+    
+  # debug
+  find "$root" -name debug.rb -path '*/debug-*' -exec \
+    sed -e 's/input = readline("Really quit? (y.n) ", false)/input = "y"/' -i {} \;
+  find "$root" -name debug.rb -path '*/jruby-*' -exec \
+    sed -e 's/input = readline("Really quit? (y.n) ", false)/input = "y"/' -i {} \;
 done
