@@ -1,6 +1,11 @@
 #!/bin/sh
 
-set -x
+# If libreoffice-writer is not installed, soffice runs fine with the
+# --writer switch and shows a format selector dialog which doesn't have any
+# text editor-looking options.
+# The program really is braindead.
+
+set -e
 
 if test -z "$1"; then
   echo "Usage: `basename $0` path" 1>&2
@@ -14,5 +19,17 @@ if ! basename "$name" |fgrep .; then
   name="$name.odt"
 fi
 
-touch "$name"
+if ! test -f "$name"; then
+#  tmpdir=`mktemp -d`
+#  echo x > $tmpdir/empty.txt
+#  pandoc -t odt $tmpdir/empty.txt -o "$name"
+  touch "$name"
+fi
+
+if ! which lowriter >/dev/null 2>&1; then
+  echo 1>&2
+  echo "WARNING: lowriter not in PATH - is libreoffice-writer installed?" 1>&2
+  echo 1>&2
+fi
+
 soffice --writer --norestore "$name"
