@@ -1,0 +1,73 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'mongo'
+
+options = {app_user: 'admin'}
+OptionParser.new do |opts|
+  opts.banner = "Usage: mongodb-create-app-user [options]"
+
+  opts.on("-A", "--admin-user=USER", "Admin user name (default: admin)") do |v|
+    options[:admin_user] = v
+  end
+  opts.on("-P", "--admin-password=PASSWORD", "Admin password") do |v|
+    options[:admin_password] = v
+  end
+
+  opts.on("-u", "--app-user=USER", "Application user name") do |v|
+    options[:app_user] = v
+  end
+  opts.on("-p", "--app-password=PASSWORD", "Application user password") do |v|
+    options[:app_password] = v
+  end
+  opts.on("-d", "--app-database=DATABASE", "Application user database") do |v|
+    options[:app_database] = v
+  end
+end.parse!
+
+unless options[:app_user] && options[:app_password] && options[:app_database]
+  raise "Application user, password and database are required"
+end
+
+client = Mongo::Client.new(%w'localhost',
+  user: options[:admin_user], password: options[:admin_password])
+
+begin
+  client.command(ping: 1)
+rescue Mongo::Auth::Unauthorized => exc
+  if exc.message =~ /AuthenticationFailed/
+    STDERR.puts "Wrong credentials for admin user"
+    exit 1
+  end
+
+  raise
+end
+
+client.use('admin')
+begin
+  client.database.users.create(
+      options[:app_user],
+      password: options[:app_password],
+      roles: [
+        { role: "readWrite", db: options[:app_database] },
+        { role: "dbAdmin", db: options[:app_database] },
+      ],
+  )
+rescue Mongo::Error => exc
+  if exc.message =~ /User.*already exists/
+    STDERR.puts "User #{options[:app_user]} appears to already exist, recreating"
+    client.database.users.remove(options[:app_user])
+    client.database.users.create(
+        options[:app_user],
+        password: options[:app_password],
+        roles: [
+          { role: "readWrite", db: options[:app_database] },
+          { role: "dbAdmin", db: options[:app_database] },
+        ],
+    )
+  else
+    raise
+  end
+end
+
+puts "User #{options[:app_user]} created successfully"
