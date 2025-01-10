@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -e
+
+`dirname $0`/remove-x-packages
+
+apt-get remove \
+    gpg-wks-server
+
+apt-get autoremove
