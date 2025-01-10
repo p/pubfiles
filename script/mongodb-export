@@ -1,0 +1,69 @@
+#!/usr/bin/env ruby
+
+autoload :FileUtils, 'fileutils'
+require 'optparse'
+require 'mongo'
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: mongodb-export [options]"
+
+  opts.on("-u", "--user=USER", "User name (default: none)") do |v|
+    options[:user] = v
+  end
+  opts.on("-p", "--password=PASSWORD", "Password") do |v|
+    options[:password] = v
+  end
+
+  opts.on("-l", "--list-databases", "List databases") do
+    options[:list_databases] = true
+  end
+
+  opts.on("-d", "--database=DATABASE", "Export specified database") do |v|
+    options[:database] = v
+  end
+end.parse!
+
+class Exporter
+  def initialize(**opts)
+    @options = opts
+  end
+
+  attr_reader :options
+
+  def client
+    @client ||= Mongo::Client.new(%w'localhost',
+      user: options[:user], password: options[:password])
+  end
+
+  def run
+    if options[:list_databases]
+      p client.database_names
+      exit
+    end
+
+    if database = options[:database]
+      export_database(database)
+    else
+      client.database_names.each do |database_name|
+        export_database(database_name)
+      end
+    end
+  end
+
+  def export_database(database_name)
+    STDERR.puts "Exporting #{database_name}"
+    db = client.use(database_name)
+    collection_names = db.collections.map(&:name)
+    retutrn if collection_names.empty?
+    FileUtils.mkdir_p(database_name)
+    collection_names.each do |collection_name|
+      out_path = File.join(database_name, "#{collection_name}.export")
+      cmd = "mongoexport -d #{database_name} -c #{collection_name} -o #{out_path} --sort '{_id:1}'"
+      STDERR.puts "Run: #{cmd}"
+      system(cmd)
+    end
+  end
+end
+
+Exporter.new(**options).run
