@@ -1,0 +1,48 @@
+#!/usr/bin/env ruby
+
+require 'mongo'
+
+username = ARGV.shift
+password = ARGV.shift
+
+raise "Usage: #{$0} username password" unless password
+
+client = Mongo::Client.new(%w'localhost', user: username, password: password)
+
+begin
+  client.command(ping: 1)
+rescue Mongo::Auth::Unauthorized => exc
+  if exc.message !~ /AuthenticationFailed/
+    raise
+  end
+  
+  # Continue with adding the user
+else
+  puts "User #{username} appears to already exist with the specified password - doing nothing"
+  exit
+end
+
+client.close
+
+client = Mongo::Client.new(%w'localhost')
+
+client.use('admin')
+begin
+  client.database.users.create(
+      username,
+      password: password,
+      roles: [
+        { role: "userAdminAnyDatabase", db: "admin" },
+        { role: "readWriteAnyDatabase", db: "admin" },
+      ],
+  )
+rescue Mongo::Error => exc
+  if exc.message =~ /User.*already exists/
+    STDERR.puts "User #{username} appears to already exist but with a different password"
+    exit 1
+  end
+  
+  raise
+end
+
+puts "User #{username} created successfully"
