@@ -11,7 +11,9 @@ apt-get remove \
     ruby-slim \
     xpdf \
     scite \
-    mpv alsa-utils yt-dlp mplayer \
-    firefox firefox-esr
+    mpv alsa-utils yt-dlp mplayer vlc \
+    firefox firefox-esr \
+    x11vnc xterm \
+    libxxf86vm1 libglapi-mesa libxtst6 libxcb-render0 libx11-6
 
 apt-get autoremove
