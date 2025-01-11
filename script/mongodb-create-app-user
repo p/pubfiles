@@ -43,9 +43,9 @@ rescue Mongo::Auth::Unauthorized => exc
   raise
 end
 
-client.use(options[:app_database])
+db = client.use(options[:app_database])
 begin
-  client.database.users.create(
+  db.users.create(
       options[:app_user],
       password: options[:app_password],
       roles: [
