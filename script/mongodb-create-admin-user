@@ -46,7 +46,7 @@ class Runner
     elsif options[:delete_users]
       db = specified_client.use(options[:database] || 'admin')
       db.command(usersInfo: 1).first.fetch('users').each do |spec|
-        db.users.remove(spec.fetch('user'), database: spec.fetch('db'))
+        db.database.users.remove(spec.fetch('user'), database: spec.fetch('db'))
       end
     else
       create_admin_user
