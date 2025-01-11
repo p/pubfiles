@@ -46,6 +46,8 @@ class Exporter
       export_database(database)
     else
       client.database_names.each do |database_name|
+        # config and local are special and require special permissions
+        next if %w(config local).include?(database_name)
         export_database(database_name)
       end
     end
@@ -55,11 +57,17 @@ class Exporter
     STDERR.puts "Exporting #{database_name}"
     db = client.use(database_name)
     collection_names = db.collections.map(&:name)
-    retutrn if collection_names.empty?
+    return if collection_names.empty?
     FileUtils.mkdir_p(database_name)
     collection_names.each do |collection_name|
       out_path = File.join(database_name, "#{collection_name}.export")
       cmd = "mongoexport -d #{database_name} -c #{collection_name} -o #{out_path} --sort '{_id:1}'"
+      if options[:user]
+        cmd << " --username #{options[:user]} --authenticationDatabase admin"
+      end
+      if options[:password]
+        cmd << " --password #{options[:password]}"
+      end
       STDERR.puts "Run: #{cmd}"
       system(cmd)
     end
