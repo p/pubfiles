@@ -18,6 +18,10 @@ OptionParser.new do |opts|
     options[:list_users] = true
   end
 
+  opts.on("-d", "--database=DATABASE", "Database to list or delete users in (default: admin)") do |v|
+    options[:database] = v
+  end
+
   opts.on("-D", "--delete-users", "Delete existing users") do
     options[:delete_users] = true
   end
@@ -32,15 +36,17 @@ class Runner
 
   def run
     if options[:list_users]
-      users = specified_client.database.command(usersInfo: 1).first.fetch('users')
+      db = specified_client.use(options[:database] || 'admin')
+      users = db.command(usersInfo: 1).first.fetch('users')
       if users.empty?
         puts "There are no users defined"
       else
         pp users
       end
     elsif options[:delete_users]
-      specified_client.database.command(usersInfo: 1).first.fetch('users').each do |spec|
-        specified_client.database.users.remove(spec.fetch('user'), database: spec.fetch('db'))
+      db = specified_client.use(options[:database] || 'admin')
+      db.command(usersInfo: 1).first.fetch('users').each do |spec|
+        db.users.remove(spec.fetch('user'), database: spec.fetch('db'))
       end
     else
       create_admin_user
