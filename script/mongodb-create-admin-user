@@ -23,68 +23,97 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-if options[:list_users]
-  # Do not default user here
-  client = Mongo::Client.new(%w'localhost',
-    user: options[:user], password: options[:password])
-  users = client.database.command(usersInfo: 1).first.fetch('users')
-  if users.empty?
-    puts "There are no users defined"
-  else
-    pp users
+class Runner
+  def initialize(**opts)
+    @options = opts
   end
-  exit
-elsif options[:delete_users]
-  # Do not default user here
-  client = Mongo::Client.new(%w'localhost',
-    user: options[:user], password: options[:password])
-  client.database.command(usersInfo: 1).first.fetch('users').each do |spec|
-    client.database.users.remove(spec.fetch('user'), database: spec.fetch('db'))
+
+  attr_reader :options
+
+  def run
+    if options[:list_users]
+      users = specified_client.database.command(usersInfo: 1).first.fetch('users')
+      if users.empty?
+        puts "There are no users defined"
+      else
+        pp users
+      end
+    elsif options[:delete_users]
+      specified_client.database.command(usersInfo: 1).first.fetch('users').each do |spec|
+        specified_client.database.users.remove(spec.fetch('user'), database: spec.fetch('db'))
+      end
+    else
+      create_admin_user
+    end
   end
-  exit
+
+  def create_admin_user
+    raise "Usage: #{$0} username password" unless password
+
+    client = authenticated_client
+
+    begin
+      client.command(ping: 1)
+    rescue Mongo::Auth::Unauthorized => exc
+      if exc.message !~ /AuthenticationFailed/
+        raise
+      end
+
+      # Continue with adding the user
+    else
+      puts "User #{username} appears to already exist with the specified password - doing nothing"
+      return
+    end
+
+    client.close
+
+    client = authless_client
+
+    begin
+      client.use('admin').database.users.create(
+          username,
+          password: password,
+          roles: [
+            { role: "userAdminAnyDatabase", db: "admin" },
+            { role: "readWriteAnyDatabase", db: "admin" },
+          ],
+      )
+    rescue Mongo::Error => exc
+      if exc.message =~ /User.*already exists/
+        STDERR.puts "User #{username} appears to already exist but with a different password"
+        exit 1
+      end
+
+      raise
+    end
+
+    puts "User #{username} created successfully"
+  end
+
+  private
+
+  def authless_client
+    @authless_client ||= Mongo::Client.new(%w'localhost', user: nil)
+  end
+
+  def specified_client
+    # Do not default user here
+    @specified_client ||= Mongo::Client.new(%w'localhost',
+      user: options[:user], password: options[:password])
+  end
+
+  def authenticated_client
+    client = Mongo::Client.new(%w'localhost',
+      user: username, password: password)
+  end
+
+  def username
+    options[:user] || 'admin'
+  end
+
+  def password
+    options[:password]
+  end
 end
 
-username = options[:user] || 'admin'
-password = options[:password]
-
-raise "Usage: #{$0} username password" unless password
-
-client = Mongo::Client.new(%w'localhost', user: username, password: password)
-
-begin
-  client.command(ping: 1)
-rescue Mongo::Auth::Unauthorized => exc
-  if exc.message !~ /AuthenticationFailed/
-    raise
-  end
-
-  # Continue with adding the user
-else
-  puts "User #{username} appears to already exist with the specified password - doing nothing"
-  exit
-end
-
-client.close
-
-client = Mongo::Client.new(%w'localhost')
-
-client.use('admin')
-begin
-  client.database.users.create(
-      username,
-      password: password,
-      roles: [
-        { role: "userAdminAnyDatabase", db: "admin" },
-        { role: "readWriteAnyDatabase", db: "admin" },
-      ],
-  )
-rescue Mongo::Error => exc
-  if exc.message =~ /User.*already exists/
-    STDERR.puts "User #{username} appears to already exist but with a different password"
-    exit 1
-  end
-
-  raise
-end
-
-puts "User #{username} created successfully"
+Runner.new(**options).run
