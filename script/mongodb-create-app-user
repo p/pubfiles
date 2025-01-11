@@ -43,9 +43,9 @@ rescue Mongo::Auth::Unauthorized => exc
   raise
 end
 
-db = client.use(options[:app_database])
+db_client = client.use(options[:app_database])
 begin
-  db.database.users.create(
+  db_client.database.users.create(
       options[:app_user],
       password: options[:app_password],
       roles: [
@@ -56,8 +56,8 @@ begin
 rescue Mongo::Error => exc
   if exc.message =~ /User.*already exists/
     STDERR.puts "User #{options[:app_user]} appears to already exist, recreating"
-    client.database.users.remove(options[:app_user])
-    client.database.users.create(
+    db_client.database.users.remove(options[:app_user])
+    db_client.database.users.create(
         options[:app_user],
         password: options[:app_password],
         roles: [
