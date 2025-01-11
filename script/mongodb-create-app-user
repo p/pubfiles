@@ -45,7 +45,7 @@ end
 
 db = client.use(options[:app_database])
 begin
-  db.users.create(
+  db.database.users.create(
       options[:app_user],
       password: options[:app_password],
       roles: [
