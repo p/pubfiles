@@ -1,9 +1,34 @@
 #!/usr/bin/env ruby
 
+require 'optparse'
 require 'mongo'
 
-username = ARGV.shift
-password = ARGV.shift
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: mongodb-create-admin-user [options]"
+
+  opts.on("-u", "--user=USER", "User name (default: admin)") do |v|
+    options[:user] = v
+  end
+  opts.on("-p", "--password=PASSWORD", "Password") do |v|
+    options[:password] = v
+  end
+
+  opts.on("-l", "--list-users", "List existing users") do
+    options[:list_users] = true
+  end
+end.parse!
+
+if options[:list_users]
+  # Do not default user here
+  client = Mongo::Client.new(%w'localhost',
+    user: options[:user], password: options[:password])
+  pp client.database.command(usersInfo: 1).first
+  exit
+end
+
+username = options[:user] || 'admin'
+password = options[:password]
 
 raise "Usage: #{$0} username password" unless password
 
@@ -15,7 +40,7 @@ rescue Mongo::Auth::Unauthorized => exc
   if exc.message !~ /AuthenticationFailed/
     raise
   end
-  
+
   # Continue with adding the user
 else
   puts "User #{username} appears to already exist with the specified password - doing nothing"
@@ -41,7 +66,7 @@ rescue Mongo::Error => exc
     STDERR.puts "User #{username} appears to already exist but with a different password"
     exit 1
   end
-  
+
   raise
 end
 
