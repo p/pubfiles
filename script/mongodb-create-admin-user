@@ -17,13 +17,30 @@ OptionParser.new do |opts|
   opts.on("-l", "--list-users", "List existing users") do
     options[:list_users] = true
   end
+
+  opts.on("-D", "--delete-users", "Delete existing users") do
+    options[:delete_users] = true
+  end
 end.parse!
 
 if options[:list_users]
   # Do not default user here
   client = Mongo::Client.new(%w'localhost',
     user: options[:user], password: options[:password])
-  pp client.database.command(usersInfo: 1).first
+  users = client.database.command(usersInfo: 1).first.fetch('users')
+  if users.empty?
+    puts "There are no users defined"
+  else
+    pp users
+  end
+  exit
+elsif options[:delete_users]
+  # Do not default user here
+  client = Mongo::Client.new(%w'localhost',
+    user: options[:user], password: options[:password])
+  client.database.command(usersInfo: 1).first.fetch('users').each do |spec|
+    client.database.users.remove(spec.fetch('user'), database: spec.fetch('db'))
+  end
   exit
 end
 
