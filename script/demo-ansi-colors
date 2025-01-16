@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+0.upto(7) do |i|
+  puts "\e[#{i+30}m##{i}: Quick brown fox jumped over the lazy dog"
+end
