@@ -24,7 +24,8 @@ cd "$tmpdir"
 apt-get source xsecurelock
 cd xsecurelock-*
 patch -p1 <"$src"/more-attempts-1.5.1.diff
-patch -p1 <"$src"/start-force-auth-1.5.1.diff
+#patch -p1 <"$src"/start-force-auth-1.5.1.diff
+patch -p1 <"$src"/start-force-auth-1.9.0.diff
 
 set -x
 version=`head -n 1 debian/changelog |egrep -o '\(.*?\)' |tr -d '()'`

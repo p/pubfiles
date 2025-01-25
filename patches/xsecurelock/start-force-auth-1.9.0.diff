@@ -1,0 +1,13 @@
+diff --git a/main.c b/main.c
+index b9a933b..10f372d 100644
+--- a/main.c
++++ b/main.c
+@@ -1105,7 +1105,7 @@ int main(int argc, char **argv) {
+   XFlush(display);
+ 
+   // Figure out the initial Xss saver state. This gets updated by event.
+-  enum WatchChildrenState xss_requested_saver_state = WATCH_CHILDREN_NORMAL;
++  enum WatchChildrenState xss_requested_saver_state = WATCH_CHILDREN_FORCE_AUTH;
+ #ifdef HAVE_XSCREENSAVER_EXT
+   if (scrnsaver_event_base != 0) {
+     XScreenSaverInfo *info = XScreenSaverAllocInfo();
