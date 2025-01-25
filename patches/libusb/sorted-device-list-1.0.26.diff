@@ -20,7 +20,7 @@
  		struct libusb_device *dev = discdevs->devices[i];
  		ret[i] = libusb_ref_device(dev);
  	}
-+	qsort(ret, len, sizeof(struct libusb_device *), compar);
++	qsort(ret, len, sizeof(struct libusb_device *), (__compar_fn_t) compar);
  	*list = ret;
  
  out:
