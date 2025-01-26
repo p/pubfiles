@@ -1,0 +1,54 @@
+#!/usr/bin/env ruby
+
+require 'find'
+
+counts = {
+  512 => 0,
+  4096 => 0,
+  big: 0,
+}
+
+size_512 = 0
+size_4096 = 0
+
+mount_points = {}
+IO.readlines('/etc/mtab').each do |line|
+  mount_points[line.split(' ')[1]] = true
+end
+
+pp mount_points
+
+start = ARGV.shift
+Find.find(start) do |path|
+  abs_path = File.join(start, path)
+  if path != start && mount_points[abs_path]
+    Find.prune
+    next
+  end
+  next if File.directory?(path)
+  begin
+    size = File.stat(path).size
+    if size <= 512
+      counts[512] += 1
+      size_512 += 1
+      size_4096 += 1
+    elsif size <= 4096
+      counts[4096] += 1
+      size_512 += (size-1)/512+1
+      size_4096 += 1
+    else
+      counts[:big] += 1
+      size_512 += (size-1)/512+1
+      size_4096 += (size-1)/4096+1
+    end
+  rescue IOError, SystemCallError => exc
+    puts "#{path}: #{exc.class}: #{exc}"
+  end
+end
+
+pp counts
+puts "Total: #{counts.values.sum}"
+
+p size_512*512
+p size_4096*4096
+p size_4096*4096.0 / size_512/512
