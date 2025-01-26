@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# Rescue tools:
+#
+# nvme-cli
+
 set -e
 
 if test "`id -u`" != 0; then
