@@ -315,6 +315,11 @@ if is_laptop; then
   if test -f /sys/devices/platform/thinkpad_acpi/rfkill; then
     echo options thinkpad_acpi fan_control=1 |tee /etc/modprobe.d/thinkpad_acpi.conf
   fi
+
+  if is_thinkpad; then
+    install -m 444 -o root -g root -t /etc/udev/rules.d \
+      "$BASE"/../config/udev/rules.d/90-brightnessctl.rules
+  fi
 fi
 
 if ! id marker >/dev/null 2>&1; then

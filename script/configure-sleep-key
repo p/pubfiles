@@ -35,13 +35,20 @@ check_deps() {
   fi
 }
 
-if dmidecode -t system |grep -q 'ThinkPad X280'; then
-  echo 'Installing for ThinkPad X280'
+install_thinkpad_x280() {
   check_deps
   install -m 555 -o root -g root -t /etc/acpi "$BASE"/config/acpi/sleep-key.sh
   install -m 444 -o root -g root -t /etc/acpi/events "$BASE"/config/acpi/events/sleep-key
   update-rc.d acpid defaults
   /etc/init.d/acpid start
+}
+
+if dmidecode -t system |grep -q 'ThinkPad X280'; then
+  echo 'Installing for ThinkPad X280'
+  install_thinkpad_x280
+elif dmidecode -t system |grep -q 'ThinkPad X13'; then
+  echo 'Installing for ThinkPad X13'
+  install_thinkpad_x280
 else
   echo 'Not installing - system not recognized'
 fi
