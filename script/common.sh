@@ -5,7 +5,8 @@ have() {
 }
 
 is_thinkpad() {
-  grep -q LENOVO /sys/devices/virtual/dmi/id/chassis_vendor 2>/dev/null
+  grep -q LENOVO /sys/devices/virtual/dmi/id/chassis_vendor 2>/dev/null &&
+  grep -q ThinkPad /sys/devices/virtual/dmi/id/product_family 2>/dev/null
 }
 
 is_laptop() {
