@@ -2,3 +2,17 @@
 # Makes line editing work and removes slow syntax highlighting.
 IRB.conf[:USE_SINGLELINE] = true
 
+# Disable autocomplete: https://stackoverflow.com/questions/70505085/disable-irb-autocomplete
+IRB.conf[:USE_AUTOCOMPLETE] = false
+# Via environment variable also?
+# IRB_USE_AUTOCOMPLETE=false
+# https://github.com/ruby/irb/issues/351
+
+# Disable colors: https://github.com/ruby/irb/issues/351
+IRB.conf[:USE_COLORIZE] = false
+
+# Defaults:
+# https://github.com/ruby/irb/issues/351
+
+# Alternative: irb --noautocomplete --nocolorize
+# Check if this can be patched system-wide?
