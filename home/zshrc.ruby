@@ -34,3 +34,7 @@ if have bundler; then
   alias bpa='bundle pack --all'
   alias rrake='rm -f *.lock; rake'
 fi
+
+if have irb; then
+  export RUBY_DEBUG_IRB_CONSOLE=1
+fi
