@@ -2,6 +2,21 @@
 
 set -e
 
+sleep=
+
+while getopts d: opt; do
+  case $opt in
+  d)
+    sleep=$OPTARG
+    ;;
+  *)
+    echo "Bogus option $opt" 1>&2
+    exit 10
+    ;;
+  esac
+done
+shift $((OPTIND-1))
+
 opts=
 
 if which optipng >/dev/null 2>&1; then
@@ -9,5 +24,9 @@ if which optipng >/dev/null 2>&1; then
 fi
 
 mkdir -p /tmp/screenshot
+
+if test -n "$sleep"; then
+  sleep $sleep
+fi
 
 scrot -s -F '/tmp/screenshot/%Y-%m-%d_%H-%M-%S.png'

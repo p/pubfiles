@@ -47,6 +47,10 @@ openbox_menu[xmlns="http://openbox.org/3.4/menu"]
         action[name="Execute"]
           command
             | ~/apps/pubfiles/script/screenshot
+      item[label="Screenshot (5 sec)"]
+        action[name="Execute"]
+          command
+            | ~/apps/pubfiles/script/screenshot -d 5
     
     - if have?('gimp')
       item[label="Gimp"]
