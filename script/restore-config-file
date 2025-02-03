@@ -1,0 +1,29 @@
+#!/bin/sh
+
+# Restores Debian configuration files (in /etc) from their packages.
+
+set -e
+
+# https://unix.stackexchange.com/questions/27762/restore-etc-configuration-files-from-the-default
+
+packages=
+
+for file in "$@"; do
+  pkg=`dpkg-query -S "$file" |awk -F: '{print $1}'`
+  echo "$file: reinstalling $pkg"
+  packages="`(echo $packages; echo $pkg) |sort|uniq`"
+done
+
+# This will prompt to reinstall removed but not purged packages.
+# Did not work:
+#apt-get install --reinstall -o Dpkg::Options::="--force-confmiss" $packages
+#apt-get install --reinstall -o Dpkg::Options::="--force-confnew" --no-upgrade $packages
+
+tmpdir=`mktemp -d`
+cd "$tmpdir"
+
+apt-get download $packages
+echo "reinstalling: `ls`"
+dpkg -i --force-confmiss *.deb
+
+rm -rf "$tmpdir"
