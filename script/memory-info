@@ -1,0 +1,36 @@
+#!/usr/bin/env ruby
+
+output = `dmidecode -t memory`
+
+info = {}
+device_index = 0
+key = nil
+
+output.split("\n").each do |line|
+  if line == 'Physical Memory Array'
+    key = :array
+    info[key] = {}
+  elsif line =~ /^\s+Number Of Devices: (\d+)/
+    info[key][:num_devices] = Integer($1)
+  elsif line == 'Memory Device'
+    device_index += 1
+    key = :"device#{device_index}"
+    info[key] = {}
+  elsif line =~ /^\s+Size: (.+)/
+    info[key][:size] = $1
+  elsif line =~ /^\s+Type: (.+)/
+    info[key][:type] = $1
+  elsif line =~ /^\s+Speed: (\d+) MT\/s/
+    info[key][:speed] = $1
+  elsif line =~ /^\s+Configured Memory Speed: (\d+) MT\/s/
+    info[key][:configured_speed] = $1
+  end
+end
+
+puts "#{info[:array][:num_devices]} slots/modules"
+1.upto(info[:array][:num_devices]) do |i|
+  device = info[:"device#{i}"]
+  puts "Slot/module #{i}: #{device[:size]} of #{device[:type]}-#{device[:speed]} at #{device[:configured_speed]}"
+end
+
+#pp info
