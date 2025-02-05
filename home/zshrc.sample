@@ -18,9 +18,8 @@ compinit
 . ~/apps/pubfiles/home/zshrc.ssh-agent
 
 test -f ~/apps/pubfiles/home/zshrc.user.$USER && . ~/apps/pubfiles/home/zshrc.user.$USER
+test -f ~/apps/pubfiles/home/zshrc.user.$USER.`hostname` && . ~/apps/pubfiles/home/zshrc.user.$USER.`hostname`
 
 if which rbenv >/dev/null 2>&1; then
   rbenv shell 3.3
 fi
-
-iw() { palemoon -ProfileManager -no-remote }

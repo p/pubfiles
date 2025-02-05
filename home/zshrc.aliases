@@ -85,3 +85,7 @@ cdiff() {
 gr() {
   git reset "$@" && git checkout "$@"
 }
+
+xscite(){
+	awk -F: '{print $1}' |xargs scite
+}
