@@ -7,3 +7,6 @@ BUNDLE_IGNORE_FUNDING_REQUESTS: true
 # For 2.4 and 2.3 set BUNDLER_VERSION=number in environment.
 # Which number should be used is unclear, both 1 and 99 seem to work.
 BUNDLE_VERSION: system
+# https://nokogiri.org/tutorials/installing_nokogiri.html#installing-using-standard-system-libraries
+# bundle config build.nokogiri --use-system-libraries
+BUNDLE_BUILD__NOKOGIRI: "--use-system-libraries"
