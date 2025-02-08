@@ -2,7 +2,7 @@
 
 set -e
 
-apt-get remove \
+apt-get remove --no-upgrade \
     gitk libvte9 feh \
     evince gimp \
     xinit xauth openbox xsecurelock xss-lock xautolock \
@@ -14,6 +14,11 @@ apt-get remove \
     mpv alsa-utils yt-dlp mplayer vlc \
     firefox firefox-esr \
     x11vnc xterm \
-    libxxf86vm1 libglapi-mesa libxtst6 libxcb-render0 libx11-6
+    libxxf86vm1 libglapi-mesa libxtst6 libxcb-render0 libx11-6 \
+    seatd mesa-va-drivers \
+    libwayland-dev \
+    libcairo2 libreoffice-core dbus dbus-bin dbus-daemon \
+    libreoffice-common libreoffice-style-colibre \
+    libva-wayland2 libva2 libvte-2.91-common libwayland-client0
 
 apt-get autoremove

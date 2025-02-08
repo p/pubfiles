@@ -5,6 +5,8 @@ set -e
 `dirname $0`/remove-x-packages
 
 apt-get remove \
-    gpg-wks-server
+    gpg-wks-server  dirmngr gpg gpg-agent gpgconf gnupg-utils  gnupg-l10n \
+    libsane-common \
+    libwebp-dev libmount-dev libfontconfig-dev  libblkid-dev 
 
 apt-get autoremove
