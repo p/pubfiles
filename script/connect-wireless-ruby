@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-# TODO: connecting to network without password after boot
+# TODO: connecting to network without PSK after boot
 # doesn't bring up the wireless interface? run ifconfig up manually?
 
 # Inspiration: https://github.com/dmelo/vswm
@@ -273,8 +273,12 @@ class Runner
     options.fetch(:ssid)
   end
 
-  def password
-    options[:password]
+  def psk
+    options[:psk]
+  end
+
+  def auth_options
+    options.slice(*%i(auth identity ca_cert_path user_cert_path user_key_path user_key_password))
   end
 
   def state_dir
@@ -362,7 +366,8 @@ class Runner
     path = File.join(state_dir, 'config.json')
     @config = {
       ssid: ssid,
-      password: password,
+      psk: psk,
+      auth_options: auth_options,
       interface: wireless_ifname,
       ip: get_interface_ip(wireless_ifname),
       gateway: get_default_gateway,
@@ -430,8 +435,8 @@ class Runner
           next
         end
 
-        # Checking WPA state here even if password isn't set - the block
-        # should never activate since without password there won't be any
+        # Checking WPA state here even if PSK isn't set - the block
+        # should never activate since without PSK there won't be any
         # WPA state to begin with.
         if state[:wpa_completed]
           sleep 3
@@ -447,7 +452,7 @@ class Runner
 
         elapsed = Utils.monotime - started_at
 
-        if password
+        if auth?
           if elapsed > options.fetch(:wpa_supplicant_timeout)
             raise WpaSupplicantFailed, "Giving up on wpa association after #{options.fetch(:wpa_supplicant_timeout)} seconds"
           end
@@ -496,6 +501,10 @@ class Runner
   attr_reader :wired_ifname
   attr_reader :wireless_ifnames
   attr_reader :wireless_ifname
+
+  def auth?
+    psk || auth_options[:auth]
+  end
 
   def identify_interfaces
     wireless = []
@@ -546,7 +555,7 @@ class Runner
     dir = '/etc/network/interfaces.d'
     if File.exist?(dir)
       contents = "iface #{wireless_ifname} inet dhcp\n"
-      if password
+      if auth?
         contents << "  wpa-ssid \"#{ssid}\"\n"
       else
         contents << "  wireless-essid \"#{ssid}\""
@@ -558,7 +567,7 @@ class Runner
 
     Sub.check_call(['iwconfig', wireless_ifname, 'essid', ssid])
 
-    if password
+    if auth?
       continue_starting_wpa_supplicant
     else
       really_set_ssid(ssid)
@@ -581,14 +590,40 @@ class Runner
   end
 
   def continue_starting_wpa_supplicant
+    contents = ''
+    if psk
+      contents << "  key_mgmt=WPA-PSK\n"
+      contents << "  psk=\"#{psk}\"\n"
+    elsif auth = auth_options[:auth]
+      auth_map = {
+        'tls' => 'TLS',
+      }
+      contents << "  key_mgmt=WPA-EAP\n"
+      contents << "  eap=#{auth_map.fetch(auth)}\n"
+      {
+        identity: :identity,
+        ca_cert_path: :ca_cert,
+        user_cert_path: :client_cert,
+        user_key_path: :private_key,
+        user_key_password: :private_key_passwd,
+      }.each do |k, mapped_k|
+      p auth_options
+        if value = auth_options[k]
+        p [k,mapped_k,value]
+          contents << "  #{mapped_k}=\"#{value}\"\n"
+        end
+      end
+      puts contents
+    end
     contents = <<-EOT
       ctrl_interface=/run/wpa_supplicant
       #ap_scan=0
       network={
         scan_ssid=1
         ssid="#{ssid}"
-        key_mgmt=WPA-PSK
-        psk="#{password}"
+        #{contents}
+        #pairwise=CCMP TKIP
+        #group=CCMP TKIP
       }
 EOT
     # Debian systems
@@ -618,7 +653,7 @@ EOT
     #binary = '/home/me/apps/exp/hostap/wpa_supplicant/wpa_supplicant'
     @wpa_process_info = Sub.start_process_pipe([binary,
       '-D', 'nl80211,wext', '-i', wireless_ifname,
-      #'-f', wpa_supplicant_log_path,
+      '-f', wpa_supplicant_log_path,
       '-c', wpa_conf_path, '-d',
     ])
     if File.exist?(wpa_supplicant_log_path)
@@ -652,6 +687,7 @@ EOT
 
       if @wpa_exited
         status = wpa_process_info[:exit_status]
+        pp status
         if status
           raise WpaSupplicantFailed, "wpa_supplicant unexpectedly terminated with exit code #{status}"
         else
@@ -673,7 +709,7 @@ EOT
   def get_wireless_state
     state = get_iwconfig(wireless_ifname)
 
-    if password
+    if auth?
       state.update(get_wpa_state(wireless_ifname))
     end
 
@@ -723,11 +759,11 @@ EOT
 end
 
 options = {
-  wpa_supplicant_timeout: 60,
+  wpa_supplicant_timeout: 20,
   state_dir: '/run/wireless',
 }
 OptionParser.new do |opts|
-  opts.banner = "Usage: connect-wireless [options] ssid [password]"
+  opts.banner = "Usage: connect-wireless [options] ssid [psk]"
 
   opts.on("-a", "--auto", "Auto switch between wired & wireless") do
     options[:auto] = true
@@ -775,14 +811,14 @@ if options[:list_ssids]
   exit
 end
 
-ssid, password = ARGV
+ssid, psk = ARGV
 if ssid.nil?
   raise 'Usage'
 end
 
 if options[:known]
-  if password
-    raise "Password cannot be given when using a known network"
+  if psk
+    raise "PSK cannot be given when using a known network"
   end
 
   dir = File.join(File.dirname(__FILE__), '../config/wireless-networks.d')
@@ -802,14 +838,16 @@ if options[:known]
     end
   end
 
-  info = networks[ssid]
+  info = networks[ssid]&.transform_keys(&:to_sym)
   unless info
     raise "Network alias #{ssid} not known"
   end
-  ssid = info.fetch('ssid')
-  password = info['psk']
+  ssid = info.fetch(:ssid)
+  psk = info[:psk]
 
   puts "Connecting to #{ssid}"
+else
+  info = {ssid: ssid, psk: psk}
 end
 
 if options[:daemonize]
@@ -822,4 +860,4 @@ if options[:daemonize]
   end
 end
 
-Runner.new(**options.merge(ssid: ssid, password: password)).run
+Runner.new(**options.merge(info)).run
