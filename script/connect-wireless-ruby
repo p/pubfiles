@@ -171,16 +171,19 @@ module Helpers
     result = JSON.parse(output)
     if ai = result.first['addr_info']
       if ai.empty?
-        raise NoIpAddress, "Empty addr_info for #{ifname}"
+        #raise NoIpAddress, "Empty addr_info for #{ifname}"
+        return nil
       end
       ai = ai.first
       unless (family = ai.fetch('family')) == 'inet'
         raise "Unhandled family: #{family}"
       end
       ai.fetch('local')
-    else
-      raise NoIpAddress, "No IP address for #{ifname}"
     end
+  end
+
+  def get_interface_ip!(ifname)
+    get_interface_ip(ifname) or raise NoIpAddress, "No IP address for #{ifname}"
   end
 
   def get_default_gateway
@@ -369,7 +372,7 @@ class Runner
       psk: psk,
       auth_options: auth_options,
       interface: wireless_ifname,
-      ip: get_interface_ip(wireless_ifname),
+      ip: get_interface_ip!(wireless_ifname),
       gateway: get_default_gateway,
     }
     File.open(path, 'w') do |f|
@@ -433,6 +436,11 @@ class Runner
           end
           sleep 3
           next
+        end
+
+        if @state == :started && auth? && !state[:ip] && state[:wpa_completed]
+          puts "Lost IP address after WPA completed, reconnecting"
+          raise NoIpAddress
         end
 
         # Checking WPA state here even if PSK isn't set - the block
@@ -539,6 +547,7 @@ class Runner
 
   def start_wpa_supplicant
     puts "[CWR] Preparing to start wpa_supplicant for #{wireless_ifname}"
+    @state = :starting
     if wpa_process_info
       begin
         Process.kill('TERM', wpa_process_info.fetch(:pid))
@@ -572,6 +581,7 @@ class Runner
     else
       really_set_ssid(ssid)
       @started_at = Utils.monotime
+      @state = :started
     end
   end
 
@@ -670,6 +680,7 @@ EOT
     end
 
     @started_at = Utils.monotime
+    @state = :started
     loop do
       get_current_state
 
@@ -708,6 +719,7 @@ EOT
 
   def get_wireless_state
     state = get_iwconfig(wireless_ifname)
+    state.update(ip: get_interface_ip(wireless_ifname))
 
     if auth?
       state.update(get_wpa_state(wireless_ifname))
@@ -759,7 +771,7 @@ EOT
 end
 
 options = {
-  wpa_supplicant_timeout: 20,
+  wpa_supplicant_timeout: 10,
   state_dir: '/run/wireless',
 }
 OptionParser.new do |opts|
