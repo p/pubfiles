@@ -169,16 +169,16 @@ module Helpers
   def get_interface_ip(ifname)
     output = Sub.check_output(['ip', '-j', 'address', 'show', ifname])
     result = JSON.parse(output)
-    if ai = result.first['addr_info']
-      if ai.empty?
+    if ais = result.first['addr_info']
+      if ais.empty?
         #raise NoIpAddress, "Empty addr_info for #{ifname}"
         return nil
       end
-      ai = ai.first
-      unless (family = ai.fetch('family')) == 'inet'
-        raise "Unhandled family: #{family}"
+      ais.each do |ai|
+        if (family = ai.fetch('family')) == 'inet'
+          return ai.fetch('local')
+        end
       end
-      ai.fetch('local')
     end
   end
 
