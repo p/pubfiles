@@ -309,8 +309,14 @@ class Runner
       end
     end
 
-    %w(ifdown ifup dhclient wpa_supplicant).each do |proc_name|
+    Sub.uncheck_call(%w,service NetworkManager stop,)
+
+    processes = %w(ifdown ifup dhclient wpa_supplicant NetworkManager)
+    processes.each do |proc_name|
       Sub.uncheck_call(['pkill', proc_name])
+    end
+    processes.each do |proc_name|
+      Sub.uncheck_call(['pkill', '-9', proc_name])
     end
 
     done = false
