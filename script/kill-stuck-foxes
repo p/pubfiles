@@ -1,0 +1,51 @@
+#!/usr/bin/env ruby
+
+# Kills firefox processes that have consumed over 90% CPU on average
+# over the last 5 seconds.
+
+require 'ffi'
+require 'etc'
+
+module C
+  extend FFI::Library
+  ffi_lib 'c'
+  attach_function :sysconf, [ :int ], :int
+end
+
+_SC_CLK_TCK = 2
+ticks_per_sec = C.sysconf(_SC_CLK_TCK)
+
+pids = {}
+
+Dir.entries('/proc').each do |entry|
+  if entry =~ /\A\d+\z/
+    path = File.join('/proc', entry)
+    stat = File.stat(path)
+    pentry = Etc.getpwuid(stat.uid)
+    if pentry.name.start_with?('br-')
+      cmdline = File.read(File.join(path, 'cmdline'))
+      if cmdline =~ /\0-contentproc\0/
+        pid = Integer(entry)
+        start_stats = File.read(File.join(path, 'stat')).sub(/\(.*?\)/, '()').split(/\s+/)
+        pids[pid] = {
+          start_ticks: Integer(start_stats[13]),
+          user: pentry.name,
+        }
+      end
+    end
+  end
+end
+
+sleep 5
+
+# https://man7.org/linux/man-pages/man5/proc_pid_stat.5.html
+
+pids.each do |pid, info|
+  end_stats = File.read(File.join('/proc', pid.to_s, 'stat')).sub(/\(.*?\)/, '()').split(/\s+/)
+  info[:end_ticks] = Integer(end_stats[13])
+  info[:time_used] = (info[:end_ticks] - info[:start_ticks]).to_f / ticks_per_sec
+  if info[:time_used] >= 5 * 0.9
+    puts "Killing #{pid}"
+    system("sudo -u #{info[:user]} kill -9 #{pid}")
+  end
+end

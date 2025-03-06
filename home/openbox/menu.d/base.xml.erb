@@ -76,6 +76,12 @@
       <action name='Execute'><command>sudo -nu br-<%= br.short_username %> pkill -9 -u br-<%= br.short_username %> waterfox</command></action>
     </item>
   <% end %>
+  
+  <separator/>
+  
+  <item label="Stuck foxes">
+    <action name='Execute'><command>~/apps/pubfiles/script/kill-stuck-foxes</command></action>
+  </item>
 </menu>
 
 <% if have?('chromium') || have?('chrome') %>
