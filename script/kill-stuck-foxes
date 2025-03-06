@@ -15,6 +15,11 @@ end
 _SC_CLK_TCK = 2
 ticks_per_sec = C.sysconf(_SC_CLK_TCK)
 
+# OR:
+# getconf CLK_TCK
+#
+# Can also determine programmatically by busy-looping for one second.
+
 pids = {}
 
 Dir.entries('/proc').each do |entry|
