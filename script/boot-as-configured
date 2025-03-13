@@ -9,6 +9,9 @@ fi
 
 . /etc/setup.conf
 base=/opt/pubfiles
+if ! test -d "$base"; then
+  base=`dirname "$0"`/..
+fi
 
 if test -n "$br_users"; then
   for user in $br_users; do
