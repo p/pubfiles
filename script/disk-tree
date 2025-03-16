@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+require 'json'
 require 'yaml'
 
 def blkid(device)
@@ -51,6 +52,13 @@ disks.each do |disk|
       model: model,
       serial: serial,
     }
+    if disk =~ /sd/
+      disk_name = File.basename(disk)
+      scsi_id = File.basename(File.readlink("/sys/block/#{disk_name}/device"))
+      disk_infos[disk].update(
+        scsi_id: scsi_id,
+      )
+    end
   end
 end
 
@@ -59,15 +67,24 @@ dm_infos = {}
 dms.each do |dm|
   next if File.basename(dm) == 'control'
   dev_num = File.basename(File.readlink(dm))
-  status = `cryptsetup status #{dm}`
-  if status =~ /device:\s+(\S+)/
-    device = $1
-  else
-    raise "cryptsetup failed for #{dm}"
-  end
-  blkid_status = blkid(dm)
 
-  if device == '(null)'
+  info = `lsblk -Jdo TYPE #{dm}`
+  info = JSON.parse(info).fetch('blockdevices')[0]
+  type = info.fetch('type')
+  if type == 'crypt'
+    status = `cryptsetup status #{dm}`
+    if status =~ /device:\s+(\S+)/
+      device = $1
+    else
+      raise "'cryptsetup status' failed or produced unexpected output for '#{dm}'"
+    end
+    blkid_status = blkid(dm)
+  else
+    # TODO
+    device = nil
+  end
+
+  if device.nil? || device == '(null)'
     warn "warning: dm #{dm} has null device"
     next
   end
@@ -90,7 +107,12 @@ end
 
 disk_infos.each do |disk, di|
   puts
-  puts "#{'%-10s' % File.basename(disk)}   #{'%10s' % di[:size]}  #{'%-20s' % di[:model]}      Serial: #{di[:serial]}"
+  name = if di[:scsi_id]
+    "#{File.basename(disk)} (#{di[:scsi_id]})"
+  else
+    File.basename(disk)
+  end
+  puts "#{'%-10s' % name}   #{'%10s' % di[:size]}  #{'%-20s' % di[:model]}      Serial: #{di[:serial]}"
   di[:part_infos].each do |part, pi|
     blkid_status = blkid(part)
 
