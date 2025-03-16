@@ -52,13 +52,13 @@ disks.each do |disk|
       model: model,
       serial: serial,
     }
-    if disk =~ /sd/
-      disk_name = File.basename(disk)
-      scsi_id = File.basename(File.readlink("/sys/block/#{disk_name}/device"))
-      disk_infos[disk].update(
-        scsi_id: scsi_id,
-      )
-    end
+  end
+  if disk =~ /sd/
+    disk_name = File.basename(disk)
+    scsi_id = File.basename(File.readlink("/sys/block/#{disk_name}/device"))
+    disk_infos[disk].update(
+      scsi_id: scsi_id,
+    )
   end
 end
 
