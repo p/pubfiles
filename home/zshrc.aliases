@@ -87,5 +87,9 @@ gr() {
 }
 
 xscite(){
-	awk -F: '{print $1}' |xargs scite
+	sed -e 's/^ *//' -e 's/[ :].*//'  |xargs scite
+}
+
+ss() {
+	~/apps/pubfiles/script/scite-ext "$@" &
 }
