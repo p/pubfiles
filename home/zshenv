@@ -1,3 +1,5 @@
+export PATH=$PATH:/usr/local/sbin:/usr/sbin:/sbin
+
 _maybe_add_to_path() {
   dir="$1"
   if test -d "$dir"; then
