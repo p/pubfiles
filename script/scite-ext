@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+
+args = ARGV.map do |path|
+  if File.exist?(path)
+    path
+  elsif path =~ %r,\A(.+):\z,
+    $1
+  elsif path =~ %r,\A(.+):\d+(?::in)?\z,
+    $1
+  else
+    path
+  end
+end
+
+exec('scite', *args)
