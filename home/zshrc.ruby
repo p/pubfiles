@@ -33,6 +33,10 @@ if have bundler; then
   alias brs='bundle exec rescue rspec'
   alias bpa='bundle pack --all'
   alias rrake='rm -f *.lock; rake'
+  
+  xbss() {
+	sed -e 's/^ *//' -e 's/[ :].*//' -e 's,^lib/,spec/,' -e 's/\.rb$/_spec.rb/' |xargs ls |xargs bundle exec rspec "$@"
+  }
 fi
 
 if have irb; then
