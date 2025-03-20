@@ -179,6 +179,9 @@ if is_headful; then
     # Force wake up laptop's screen upon resume, unsure if this is working.
     install -m 555 -o root -g root -t /etc/pm/sleep.d $BASE/../config/pm/sleep.d/screen
   fi
+  
+  # TODO make conditional based on system?
+  install -m 444 -o root -g root -t /etc/X11/xorg.conf.d $BASE/../config/xorg.conf.d/99-disable-touch-screen.conf
 fi
 
 install_if_needed firmware-linux
