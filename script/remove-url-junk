@@ -12,6 +12,10 @@ def fix_url(url)
     url = Addressable::URI.parse(url)
     q = url.query_values.fetch('q')
     q
+  elsif url.start_with?('https://l.facebook.com/l.php')
+    url = Addressable::URI.parse(url)
+    q = url.query_values.fetch('u')
+    q
   else
     url
   end
