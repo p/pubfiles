@@ -444,6 +444,11 @@ class Runner
           next
         end
 
+        if !state[:ip]
+          puts "No IP address"
+          raise NoIpAddress
+        end
+
         if @state == :started && auth? && !state[:ip] && state[:wpa_completed]
           puts "Lost IP address after WPA completed, reconnecting"
           raise NoIpAddress
