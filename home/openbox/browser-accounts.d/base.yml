@@ -1,0 +1,8 @@
+sandbox:
+  name: Sandbox
+  user-suffix: sandbox
+
+shop:
+  name: Shop
+  user-suffix: shop
+  if-user-exists: true

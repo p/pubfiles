@@ -1,3 +1,5 @@
+autoload :Find, 'find'
+autoload :YAML, 'yaml'
 autoload :Socket, 'socket'
 autoload :Shellwords, 'shellwords'
 autoload :Timeout, 'timeout'
@@ -67,9 +69,25 @@ module Helpers
 
   def browser_accounts
     @browser_accounts ||= [].tap do |br|
-      br << BrowserAccount.new('Sandbox', 'sandbox', nil, options[:verbose_browsers])
-      if have_user?('br-shop')
-        br << BrowserAccount.new('Shop', 'br-shop', nil, options[:verbose_browsers])
+      conf_dir = File.join(File.dirname(__FILE__), '..', 'browser-accounts.d')
+      Find.find(conf_dir) do |path|
+        if path.end_with?('.yml')
+          infos = File.open(path) do |f|
+            YAML.load(f)
+          end
+          infos.values.each do |info|
+            user_suffix = info.fetch('user-suffix')
+            if info['if-user-exists'] && !have_user?("br-#{user_suffix}")
+              next
+            end
+            br << BrowserAccount.new(
+              info.fetch('name'),
+              user_suffix,
+              nil,
+              options[:verbose_browsers],
+            )
+          end
+        end
       end
     end
   end
