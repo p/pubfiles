@@ -210,7 +210,14 @@ module Helpers
     output = Sub.check_output(['iwconfig', ifname])
     state = {associated: false}
     if output =~ /\bESSID:"([^"]*)"/
-      state[:ssid] = $1
+      # SSID is escaped here, try to interpret it as UTF-8
+      # (happened in a Paris hotel at least) and un-escape
+      ssid = $1
+      if ssid.include?(?\\)
+        warn "Unescaping SSID: #{ssid}"
+        ssid.gsub!(%r,\\x(\w\w),) { Integer($1, 16).chr }.force_encoding('utf-8')
+      end
+      state[:ssid] = ssid
     elsif output =~ /\bESSID:([^\s]+)/
       state[:ssid] = $1
     end
