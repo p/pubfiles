@@ -470,6 +470,27 @@ class Runner
     end
   end
 
+  def list_wireless_ssids
+    identify_interfaces
+    wireless_ifname = wireless_ifnames.first
+    output = Sub.check_output(['iwlist', wireless_ifname, 'scanning'])
+    ssids = []
+    output.split("\n").each do |line|
+      if line =~ /\bESSID:"(.+)"\z/
+        ssids << $1
+      end
+    end
+    ssids.uniq!.sort!
+    if ssids.any?
+      ssids.each do |ssid|
+        p ssid
+      end
+    else
+      puts "No wireless networks observed"
+    end
+    exit
+  end
+
   private
 
   attr_reader :wired_ifnames
@@ -726,6 +747,10 @@ OptionParser.new do |opts|
     options[:log_path] = v
   end
 
+  opts.on('-L', '--list', 'List SSIDs') do
+    options[:list_ssids] = true
+  end
+
   opts.on("-t", "--wpa-supplicant-timeout TIMEOUT", "Timeout to wait for wpasupplicant") do |v|
     options[:wpa_supplicant_timeout] = Float(v)
   end
@@ -738,6 +763,10 @@ OptionParser.new do |opts|
     options[:state_dir] = v
   end
 end.parse!
+
+if options[:list_ssids]
+  Runner.new.list_wireless_ssids
+end
 
 ssid, password = ARGV
 if ssid.nil?
