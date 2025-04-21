@@ -1,0 +1,36 @@
+#!/usr/bin/env ruby
+
+autoload :JSON, 'json'
+
+def transform(io)
+  contents = JSON.load(io)
+  lists = contents.fetch('lists')
+  lists.each do |list|
+    title = list.fetch('title')
+    tasks = list.fetch('tasks')
+    tasks.each do |task|
+      task_id = task.fetch('_id')
+      task_title = task.fetch('title')
+      task_content = task.fetch('note')
+      task_updated = Time.at(task.fetch('updated') / 1000.0)
+
+      basename = "#{'%03d' % task_id}-#{fs_name(task_title)}-#{task_updated.strftime('%Y%m%d-%H%M')}.md"
+      File.open(basename, 'w') do |f|
+        f << "# #{task_title}\n\n"
+        f << task_content
+      end
+    end
+  end
+end
+
+def fs_name(text)
+  text.gsub(/[^a-z0-9A-Z]/, '_')
+end
+
+if ARGV.any?
+  File.open(ARGV.first) do |f|
+    transform(f)
+  end
+else
+  transform(STDIN)
+end
