@@ -18,6 +18,9 @@ def transform(io)
       File.open(basename, 'w') do |f|
         f << "# #{task_title}\n\n"
         f << task_content
+        unless task_content.end_with?("\n")
+          f << "\n"
+        end
       end
     end
   end
