@@ -300,6 +300,15 @@ class Runner
     @connected == :wireless
   end
 
+  def delete_processes(*names)
+    names.each do |proc_name|
+      Sub.uncheck_call(['pkill', proc_name])
+    end
+    names.each do |proc_name|
+      Sub.uncheck_call(['pkill', '-9', proc_name])
+    end
+  end
+
   def run
     identify_interfaces
 
@@ -311,13 +320,7 @@ class Runner
 
     Sub.uncheck_call(%w,service NetworkManager stop,)
 
-    processes = %w(ifdown ifup dhclient wpa_supplicant NetworkManager)
-    processes.each do |proc_name|
-      Sub.uncheck_call(['pkill', proc_name])
-    end
-    processes.each do |proc_name|
-      Sub.uncheck_call(['pkill', '-9', proc_name])
-    end
+    delete_processes(*%w(ifdown ifup dhclient wpa_supplicant NetworkManager))
 
     done = false
     if auto? && wired_ifnames.any?
@@ -361,6 +364,8 @@ class Runner
         Sub.uncheck_call(['ifdown', ifname])
       end
     end
+    Sub.uncheck_call(%w,service NetworkManager stop,)
+    delete_processes(*%w(NetworkManager))
 
     unblock_rfkill
 
@@ -571,6 +576,9 @@ class Runner
       @wpa_process_info = nil
     end
     @wpa_exited = false
+
+    Sub.uncheck_call(%w,service NetworkManager stop,)
+    delete_processes(*%w(NetworkManager))
 
     dir = '/etc/network/interfaces.d'
     if File.exist?(dir)
