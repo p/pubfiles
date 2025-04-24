@@ -3,6 +3,10 @@
 args = ARGV.map do |path|
   if File.exist?(path)
     path
+  elsif path =~ %r,\A(.+):\d+:\d+:\z,
+    $1
+  elsif path =~ %r,\A(.+):\d+:\z,
+    $1
   elsif path =~ %r,\A(.+):\z,
     $1
   elsif path =~ %r,\A(.+):\d+(?::in)?\z,
