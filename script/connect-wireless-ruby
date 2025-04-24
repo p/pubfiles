@@ -434,6 +434,9 @@ class Runner
       begin
         if need_start
           start_wpa_supplicant
+          # TODO check if we already have an IP address
+          puts('Running dhclient')
+          Sub.check_call(['dhclient', '-v', wireless_ifname])
           need_start = false
         end
 
