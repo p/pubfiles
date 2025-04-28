@@ -1,0 +1,3 @@
+#!/bin/sh
+
+exec sg_format -F -P 0 -v --fmtpinfo=0 -s 4096 "$@"
