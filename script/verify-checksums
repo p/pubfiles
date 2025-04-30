@@ -16,13 +16,29 @@ class Runner
       YAML.load(f)
     end.fetch('sums')
 
-    puts 'Reading reference...'
-    ref_checksums = File.open(options.fetch(:ref_path)) do |f|
-      YAML.load(f)
-    end.fetch('sums')
+    all_ref_checksums = {}
+    options.fetch(:ref_paths).each do |ref_path|
+      puts "Reading reference... #{ref_path}"
+      ref_checksums = File.open(ref_path) do |f|
+        YAML.load(f)
+      end.fetch('sums')
+      dups = ref_checksums.keys.select do |key|
+        all_ref_checksums.include?(key)
+      end
+      if dups.any?
+        warn "#{dups.length} duplicated paths:\n"
+        dups[0..19].each do |dup|
+          puts "  #{dup}"
+        end
+        if dups.length > 20
+          puts '  ...'
+        end
+      end
+      all_ref_checksums.update(ref_checksums)
+    end
 
     checksums.each do |path, info|
-      if (ref_info = ref_checksums[path]) &&
+      if (ref_info = all_ref_checksums[path]) &&
         info.fetch('sha1') == ref_info.fetch('sha1') &&
         info.fetch('size') == ref_info.fetch('size')
       then
@@ -31,7 +47,7 @@ class Runner
 
       found = false
       bn = File.basename(path)
-      ref_checksums.each do |ref_path, ref_info|
+      all_ref_checksums.each do |ref_path, ref_info|
         if File.basename(ref_path) == bn &&
           ref_info.fetch('size') == info.fetch('size') &&
           ref_info.fetch('sha1') == info.fetch('sha1')
@@ -56,7 +72,8 @@ OptionParser.new do |opts|
   opts.banner = "Usage: verify-checksums [-r ref-path] path"
 
   opts.on('-r', '--reference=PATH', 'Reference path') do |v|
-    options[:ref_path] = v
+    options[:ref_paths] ||= []
+    options[:ref_paths] << v
   end
 
   opts.on('-v', '--verbose', 'Be more verbose') do
@@ -64,6 +81,6 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-options.fetch(:ref_path)
+options.fetch(:ref_paths)
 
 Runner.new(path: ARGV.shift, **options).run
