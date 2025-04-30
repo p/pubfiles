@@ -38,6 +38,13 @@ class Runner
       all_ref_checksums.update(ref_checksums)
     end
 
+    basename_index = {}
+    all_ref_checksums.each_key do |ref_path|
+      bn = File.basename(ref_path)
+      basename_index[bn] ||= []
+      basename_index[bn] << ref_path
+    end
+
     with_progress do |bar|
       checksums.each do |path, info|
         begin
@@ -50,16 +57,19 @@ class Runner
 
           found = false
           bn = File.basename(path)
-          all_ref_checksums.each do |ref_path, ref_info|
-            if File.basename(ref_path) == bn &&
-              ref_info.fetch('size') == info.fetch('size') &&
-              ref_info.fetch('sha1') == info.fetch('sha1')
-            then
-              found = true
-              if options[:verbose]
-                puts "OK: #{path}"
+          if !(candidate_ref_paths = basename_index[bn]).empty?
+            candidate_ref_paths.each do |ref_path|
+              ref_info = all_ref_checksums.fetch(ref_path)
+              if File.basename(ref_path) == bn &&
+                ref_info.fetch('size') == info.fetch('size') &&
+                ref_info.fetch('sha1') == info.fetch('sha1')
+              then
+                found = true
+                if options[:verbose]
+                  puts "OK: #{path}"
+                end
+                break
               end
-              break
             end
           end
 
