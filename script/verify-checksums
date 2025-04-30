@@ -9,10 +9,11 @@ class Runner
   end
 
   attr_reader :options
+  attr_reader :checksums
 
   def run
     puts 'Reading checksums...'
-    checksums = File.open(options.fetch(:path)) do |f|
+    @checksums = File.open(options.fetch(:path)) do |f|
       YAML.load(f)
     end.fetch('sums')
 
@@ -37,32 +38,48 @@ class Runner
       all_ref_checksums.update(ref_checksums)
     end
 
-    checksums.each do |path, info|
-      if (ref_info = all_ref_checksums[path]) &&
-        info.fetch('sha1') == ref_info.fetch('sha1') &&
-        info.fetch('size') == ref_info.fetch('size')
-      then
-        next
-      end
-
-      found = false
-      bn = File.basename(path)
-      all_ref_checksums.each do |ref_path, ref_info|
-        if File.basename(ref_path) == bn &&
-          ref_info.fetch('size') == info.fetch('size') &&
-          ref_info.fetch('sha1') == info.fetch('sha1')
-        then
-          found = true
-          if options[:verbose]
-            puts "OK: #{path}"
+    with_progress do |bar|
+      checksums.each do |path, info|
+        begin
+          if (ref_info = all_ref_checksums[path]) &&
+            info.fetch('sha1') == ref_info.fetch('sha1') &&
+            info.fetch('size') == ref_info.fetch('size')
+          then
+            next
           end
-          break
+
+          found = false
+          bn = File.basename(path)
+          all_ref_checksums.each do |ref_path, ref_info|
+            if File.basename(ref_path) == bn &&
+              ref_info.fetch('size') == info.fetch('size') &&
+              ref_info.fetch('sha1') == info.fetch('sha1')
+            then
+              found = true
+              if options[:verbose]
+                puts "OK: #{path}"
+              end
+              break
+            end
+          end
+
+          next if found
+
+          puts "Missing in reference: #{path}"
+        ensure
+          bar&.increment
         end
       end
+    end
+  end
 
-      next if found
-
-      puts "Missing in reference: #{path}"
+  def with_progress
+    if options[:progress]
+      require 'ruby-progressbar'
+      bar = ProgressBar.create(total: checksums.length, format: '%c/%C %e %w')
+      yield bar
+    else
+      yield
     end
   end
 end
@@ -78,6 +95,10 @@ OptionParser.new do |opts|
 
   opts.on('-v', '--verbose', 'Be more verbose') do
     options[:verbose] = true
+  end
+
+  opts.on('-g', '--progress', 'Show progress') do
+    options[:progress] = true
   end
 end.parse!
 
