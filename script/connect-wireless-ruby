@@ -488,7 +488,6 @@ class Runner
     else
       puts "No wireless networks observed"
     end
-    exit
   end
 
   private
@@ -773,6 +772,7 @@ end.parse!
 
 if options[:list_ssids]
   Runner.new.list_wireless_ssids
+  exit
 end
 
 ssid, password = ARGV
