@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 args = ARGV.map do |path|
+  path = path.sub(%r,\A[ab]/,, '')
   if File.exist?(path)
     path
   elsif path =~ %r,\A(.+):\d+:\d+:\z,
