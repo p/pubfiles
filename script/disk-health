@@ -41,10 +41,12 @@ else
   end
 end
 
+error = false
 devices.each do |path|
   output = `smartctl -a #{path}`
-  if $?.exitstatus == 64
+  if [64, 128].include?($?.exitstatus)
     warn "#{path}: smartctl: errors in SMART data; continuing"
+    error = true
   elsif $?.exitstatus != 0
     warn "#{path}: smartctl failed"
     next
@@ -79,3 +81,5 @@ devices.each do |path|
 
   puts "#{path}: #{serial}: OK"
 end
+
+exit error ? 1 : 0
