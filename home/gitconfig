@@ -4,10 +4,7 @@
 	co = checkout
 	cd = diff --cached
 	dc = diff --cached
-
-	sdc = svn dcommit
-	sf = svn fetch
-	sr = svn rebase
+	ds = diff --stat
 
 	fa = fetch --all
 	br = branch
@@ -23,13 +20,13 @@
 	cpx = cherry-pick -X ours
 	gerp = grep
 	rc = rebase --continue
-	rbc = rebase --continue
 	aa = add -A
 	rbs = rebase --skip
 	pp = push p -u
 	g = grep
 	mnf = merge --no-ff
 	gi = g -i
+	puu = push u -u
 
 [user]
 	name = Oleg Pudeyev
