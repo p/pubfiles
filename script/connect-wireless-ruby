@@ -551,7 +551,8 @@ class Runner
     JSON.parse(output).each do |info|
       if info.fetch('link_type') == 'ether'
         ifname = info.fetch('ifname')
-        unless wireless.include?(ifname)
+        #unless wireless.include?(ifname)
+        if ifname =~ /\A(?:eth|en)\d/
           wired << ifname
         end
       end
