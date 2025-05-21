@@ -4,6 +4,8 @@ require 'optparse'
 require 'find'
 require 'fileutils'
 
+ASSUMED_SOURCE_ENCODING = 'cp1251'
+
 options = {
   dry: false,
   replacements: {},
@@ -13,6 +15,10 @@ OptionParser.new do |opts|
 
   opts.on("-n", "--dry-run", "Do not make any changes") do
     options[:dry] = true
+  end
+
+  opts.on('-e', '--encoding=ENCODING', 'Assume source encoding ENCODING') do |v|
+    options[:source_encoding] = v
   end
 
   opts.on("-r", "--replace=X:Y", "Replace X with Y") do |v|
@@ -75,12 +81,13 @@ paths.each do |start|
     begin
       bn.encode('utf-16')
     rescue Encoding::InvalidByteSequenceError
-      fixed_bn = bn.encode('utf-8')
+      fixed_bn = bn.dup.force_encoding(options[:source_encoding] || ASSUMED_SOURCE_ENCODING).encode('utf-8')
       #puts "In #{dn}: #{bn} -> #{fixed_bn}"
-      puts "In #{dn}: #{bn.inspect} -> #{fixed_bn.inspect}"
+      puts "In #{dn}: #{bn.inspect} -> #{fixed_bn.inspect} (#{fixed_bn})"
       unless options[:dry]
-        puts 'fixing'
-        #FileUtils.mv(path, File.join(dn, fixed_bn))
+        fixed_path = File.join(dn, fixed_bn)
+        puts "Renaming: #{path} -> #{fixed_path}"
+        #FileUtils.mv(path, fixed_path)
       end
     end
   end
