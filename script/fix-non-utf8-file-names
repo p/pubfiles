@@ -54,6 +54,11 @@ paths.each do |start|
     end
 
     bn = File.basename(path)
+
+    if bn.split('').any? { |c| c.ord == 65533 }
+      warn "#{path}: contains Unicode 'replacement character' (?), not fixable"
+    end
+
     next if bn.valid_encoding?
     dn = File.dirname(path)
 
