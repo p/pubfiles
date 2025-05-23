@@ -49,6 +49,7 @@ class Runner
       checksums.each do |path, info|
         begin
           if (ref_info = all_ref_checksums[path]) &&
+            !ref_info['error'] &&
             info.fetch('sha1') == ref_info.fetch('sha1') &&
             info.fetch('size') == ref_info.fetch('size')
           then
@@ -57,10 +58,12 @@ class Runner
 
           found = false
           bn = File.basename(path)
-          if !(candidate_ref_paths = basename_index[bn]).empty?
+          candidate_ref_paths = basename_index[bn]
+          if candidate_ref_paths && !candidate_ref_paths.empty?
             candidate_ref_paths.each do |ref_path|
               ref_info = all_ref_checksums.fetch(ref_path)
               if File.basename(ref_path) == bn &&
+                !ref_info['error'] &&
                 ref_info.fetch('size') == info.fetch('size') &&
                 ref_info.fetch('sha1') == info.fetch('sha1')
               then
