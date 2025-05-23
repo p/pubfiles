@@ -219,4 +219,15 @@ end.parse!
 
 options.fetch(:out_path)
 
-Runner.new(start_path: ARGV.shift || '', **options).run
+if ARGV.any?
+  ARGV.each_with_index do |path, index|
+    puts "#{path} (#{index+1}/#{ARGV.length})"
+    this_options = options.dup
+    if index > 0
+      this_options[:resume] = true
+    end
+    Runner.new(start_path: path, **this_options).run
+  end
+else
+  Runner.new(start_path: '.', **options).run
+end
