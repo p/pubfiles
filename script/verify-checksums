@@ -48,12 +48,16 @@ class Runner
     with_progress do |bar|
       checksums.each do |path, info|
         begin
-          if (ref_info = all_ref_checksums[path]) &&
-            !ref_info['error'] &&
-            info.fetch('sha1') == ref_info.fetch('sha1') &&
-            info.fetch('size') == ref_info.fetch('size')
-          then
-            next
+          error_in_reference = false
+
+          if ref_info = all_ref_checksums[path]
+            if ref_info['error']
+              error_in_reference = true
+            elsif info.fetch('sha1') == ref_info.fetch('sha1') &&
+              info.fetch('size') == ref_info.fetch('size')
+            then
+              next
+            end
           end
 
           found = false
@@ -62,23 +66,29 @@ class Runner
           if candidate_ref_paths && !candidate_ref_paths.empty?
             candidate_ref_paths.each do |ref_path|
               ref_info = all_ref_checksums.fetch(ref_path)
-              if File.basename(ref_path) == bn &&
-                !ref_info['error'] &&
-                ref_info.fetch('size') == info.fetch('size') &&
-                ref_info.fetch('sha1') == info.fetch('sha1')
-              then
-                found = true
-                if options[:verbose]
-                  puts "OK: #{path}"
+              if File.basename(ref_path) == bn
+                if ref_info['error']
+                  error_in_reference = true
+                elsif ref_info.fetch('size') == info.fetch('size') &&
+                  ref_info.fetch('sha1') == info.fetch('sha1')
+                then
+                  found = true
+                  if options[:verbose]
+                    puts "OK: #{path}"
+                  end
+                  break
                 end
-                break
               end
             end
           end
 
           next if found
 
-          puts "Missing in reference: #{path}"
+          if error_in_reference
+            puts "Error in reference: #{path}"
+          else
+            puts "Missing in reference: #{path}"
+          end
         ensure
           bar&.increment
         end
