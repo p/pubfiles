@@ -2,7 +2,6 @@
 
 autoload :FileUtils, 'fileutils'
 require 'optparse'
-require 'mongo'
 
 options = {}
 OptionParser.new do |opts|
@@ -23,6 +22,8 @@ OptionParser.new do |opts|
     options[:database] = v
   end
 end.parse!
+
+require 'mongo'
 
 class Exporter
   def initialize(**opts)
