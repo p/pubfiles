@@ -96,8 +96,10 @@ dms.each do |dm|
   }
   parent = if device =~ /nvme/
     device[...-2]
-  elsif device =~ /\bsd/
+  elsif device =~ /\Asd\w\d\z/
     device[...-1]
+  elsif device =~ /\Asd\w\z/
+    device
   else
     raise NotImplementedError
   end
