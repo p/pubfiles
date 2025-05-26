@@ -93,3 +93,7 @@ xscite(){
 ss() {
 	~/apps/pubfiles/script/scite-ext "$@" &
 }
+
+if have sg_start; then
+  alias sg_stop='sg_start -rS'
+fi
