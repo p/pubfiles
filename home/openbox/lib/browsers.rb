@@ -23,7 +23,7 @@ class BrowserAccount
       -fgG
       -b #{browser.path}
       -S DuckDuckGo
-      --user-js #{src_base}/../../home/mozilla/user.js
+      --user-js #{src_base}/../../home/mozilla/user.js.erb
       --user-chrome-css #{src_base}/../../home/mozilla/userChrome.css
       --user-content-css #{src_base}/../../home/mozilla/userContent.css
       --policies #{src_base}/../../config/mozilla/distribution/policies.json

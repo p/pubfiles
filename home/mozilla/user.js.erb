@@ -1,3 +1,7 @@
+// IMPORTANT: This file does not support full JS syntax, despite having
+// .js extension. I don't know what syntax is supported but variable
+// declarations are not, at least.
+
 // Disabling websites messing with pasting passwords:
 // https://www.cyberciti.biz/linux-news/google-chrome-extension-to-removes-password-paste-blocking-on-website/
 
@@ -12,6 +16,9 @@
 
 // Uncomment for jslint:
 // var user_pref = function () { 1; };
+
+// Some website refused to function without webrtc, I forget which one it was
+<% permit_webrtc = false %>
 
 user_pref('devtools.selfxss.count', 10000);
 
@@ -237,9 +244,9 @@ user_pref('notification.feature.enabled', false);
 
 // https://bugzilla.mozilla.org/show_bug.cgi?id=959893
 // https://www.purevpn.com/internet-privacy/disable-webrtc
-user_pref('media.peerconnection.enabled', false);
+user_pref('media.peerconnection.enabled', <%= permit_webrtc %>);
 
-user_pref("media.peerconnection.enabled", false); // VPN cannot bypassed anymore (https://www.reddit.com/r/VPN/comments/2tva1o/websites_can_now_use_webrtc_to_determine_your/)
+user_pref("media.peerconnection.enabled", <%= permit_webrtc %>); // VPN cannot bypassed anymore (https://www.reddit.com/r/VPN/comments/2tva1o/websites_can_now_use_webrtc_to_determine_your/)
 user_pref("media.peerconnection.turn.disable", true); // makes sure WebRTC is really disabled
 user_pref("media.peerconnection.use_document_iceservers", false); // makes sure WebRTC is really disabled
 user_pref("media.peerconnection.video.enabled", false); // makes sure WebRTC is really disabled

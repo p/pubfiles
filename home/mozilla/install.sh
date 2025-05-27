@@ -91,9 +91,14 @@ for dir in .mozilla/firefox ".moonchild productions/pale moon" .waterfox; do
       as_browser chmod g+rwX "`pwd`/chrome" &&
       for file in gm_scripts user.js chrome/userContent.css chrome/userChrome.css; do
         if test -L $file; then rm $file; fi &&
-        ln -s "$base"//`basename $file` $file;
+        base_path="$base"/`basename $file` &&
+        if test -f "$base_path".erb; then
+          erb <"$base"/`basename $file` >$file
+        else
+          ln -s $base_path $file
+        fi
       done &&
-      cat "$base"//user.js >>prefs.js
+      cat "$base"/user.js >>prefs.js
     )
   done
 done
