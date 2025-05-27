@@ -140,19 +140,45 @@ module Sub
 end
 
 module Utils
-  module_function def monotime
+  module_function
+
+  def monotime
     Process.clock_gettime(Process::CLOCK_MONOTONIC)
   end
 
-  module_function def have(basename)
+  def have(basename)
     !!path_dirs.detect do |dir|
       File.exist?(File.join(dir, basename))
     end
   end
 
+  def pids_with_exe_basename(name)
+    # As root we are able to read /proc/*/exe
+    pids = []
+    Find.find('/proc') do |path|
+      if File.basename(path) == 'exe'
+        exe_path = File.readlink(path)
+        if File.basename(exe_path) == name
+          pids << Integer(File.basename(File.dirname(path)))
+        end
+      end
+      if path.count('/') == 3
+        Find.prune
+      end
+    end
+    pids
+  end
+
+  def pkill_exe_basename(name)
+    pids = pids_with_exe_basename(name)
+    pids.each do |pid|
+      Process.kill('TERM', pid)
+    end
+  end
+
   private
 
-  module_function def path_dirs
+  def path_dirs
     @path_dirs ||= ENV.fetch('PATH').split(':')
   end
 end
@@ -302,10 +328,12 @@ class Runner
 
   def delete_processes(*names)
     names.each do |proc_name|
-      Sub.uncheck_call(['pkill', proc_name])
+      Utils.pkill_exe_basename(proc_name)
+      #Sub.uncheck_call(['pkill', proc_name])
     end
     names.each do |proc_name|
-      Sub.uncheck_call(['pkill', '-9', proc_name])
+      Utils.pkill_exe_basename(proc_name, signal: 'KILL')
+      #Sub.uncheck_call(['pkill', '-9', proc_name])
     end
   end
 
@@ -355,7 +383,8 @@ class Runner
     end
 
     %w(ifdown ifup dhclient wpa_supplicant).each do |proc_name|
-      Sub.uncheck_call(['pkill', '-9', proc_name])
+      #Sub.uncheck_call(['pkill', '-9', proc_name])
+      Utils.pkill_exe_basename(proc_name, signal: 'KILL')
     end
 
     if have_ifdown = Utils.have('ifdown')
@@ -496,7 +525,8 @@ class Runner
         sleep 3
       rescue WpaSupplicantFailed, NoIpAddress
         need_start = true
-        Sub.uncheck_call(%w(pkill -9 wpa_supplicant))
+        #Sub.uncheck_call(%w(pkill -9 wpa_supplicant))
+        Utils.pkill_exe_basename('wpa_supplicant', signal: 'KILL')
         sleep 1
       end
     end
@@ -795,7 +825,8 @@ EOT
   def start_dhclient
     wait_for_ip_release
 
-    Sub.uncheck_call(%w(pkill dhclient))
+    #Sub.uncheck_call(%w(pkill dhclient))
+    Utils.pkill_exe_basename('dhclient', signal: 'KILL')
     Sub.check_call(['dhclient', '-v', wireless_ifname])
   end
 
