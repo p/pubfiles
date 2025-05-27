@@ -581,6 +581,11 @@ class Runner
     end
     @wpa_exited = false
 
+    # TODO Sometimes the IP is actually usable, and we could be
+    # avoiding dhclient call to obtain it instead of forcing a full reset?
+    # Probably is network-dependent.
+    release_ip_in_background
+
     Sub.uncheck_call(%w,service NetworkManager stop,)
     delete_processes(*%w(NetworkManager))
 
@@ -788,8 +793,35 @@ EOT
   end
 
   def start_dhclient
+    wait_for_ip_release
+
     Sub.uncheck_call(%w(pkill dhclient))
     Sub.check_call(['dhclient', '-v', wireless_ifname])
+  end
+
+  # Calls `dhclient -r` to release the IP on the interaface, if any.
+  # This process takes a while, therefore we start it before starting
+  # wpa_supplicant and while WPA connection is being established, the idea
+  # is for the IP release to finish or time out.
+  #
+  # TODO we should probably just reset local state and not attempt to actually
+  # release the address over the network here.
+  # Need to figure out how to do that.
+  def release_ip_in_background
+    if @release_ip_process
+      @release_ip_process.stop
+      @release_ip_process = nil
+    end
+
+    @release_ip_process = ChildProcess.new('dhclient', '-r', wireless_ifname)
+    @release_ip_process.start
+  end
+
+  def wait_for_ip_release
+    if @release_ip_process
+      @release_ip_process.wait
+      @release_ip_process = nil
+    end
   end
 end
 
