@@ -1,0 +1,32 @@
+#!/bin/sh
+
+set -e
+
+mongodb_version=5
+daemonize=true
+#daemonize=false
+container_name=mongodb-ephemeral
+
+if test "$1" = -s; then
+  exec docker exec -it $container_name bash
+fi
+
+image_name=mongo:$mongodb_version
+
+docker pull $image_name
+
+mkdir -p /tmp/mongodb-ephemeral
+
+run_opts=
+if $daemonize; then
+  run_opts="$run_opts -d"
+else
+  run_opts="$run_opts -it"
+fi
+
+docker stop $container_name || true
+docker rm $container_name || true
+
+docker run $run_opts --name $container_name -v /tmp/mongodb-ephemeral:/data/db \
+  -p 127.0.0.1:27017:27017 \
+  $image_name --setParameter diagnosticDataCollectionEnabled=false
