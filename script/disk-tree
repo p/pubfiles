@@ -223,19 +223,40 @@ class IOStats
   end
 end
 
-UNITS = %w(bytes KB MB GB TB)
+SIZE_UNITS = %w(bytes KB MB GB TB)
 
-def friendly_size(size)
-  UNITS.each do |unit|
+def friendly_size(size, suffix: nil)
+  SIZE_UNITS.each do |unit|
     if size < 5*1024
       precision = [2-size.round.to_s.length, 0].max
-      return "#{"%.#{precision}f" % size} #{unit}"
+      return "#{"%.#{precision}f" % size} #{unit}#{suffix}"
     end
 
     size /= 1024.0
   end
 
-  return "#{size.round} PB"
+  precision = [2-size.round.to_s.length, 0].max
+  "#{"%.#{precision}f" % size} PB#{suffix}"
+end
+
+TIME_UNITS = [
+  ['seconds', 60],
+  ['minutes', 60],
+  ['hours', 24],
+  ['days', 1_000_000],
+]
+
+def friendly_time(time)
+  TIME_UNITS.each do |(unit, max)|
+    if time < max/2
+      precision = [2-time.round.to_s.length, 0].max
+      return "#{"%.#{precision}f" % time} #{unit}"
+    end
+
+    time /= max.to_f
+  end
+
+  raise "Should never get here"
 end
 
 disk_infos.each do |disk, di|
@@ -248,7 +269,14 @@ disk_infos.each do |disk, di|
   puts "#{'%-10s' % name}   #{'%10s' % di[:size]}  #{'%-20s' % di[:model]}      Serial: #{di[:serial]}"
 
   stats = IOStats.new(disk)
-  puts "stats: #{friendly_size(stats.bytes_read)} read, #{friendly_size(stats.bytes_written)} written"
+  puts "stats: \
+#{friendly_size(stats.bytes_read)} read \
+in #{friendly_time(stats.time_spent_reading)} \
+(#{friendly_size(stats.bytes_read / stats.time_spent_reading, suffix: '/s')}), \
+#{friendly_size(stats.bytes_written)} written \
+in #{friendly_time(stats.time_spent_writing)} \
+(#{friendly_size(stats.bytes_written / stats.time_spent_writing, suffix: '/s')})\
+"
 
   di[:part_infos].each do |part, pi|
     blkid_status = blkid(part)
