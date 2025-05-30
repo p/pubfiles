@@ -5,6 +5,7 @@
 
 # Inspiration: https://github.com/dmelo/vswm
 
+autoload :Find, 'find'
 autoload :YAML, 'yaml'
 autoload :FileUtils, 'fileutils'
 autoload :Tempfile, 'tempfile'
@@ -165,18 +166,20 @@ module Utils
       if path.count('/') == 3
         Find.prune
       end
+    rescue Errno::ENOENT
+      # Is returned for kernel processes, ignore
     end
     pids
   end
 
-  def pkill_exe_basename(name)
+  def pkill_exe_basename(name, signal: :term)
     pids = pids_with_exe_basename(name)
     pids.each do |pid|
-      Process.kill('TERM', pid)
+      Process.kill(signal.to_s.upcase, pid)
     end
   end
 
-  private
+  #private
 
   def path_dirs
     @path_dirs ||= ENV.fetch('PATH').split(':')
