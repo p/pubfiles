@@ -223,6 +223,21 @@ class IOStats
   end
 end
 
+UNITS = %w(bytes KB MB GB TB)
+
+def friendly_size(size)
+  UNITS.each do |unit|
+    if size < 5*1024
+      precision = [2-size.round.to_s.length, 0].max
+      return "#{"%.#{precision}f" % size} #{unit}"
+    end
+
+    size /= 1024.0
+  end
+
+  return "#{size.round} PB"
+end
+
 disk_infos.each do |disk, di|
   puts
   name = if di[:scsi_id]
@@ -233,7 +248,7 @@ disk_infos.each do |disk, di|
   puts "#{'%-10s' % name}   #{'%10s' % di[:size]}  #{'%-20s' % di[:model]}      Serial: #{di[:serial]}"
 
   stats = IOStats.new(disk)
-  puts "stats: #{stats.bytes_read} read, #{stats.bytes_written} written"
+  puts "stats: #{friendly_size(stats.bytes_read)} read, #{friendly_size(stats.bytes_written)} written"
 
   di[:part_infos].each do |part, pi|
     blkid_status = blkid(part)
