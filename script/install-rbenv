@@ -24,7 +24,8 @@ eval "`~/.rbenv/bin/rbenv init -`"
 rbenv alias --auto || true
 
 if test -f /etc/debian_version; then
-  packages="make gcc libssl-dev libreadline-dev zlib1g-dev bzip2"
+  # Ruby 3.0 requires g++
+  packages="make gcc g++ libssl-dev libreadline-dev zlib1g-dev bzip2"
   missing=
   for package in $packages; do
     if ! dpkg -s "$package" >/dev/null 2>&1; then
