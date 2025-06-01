@@ -33,7 +33,11 @@ if test -f /etc/debian_version; then
     fi
   done
   if test -n "$missing"; then
-    sudo apt-get install $missing
+    if test `id -u` = 0; then
+      apt-get install $missing
+    else
+      sudo apt-get install $missing
+    fi
   fi
 fi
 
