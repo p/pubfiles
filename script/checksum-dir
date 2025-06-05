@@ -101,7 +101,18 @@ class Runner
     @next_write = monotime + MIN_WRITE_INTERVAL
 
     Find.find(start_path) do |path|
-      rel_path = relativize(path)
+      rel_path = begin
+        relativize(path)
+      rescue ArgumentError => exc
+        # When file names contain invalid UTF-8, we still should be able
+        # to create the checksums.
+        if exc.message =~ /invalid byte sequence in UTF-8/
+          path.force_encoding('BINARY')
+          retry
+        else
+          raise
+        end
+      end
 
       maybe_prune(rel_path)
 
