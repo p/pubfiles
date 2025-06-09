@@ -226,6 +226,10 @@ end
 SIZE_UNITS = %w(bytes KB MB GB TB)
 
 def friendly_size(size, suffix: nil)
+  if size.respond_to?(:nan?) && size.nan?
+    return "-- bytes#{suffix}"
+  end
+
   SIZE_UNITS.each do |unit|
     if size < 5*1024
       precision = [2-size.round.to_s.length, 0].max
