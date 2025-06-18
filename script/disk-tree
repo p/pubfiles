@@ -226,7 +226,7 @@ end
 SIZE_UNITS = %w(bytes KB MB GB TB)
 
 def friendly_size(size, suffix: nil)
-  if size.respond_to?(:nan?) && size.nan?
+  if size.respond_to?(:nan?) && (size.nan? || size.infinite?)
     return "-- bytes#{suffix}"
   end
 
