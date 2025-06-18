@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module FsHelpers
 
   module_function def relativize(start, path)
