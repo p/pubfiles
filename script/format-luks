@@ -1,0 +1,3 @@
+#!/bin/sh
+
+exec cryptsetup luksFormat --type=luks2 "$@"
