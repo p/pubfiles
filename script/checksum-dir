@@ -119,7 +119,7 @@ class Runner
       next unless File.file?(path)
 
       if resume? && sums.key?(rel_path)
-        unless sums[rel_path]['error'] && retry_errors?
+        if sums[rel_path]['error'].nil? || !retry_errors?
           bar.increment
           next
         end
