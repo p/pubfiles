@@ -23,7 +23,7 @@ cd "$tmpdir"
 
 apt-get source mpv
 cd mpv-*
-patch -p1 <"$src"/mpv-no-images-0.4.0.diff
+patch -p1 <"$src"/mpv-no-images-0.40.0.diff
 
 set -x
 version=`head -n 1 debian/changelog |egrep -o '\(.*?\)' |tr -d '()'`
