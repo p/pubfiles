@@ -88,6 +88,11 @@ class Installer
         load File.join(File.dirname(__FILE__), 'script/configure-office')
         OfficeConfigurator.new.run
       end
+
+      if have?('mpv')
+        # Scripts do not work
+        #install_file('home/mpv', '~/.config/mpv')
+      end
     end
   end
 
