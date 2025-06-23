@@ -1,0 +1,12 @@
+--- options.c.orig	2025-06-23 15:07:45.093700901 -0400
++++ options.c	2025-06-23 15:12:03.560324203 -0400
+@@ -1055,8 +1055,7 @@
+         "mp3", "oga", "ogg", "ogm", "opus", "thd", "wav", "wav", "wma", "wv", NULL
+     },
+     .image_exts = (char *[]){
+-        "avif", "bmp", "gif", "heic", "heif", "j2k", "jp2", "jpeg", "jpg",
+-        "jxl", "png", "qoi", "svg", "tga", "tif", "tiff", "webp", NULL
++        NULL
+     },
+     .archive_exts = (char *[]){
+         "zip", "rar", "7z", "cbz", "cbr", NULL
