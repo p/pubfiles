@@ -1,0 +1,13 @@
+diff --git a/tools/dl.c b/tools/dl.c
+index 83e7806..e1cb97c 100644
+--- a/tools/dl.c
++++ b/tools/dl.c
+@@ -492,7 +496,7 @@ static int dl_main(int ac, char *av[])
+                                if (g_slist_length(l) == 1) {
+                                        struct mega_node *root_node = l->data;
+ 
+-                                       gc_object_unref GFile *local_dir = g_file_new_for_path(opt_path);
++                                       gc_object_unref GFile *local_dir = g_file_new_for_path(root_node->name);
+                                        if (g_file_query_file_type(local_dir, 0, NULL) == G_FILE_TYPE_DIRECTORY) {
+                                                if (opt_choose_files) {
+                                                        if (!dl_sync_dir_choose(local_dir))
