@@ -1,13 +1,17 @@
 diff --git a/tools/dl.c b/tools/dl.c
-index 83e7806..e1cb97c 100644
+index 83e7806..138a77b 100644
 --- a/tools/dl.c
 +++ b/tools/dl.c
-@@ -492,7 +496,7 @@ static int dl_main(int ac, char *av[])
-				if (g_slist_length(l) == 1) {
-					struct mega_node *root_node = l->data;
+@@ -493,7 +493,11 @@ static int dl_main(int ac, char *av[])
+ 					struct mega_node *root_node = l->data;
  
--					gc_object_unref GFile *local_dir = g_file_new_for_path(opt_path);
-+					gc_object_unref GFile *local_dir = g_file_new_for_path(root_node->name);
-					if (g_file_query_file_type(local_dir, 0, NULL) == G_FILE_TYPE_DIRECTORY) {
-						if (opt_choose_files) {
-							if (!dl_sync_dir_choose(local_dir))
+ 					gc_object_unref GFile *local_dir = g_file_new_for_path(opt_path);
+-					if (g_file_query_file_type(local_dir, 0, NULL) == G_FILE_TYPE_DIRECTORY) {
++					local_dir = g_file_get_child(local_dir, root_node->name);
++					if (!g_file_make_directory(local_dir, NULL, NULL)) {
++						g_printerr("ERROR: failed to create destination: .../%s\n", root_node->name);
++						status = 1;
++					} else if (g_file_query_file_type(local_dir, 0, NULL) == G_FILE_TYPE_DIRECTORY) {
+ 						if (opt_choose_files) {
+ 							if (!dl_sync_dir_choose(local_dir))
+ 								status = 1;
