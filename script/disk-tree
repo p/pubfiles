@@ -29,7 +29,7 @@ di.each do |info|
     size: info.size,
     parts: info.partition_device_names,
     model: info.model || '???',
-    serial: info.model || '???',
+    serial: info.serial || '???',
     part_infos: part_infos,
     scsi_id: info.scsi? && info.scsi_id,
   }
