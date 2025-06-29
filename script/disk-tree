@@ -3,6 +3,7 @@
 require 'json'
 require 'yaml'
 require_relative '../lib/ruby/disk/io_stats'
+require_relative '../lib/ruby/disk/info'
 require_relative '../lib/ruby/format_helpers'
 
 def blkid(device)
@@ -13,55 +14,25 @@ def blkid(device)
   {label: label}
 end
 
-disks = (Dir['/dev/sd?'] + Dir['/dev/nvme?n?']).sort
+di = Disk::Info.all
+
 disk_infos = {}
-disks.each do |disk|
-  pattern = if disk =~ /nvme/
-    "#{disk}p?"
-  else
-    "#{disk}?"
+di.each do |info|
+  part_infos = {}
+  info.partition_device_names.each do |part|
+    status = `fdisk -l #{part}`
+    part_size = "#{status.split(/\s+/)[2]} #{status.split(/\s+/)[3].sub(',', '')}"
+    part_infos[part] = {size: part_size}
   end
-  parts = Dir[pattern].sort
-  status = `fdisk -l #{disk}`
-  if status.strip.empty?
-    disk_infos[disk] = {
-      model: '???',
-      serial: '???',
-      part_infos: {},
-    }
-  else
-    size = "#{status.split(/\s+/)[2]} #{status.split(/\s+/)[3].sub(',', '')}"
-    if status =~ /Disk model: ([^\n]+)/
-      model = $1
-    end
-    part_infos = {}
-    parts.each do |part|
-      status = `fdisk -l #{part}`
-      part_size = "#{status.split(/\s+/)[2]} #{status.split(/\s+/)[3].sub(',', '')}"
-      part_infos[part] = {size: part_size}
-    end
-    status = `smartctl -a #{disk}`
-    if status =~ /Serial [nN]umber:\s+(\S+)/
-      serial = $1
-    end
-    if status =~ /Device Model:\s+(.+?)\n/
-      model = $1
-    end
-    disk_infos[disk] = {
-      parts: parts,
-      size: size,
-      part_infos: part_infos,
-      model: model,
-      serial: serial,
-    }
-  end
-  if disk =~ /sd/
-    disk_name = File.basename(disk)
-    scsi_id = File.basename(File.readlink("/sys/block/#{disk_name}/device"))
-    disk_infos[disk].update(
-      scsi_id: scsi_id,
-    )
-  end
+
+  disk_infos[info.device_name] = {
+    size: info.size,
+    parts: info.partition_device_names,
+    model: info.model || '???',
+    serial: info.model || '???',
+    part_infos: part_infos,
+    scsi_id: info.scsi? && info.scsi_id,
+  }
 end
 
 dms = Dir['/dev/mapper/*'].sort
@@ -118,7 +89,7 @@ disk_infos.each do |disk, di|
   end
   puts "#{'%-10s' % name}   #{'%10s' % di[:size]}  #{'%-20s' % di[:model]}      Serial: #{di[:serial]}"
 
-  stats = IOStats.new(disk)
+  stats = Disk::IOStats.new(disk)
   puts "stats: \
 #{friendly_size(stats.bytes_read)} read \
 in #{friendly_time(stats.time_spent_reading)} \

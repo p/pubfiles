@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-class IOStats
+module Disk; end
+class Disk::IOStats
   def initialize(device_name)
     @device_name = File.basename(device_name)
   end
