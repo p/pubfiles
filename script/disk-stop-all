@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+
+mounts=`mount`.strip
+
+raise "Failed to run" unless $?.exitstatus == 0
+
+mounts.split("\n").each do |line|
+  device, _, target = line.split(' ')
+  p [device, target]
+  if target =~ %r,\A/mnt/, && device =~ %r,\A/dev/mapper/,
+    puts "unmount #{target}"
+    system("umount #{target}")
+    raise "Failed to unmount #{target}" unless $?.exitstatus == 0
+
+    puts "close #{device}"
+    system("cryptsetup close #{File.basename(device)}")
+    raise "Failed to close #{device}" unless $?.exitstatus == 0
+  end
+end
+
+system("sync")
+raise "Failed to sync" unless $?.exitstatus == 0
+#sleep 5
+
