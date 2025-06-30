@@ -16,4 +16,13 @@ compinit
 . ~/apps/pubfiles/home/zshrc.node
 . ~/apps/pubfiles/home/zshrc.ruby
 
-test -f ~/apps/pubfiles/home/zshrc.user.$USER && . ~/apps/pubfiles/home/zshrc.user.$USER
+if test -f ~/apps/pubfiles/home/zshrc.user.$USER; then
+  . ~/apps/pubfiles/home/zshrc.user.$USER
+fi
+
+hostname=`hostname`
+if test -n "$hostname"; then
+  if test -f ~/apps/pubfiles/home/zshrc.user.$USER."$hostname"; then            
+    . ~/apps/pubfiles/home/zshrc.user.$USER."$hostname"
+  fi
+fi
