@@ -10,19 +10,3 @@ zstyle :compinstall filename "$HOME/.zshrc"
 autoload -Uz compinit
 compinit
 # End of lines added by compinstall
-
-. ~/apps/pubfiles/home/zshrc.aliases
-. ~/apps/pubfiles/home/zshrc.git
-. ~/apps/pubfiles/home/zshrc.node
-. ~/apps/pubfiles/home/zshrc.ruby
-
-if test -f ~/apps/pubfiles/home/zshrc.user.$USER; then
-  . ~/apps/pubfiles/home/zshrc.user.$USER
-fi
-
-hostname=`hostname`
-if test -n "$hostname"; then
-  if test -f ~/apps/pubfiles/home/zshrc.user.$USER."$hostname"; then            
-    . ~/apps/pubfiles/home/zshrc.user.$USER."$hostname"
-  fi
-fi

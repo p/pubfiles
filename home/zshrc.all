@@ -1,0 +1,10 @@
+. ~/apps/pubfiles/home/zshrc.base
+
+. ~/apps/pubfiles/home/zshrc.aliases
+. ~/apps/pubfiles/home/zshrc.git
+. ~/apps/pubfiles/home/zshrc.node
+. ~/apps/pubfiles/home/zshrc.ruby
+. ~/apps/pubfiles/home/zshrc.ssh-agent
+
+# This should be last
+. ~/apps/pubfiles/home/zshrc.sources
