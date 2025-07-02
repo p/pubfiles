@@ -148,7 +148,7 @@ if is_headful; then
     xinit xauth openbox xsecurelock xss-lock xautolock \
     x11-xserver-utils x11-utils xserver-xorg \
     xfonts-terminus fonts-terminus-otb libnss3-tools libglib2.0-bin \
-    ruby-slim
+    ruby-slim yad ruby-activesupport
 
   if ! is_ubuntu; then
     # Does not exist in ubuntu 20.04
