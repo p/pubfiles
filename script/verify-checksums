@@ -74,7 +74,7 @@ class Runner
                 then
                   found = true
                   if options[:verbose]
-                    puts "OK: #{path}"
+                    puts "OK: #{path}\n  @ #{ref_path}"
                   end
                   break
                 end
