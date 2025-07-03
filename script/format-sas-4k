@@ -1,3 +1,23 @@
 #!/bin/sh
 
+# Self-encrypting drives may be locked. To unlock them, use sedutil-cli
+# as follows:
+#
+# sedutil-cli --yesIreallywanttoERASEALLmydatausingthePSID PSID /dev/sdX
+#
+# PSID is, for HGST drives, a 20-character alphanumeric string printed on
+# the drive label next to a QR code (which I gather is supposed to represent
+# the same string). There is no explanation (on the drive) of what this string
+# is though.
+#
+# Also for self-encrypting drives, it is possible to set up encryption
+# without a password, if encryption is not currently active. This I suppose
+# permits ransomware to encrypt data on the drive. This attack still
+# requires root access on the system. To prevent it, I gather one can
+# initialize the encryption by running, I think:
+#
+# sedutil-cli --initialSetup PASSWORD /dev/sdX
+#
+# I haven't tried this to see if there are additional steps that are required.
+
 exec sg_format -F -P 0 -v --fmtpinfo=0 -s 4096 "$@"
