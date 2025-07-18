@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require_relative '../lib/ruby/link_cleaner'
+
+LinkCleaner.new.run_in_path(ARGV.shift || '.')
