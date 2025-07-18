@@ -1,5 +1,3 @@
-#!/usr/bin/env ruby
-
 autoload :CGI, 'cgi'
 autoload :URI, 'uri'
 autoload :Find, 'find'
