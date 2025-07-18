@@ -134,3 +134,9 @@ end
 puts
 
 #puts disk_infos.to_yaml
+
+__END__
+
+scan% ls -dl /sys/class/sas_port/port-*/device/phy*
+lrwxrwxrwx 1 root root 0 Jul  5 16:24 /sys/class/sas_port/port-0:18/device/phy-0:2 -> ../phy-0:2
+lrwxrwxrwx 1 root root 0 Jul  5 16:24 /sys/class/sas_port/port-0:19/device/phy-0:3 -> ../phy-0:3
