@@ -1,5 +1,38 @@
 #!/usr/bin/env ruby
 
+require 'optparse'
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: clean-links [-r] [files...]"
+
+  opts.on("-r", "Recursively process all files in current or specified directories") do
+    options[:recurse] = true
+  end
+end.parse!
+
 require_relative '../lib/ruby/link_cleaner'
 
-LinkCleaner.new.run_in_path(ARGV.shift || '.')
+cleaner = LinkCleaner.new
+if options[:recurse]
+  if ARGV.any?
+    ARGV.each do |dir|
+      cleaner.run_in_path(dir)
+    end
+  else
+    cleaner.run_in_path('.')
+  end
+else
+  if ARGV.any?
+    ARGV.each do |path|
+      if path =~ /^https?:/
+        require 'open-uri'
+        STDOUT << cleaner.clean(URI.open(path).read)
+      else
+        cleaner.clean_file_in_place(path)
+      end
+    end
+  else
+    STDOUT << cleaner.clean(STDIN)
+  end
+end
