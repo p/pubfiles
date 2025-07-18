@@ -15,6 +15,8 @@ class LinkCleaner
     @method = method
   end
 
+  attr_reader :method
+
   def run_in_path(start)
     Find.find(start) do |path|
       if path.end_with?('.md')
