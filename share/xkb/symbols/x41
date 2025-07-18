@@ -1,0 +1,15 @@
+// start x41
+
+partial alphanumeric_keys
+xkb_symbols "x41" {
+    name[Group1] = "US - Dvorak - X41";
+    include "us(dvorak)"
+    key <LSGT> {
+        type = "ALPHABETIC",
+        actions [Group1] = [
+            SetMods(modifiers=Shift),
+            SetMods(modifiers=Shift+Lock,clearLocks)
+        ]
+    };
+    key <LSGT> { [ Print, Sys_Req  ] };
+};
