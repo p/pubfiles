@@ -74,6 +74,7 @@ class LinkCleaner
     end
 
     cleaned.gsub!(/ +$/, '')
+    cleaned
   end
 
   def clean_via_nokogiri(contents)
