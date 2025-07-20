@@ -61,13 +61,19 @@ class Builder
 
   def transform_template_real(basename, template_name, template_path, dest_dir)
     result = Context.new(**options).render(template_path)
+    if template_path.to_s.end_with?('.slim')
+      result.gsub!(%r,<\?xml version='1.0' encoding='UTF-8'\?>,, '')
+      if result =~ %r,\?xml version='1.0',
+        raise "XML declaration should have been removed"
+      end
+    end
     if HAVE_NOKOGIRI
       doc = Nokogiri::XML(result)
       unless doc.errors.empty?
         errors = doc.errors.map do |e|
           "#{e.class}: #{e}"
         end.join(', ')
-        raise "#{template_name} generated malformed XML: #{errors}"
+        raise "#{template_name} generated malformed XML: #{errors}\n#{result}"
       end
     end
     tmp_rc_path = File.join(dest_dir, basename)
