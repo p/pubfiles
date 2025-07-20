@@ -80,7 +80,11 @@ skip_lock=false
 if test -e /etc/setup.conf && grep -q skip_lock=true /etc/setup.conf; then
   skip_lock=true
 fi
-if ! $skip_lock; then
+if $skip_lock; then
+  # For now, make screen stay on all the time if locking is disabled.
+  xset s off
+  xset -dpms
+else
   if have xss-lock && have xsecurelock; then
     xset s 600
     xss-lock env \
