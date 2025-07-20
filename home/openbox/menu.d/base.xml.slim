@@ -1,0 +1,133 @@
+menu#comms-menu[label="Comms"]
+
+menu#misc-menu[label="Misc"]
+  item[label="Eclipse"]
+    action[name="Execute"]
+      command
+        | eclipse
+  item[label="NetBeans"]
+    action[name="Execute"]
+      command
+        | netbeans
+menu#waterfox-classic-menu[label="Waterfox Classic"]
+  - browser_accounts.each do |br|
+    item[label="<ruby code=" br.name=""]
+  | "&gt; 
+  action[name="Execute"]
+    command
+      = br.fox_command(waterfox_classic)
+menu#waterfox-menu[label="Waterfox"]
+  - browser_accounts.each do |br|
+    item[label="<ruby code=" br.name=""]
+  | "&gt; 
+  action[name="Execute"]
+    command
+      = br.fox_command(waterfox)
+menu#firefox-menu[label="Firefox"]
+  - browser_accounts.each do |br|
+    item[label="<ruby code=" br.name=""]
+  | "&gt; 
+  action[name="Execute"]
+    command
+      = br.fox_command(firefox)
+menu#kill-browsers-menu[label="Kill Browsers"]
+  - browser_accounts.each_with_index do |br, index|
+    - if index > 0
+      separator
+    item[label="<ruby code=" br.name=""]
+  |  all"&gt; 
+  action[name="Execute"]
+    command
+      | sudo -nu br-
+      = br.short_username
+      |  pkill -9 -u br-
+      = br.short_username
+  item[label="<ruby code=" br.name=""]
+    |  chromium"&gt; 
+    action[name="Execute"]
+      command
+        | sh -c ' sudo -nu br-
+        = br.short_username
+        |  pkill -9 -u br-
+        = br.short_username
+        |  chromium; sudo -nu br-
+        = br.short_username
+        |  pkill -9 -u br-
+        = br.short_username
+        |  chrome; sudo -nu br-
+        = br.short_username
+        |  pkill -9 -u br-
+        = br.short_username
+        |  pulseaudio; '
+  item[label="<ruby code=" br.name=""]
+    |  waterfox"&gt; 
+    action[name="Execute"]
+      command
+        | sudo -nu br-
+        = br.short_username
+        |  pkill -9 -u br-
+        = br.short_username
+        |  waterfox
+  separator
+  item[label="Stuck foxes"]
+    action[name="Execute"]
+      command
+        | ~/apps/pubfiles/script/kill-stuck-foxes
+- if have?('chromium') || have?('chrome')
+  menu#chromium-menu[label="Chromium"]
+    - browser_accounts.each_with_index do |br, index|
+      - if index > 0
+        separator
+      item[label="<ruby code=" br.name=""]
+    | "&gt; 
+    action[name="Execute"]
+      command
+        = br.chromium_command
+    item[label="<ruby code=" br.name=""]
+|  restore"&gt; 
+action[name="Execute"]
+  command
+    = br.restore_chromium_command
+item[label="<ruby code=" br.name=""]
+  |  fresh"&gt; 
+  action[name="Execute"]
+    command
+      = br.fresh_chromium_command
+- if have?('google-chrome')
+  menu#chromium-menu[label="Google Chrome"]
+    - browser_accounts.each_with_index do |br, index|
+      - if index > 0
+        separator
+      item[label="<ruby code=" br.name=""]
+    | "&gt; 
+    action[name="Execute"]
+      command
+        = br.chromium_command('google-chrome')
+    item[label="<ruby code=" br.name=""]
+|  restore"&gt; 
+action[name="Execute"]
+  command
+    = br.restore_chromium_command('google-chrome')
+item[label="<ruby code=" br.name=""]
+  |  fresh"&gt; 
+  action[name="Execute"]
+    command
+      = br.fresh_chromium_command('google-chrome')
+menu#settings-menu[label="Settings"]
+  separator[label="Lock timeout"]
+  - [10, 15, 30, 90].each do |interval|
+    item[label="<ruby code=\"= interval\"></ruby>"]
+      action[name="Execute"]
+        command
+          | sh -c '\ pkill xautolock; \ exec xautolock -time 
+          = interval
+          |  -locker "env XSECURELOCK_PASSWORD_PROMPT=asterisks XSECURELOCK_SHOW_HOSTNAME=1 XSECURELOCK_SHOW_USERNAME=1 xsecurelock" \ '
+menu#zoom-menu[label="Zoom"]
+  item[label="Launch"]
+    action[name="Execute"]
+      command
+        | ~/apps/pubfiles/script/sudo-x zoom zoom
+  item[label="Kill"]
+    action[name="Execute"]
+      command
+        | sh -c 'pkill -9 zoom; sudo -nu zoom pkill -9 zoom'
