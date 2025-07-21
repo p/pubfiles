@@ -73,7 +73,9 @@ class Builder
         errors = doc.errors.map do |e|
           "#{e.class}: #{e}"
         end.join(', ')
-        raise "#{template_name} generated malformed XML: #{errors}\n#{result}"
+        tempfile = Tempfile.create
+        tempfile << result
+        raise "#{template_name} generated malformed XML: #{errors} (output stored in #{tempfile.path}"
       end
     end
     tmp_rc_path = File.join(dest_dir, basename)
