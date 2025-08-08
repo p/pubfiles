@@ -1,0 +1,29 @@
+#!/bin/sh
+
+set -e
+
+if test "$1" = -u; then
+  umount /mnt/tmp
+  exit
+fi
+
+found_dev_name=
+for path in /sys/block/sd*; do
+  dev_name=`basename $path`
+  
+  if test `cat $path/removable` = 1; then
+    if test -n "$found_dev_name"; then
+      echo "Multiple removable devices: $dev_name, $found_dev_name" 1>&2
+      exit 1
+    fi
+    found_dev_name=$dev_name
+  fi
+done
+
+if test `ls /sys/block/$found_dev_name/*/partition |wc -l` != 1; then
+  echo Multiple partitions on $found_dev_name 1>&2
+fi
+
+part_name=`basename $(dirname $(ls /sys/block/$found_dev_name/*/partition))`
+
+mount -o uid=me,gid=me /dev/$part_name /mnt/tmp
