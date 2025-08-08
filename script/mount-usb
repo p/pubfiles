@@ -20,6 +20,11 @@ for path in /sys/block/sd*; do
   fi
 done
 
+if test -z "$found_dev_name"; then
+  echo No removable devices 1>&2
+  exit 1
+fi
+
 if test `ls /sys/block/$found_dev_name/*/partition |wc -l` != 1; then
   echo Multiple partitions on $found_dev_name 1>&2
 fi
