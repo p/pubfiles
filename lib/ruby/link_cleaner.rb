@@ -72,6 +72,9 @@ class LinkCleaner
       end
       uri.to_s
     end
+    cleaned.gsub!(%r,https://l.facebook.com/l.php\?u=([^&]+)\S+,) do |m|
+      CGI.unescape($1)
+    end
 
     cleaned.gsub!(/ +$/, '')
     cleaned

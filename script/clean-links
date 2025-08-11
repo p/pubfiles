@@ -6,6 +6,10 @@ options = {}
 OptionParser.new do |opts|
   opts.banner = "Usage: clean-links [-r] [files...]"
 
+  opts.on('-n', 'Use nokogiri') do
+    options[:method] = :nokogiri
+  end
+
   opts.on("-r", "Recursively process all files in current or specified directories") do
     options[:recurse] = true
   end
@@ -13,7 +17,7 @@ end.parse!
 
 require_relative '../lib/ruby/link_cleaner'
 
-cleaner = LinkCleaner.new
+cleaner = LinkCleaner.new(method: options[:method])
 if options[:recurse]
   if ARGV.any?
     ARGV.each do |dir|
