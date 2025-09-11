@@ -1,12 +1,14 @@
+- command = 'google-chrome --renderer-process-limit=10'
+
 menu#gc-no-isolation[label="GC no isolation"]
   item[label="Launch"]
     action[name="Execute"]
       command
-        | google-chrome
+        = command
   item[label="Restart"]
     action[name="Execute"]
       command
-        | sh -c 'pkill -9 chrome; sleep 1; google-chrome'
+        | sh -c 'pkill -9 chrome; sleep 1; #{command}'
   item[label="Kill"]
     action[name="Execute"]
       command
