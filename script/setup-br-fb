@@ -1,3 +1,3 @@
 #!/bin/sh
 
-exec `dirname "$0"`/setup-br fb 2518 me
+exec `dirname "$0"`/setup-br fb 2518

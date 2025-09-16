@@ -15,8 +15,13 @@ fi
 user_suffix="$1"
 uid="$2"
 from_user="$3"
+
 if test -z "$from_user"; then
-  echo "Usage: setup-br user-suffix uid from-user" 1>&2
+  from_user=`. /etc/setup.conf && echo "$main_user"`
+fi
+
+if test -z "$from_user"; then
+  echo "Usage: setup-br user-suffix uid [from-user]" 1>&2
   exit 1
 fi
 
