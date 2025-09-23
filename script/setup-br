@@ -79,3 +79,5 @@ echo "$from_user ALL = ($user) NOPASSWD: ALL" >/etc/sudoers.d/"$from_user"-"$use
 
 mkdir -p /home/br-downloads/"$user"
 chown "$user":"$user" /home/br-downloads/"$user"
+
+usermod -aG "$user" "$from_user"
