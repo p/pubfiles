@@ -153,6 +153,11 @@ if is_headful; then
   if ! is_ubuntu; then
     # Does not exist in ubuntu 20.04
     install_if_needed xpdf
+    
+    cat >/usr/share/applications/defaults.list <<-EOT
+[Default Applications]
+application/pdf=xpdf.desktop
+EOT
   fi
 
   # Do not need:
