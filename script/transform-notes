@@ -9,6 +9,8 @@ def transform(io)
     title = list.fetch('title')
     tasks = list.fetch('tasks')
     tasks.each do |task|
+      next if task['title'] == 'Welcome!' && task['note'] =~ /\AOpen this to get started/
+
       task_id = task.fetch('_id')
       task_title = task.fetch('title')
       task_content = task.fetch('note')
