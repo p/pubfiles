@@ -37,7 +37,7 @@ class BrowserAccount
   end
 
   def verbose_browsers?
-    !!@verbose_browsers
+    !!verbose_browsers
   end
 
   def src_base
