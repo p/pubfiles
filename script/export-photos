@@ -40,6 +40,10 @@ sources.each do |src|
   end
 
   dest = File.join('/tmp/0-sale', rel_src)
+  if File.exist?(dest)
+    warn "Exists: #{dest}"
+    exit 1
+  end
   dest_dir = File.dirname(dest)
   FileUtils.mkdir_p(dest_dir)
   ext = File.basename(src).sub(/.*\./, '')
@@ -48,7 +52,7 @@ sources.each do |src|
   dest_path = File.join(dest_dir, dest_bn)
   FileUtils.cp_r(src, dest_path, remove_destination: true)
 
-  Find.find(dest) do |path|
+  Find.find(dest_path) do |path|
     next if File.directory?(path)
 
     ed = begin
@@ -78,4 +82,6 @@ sources.each do |src|
     rescue Exif::NotReadable
     end
   end
+
+  FileUtils.mv(dest_path, dest)
 end
