@@ -21,7 +21,7 @@ di.each do |info|
   part_infos = {}
   info.partition_device_names.each do |part|
     status = `fdisk -l #{part}`
-    part_size = "#{status.split(/\s+/)[2]} #{status.split(/\s+/)[3].sub(',', '')}"
+    part_size = "#{status.split(/\s+/)[2]} #{status.split(/\s+/)[3].sub(',', '')}" rescue '???'
     part_infos[part] = {size: part_size}
   end
 
