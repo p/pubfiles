@@ -133,6 +133,7 @@ if test "$skip_ntpd" != true; then
 fi
 
 install_if_needed \
+  lsb-release \
   console-setup console-setup-linux openssh-server \
   zsh sudo man-db dnsutils netcat-openbsd \
   git curl wget make gcc ruby ruby-childprocess ruby-byebug ruby-progressbar \
