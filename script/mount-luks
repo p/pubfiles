@@ -1,0 +1,47 @@
+#!/bin/sh
+
+set -e
+
+device="$1"
+dest="$2"
+
+if test -z "$dest"; then
+  echo "Usage: mount-luks device destination" 1>&2
+  exit 1
+fi
+
+original_device="$device"
+if ! echo "$device" |grep -Eq '[0-9]$'; then
+  device="$device"1
+fi
+
+if ! echo "$device" |fgrep -q /; then
+  device="/dev/$device"
+fi
+
+if test "$device" != "$original_device"; then
+  echo "Adjusted device from $original_device to $device" 1>&2
+fi
+
+original_dest="$dest"
+if ! echo "$dest" |fgrep -q /; then
+  dest="/mnt/$dest"
+fi
+
+if test "$dest" != "$original_dest"; then
+  echo "Adjusted destination from $original_dest to $dest" 1>&2
+fi
+
+label=`blkid -o value -s LABEL "$device"`
+if test -z "$label"; then
+  echo "No label on $device, aborting" 1>&2
+  exit 1
+fi
+
+if test -e /dev/mapper/"$label"; then
+  echo "luks already opened? skipping" 1>&2
+else
+  cryptsetup open "$device" "$label"
+fi
+
+mount -o noatime,nodiratime /dev/mapper/"$label" "$dest"
