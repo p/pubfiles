@@ -5,11 +5,23 @@ set -e
 # https://www.reddit.com/r/openbsd/comments/ived5q/solved_a_few_issues_recording_sound_audio_using/
 # https://unix.stackexchange.com/questions/686940/alsa-record-everything-on-given-sound-card
 
+usage() {
+  echo "Usage: record-screen [-apAs] output-path"
+  echo
+  echo '-a      Capture audio via alsa'
+  echo '-s      Use dsnoop instead of hw:0 when capturing audio with alsa'
+  echo '-p      Capture audio via pulseaudio'
+  echo '-A      Capture audio only, do not record video'
+  echo '-V      Capture video only, do not record audio'
+  echo '-h      This help text'
+}
+
 audio_sys=
 audio_only=false
 use_dsnoop=false
+audio_only=false
 
-while getopts aAs opt; do
+while getopts aspAV opt; do
   case $opt in
   a)
     audio_sys=alsa
@@ -20,8 +32,15 @@ while getopts aAs opt; do
   A)
     audio_only=true
     ;;
+  V)
+    audio_sys=none
+    ;;
   s)
     use_dsnoop=true
+    ;;
+  h)
+    usage
+    exit
     ;;
   *)
     echo "Bogus option $opt" 1>&2
@@ -30,6 +49,11 @@ while getopts aAs opt; do
   esac
 done
 shift $((OPTIND-1))
+
+if test -z "$1"; then
+  usage 1>&2
+  exit 1
+fi
 
 if test -z "$audio_sys" && which pacmd >/dev/null 2>&1; then
   echo Using pulseaudio
@@ -41,13 +65,18 @@ if test $audio_sys = pulse; then
   pacmd list-sources >/dev/null
   #audio_device=`pacmd list-sources |grep name: |fgrep -v '.monitor>' |awk '{print $2}' |tr -d '<>'`
   audio_device=`pacmd list-sources |grep name: |fgrep '.monitor>' |awk '{print $2}' |tr -d '<>'`
-else
+elif test $audio_sys != none; then
   audio_backend=alsa
   if $use_dsnoop; then
     audio_device=dsnooped
   else
     audio_device=hw:0
   fi
+fi
+
+audio_processing=
+if test $audio_sys != none; then
+  audio_processing="-f $audio_backend -ac 2 -i '$audio_device'"
 fi
 
 video_args=
@@ -60,7 +89,7 @@ if ! $audio_only; then
 fi
 
 exec ffmpeg -hide_banner $video_input \
-  -f $audio_backend -ac 2 -i "$audio_device" \
+  $audio_processing \
   $video_processing \
   -c:a pcm_s16le \
   "$@"
