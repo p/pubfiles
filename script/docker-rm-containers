@@ -6,3 +6,8 @@ ids=$(docker container ls -a |tail +2 |awk '{print $1}')
 if test -n "$ids"; then
   docker container rm $ids "$@"
 fi
+
+ids=$(docker volume ls |tail +2 |awk '{print $2}')
+if test -n "$ids"; then
+  docker volume rm $ids "$@"
+fi

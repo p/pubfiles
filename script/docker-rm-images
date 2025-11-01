@@ -6,3 +6,5 @@ ids=$(docker image ls -a |tail +2 |awk '{print $3}')
 if test -n "$ids"; then
   docker image rm $ids -f
 fi
+
+docker system prune -af
