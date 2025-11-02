@@ -84,6 +84,7 @@ module Helpers
               info.fetch('name'),
               user_suffix,
               nil,
+              info['tamper-monkey'],
               options[:verbose_browsers],
             )
           end

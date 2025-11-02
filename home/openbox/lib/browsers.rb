@@ -4,6 +4,7 @@ BrowserAccount = Struct.new('BrowserAccount',
   :name,
   :short_username,
   :profile_name,
+  :tamper_monkey,
   :verbose_browsers,
 )
 
@@ -40,6 +41,10 @@ class BrowserAccount
     !!verbose_browsers
   end
 
+  def tamper_monkey?
+    !!tamper_monkey
+  end
+
   def src_base
     @src_base ||= Pathname.new(__FILE__).dirname.join('..').realpath
   end
@@ -59,6 +64,10 @@ class BrowserAccount
     ]
     if browser
       cmd += ['-b', browser]
+    end
+    if tamper_monkey?
+      # TODO fix path
+      cmd += ['-e', '/usr/local/share/tampermonkey_stable.crx']
     end
     cmd.join(' ').gsub(/\s+/, ' ').strip.tap do |cmd|
       if verbose_browsers?
