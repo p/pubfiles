@@ -16,6 +16,12 @@ for path in /sys/block/sd*; do
       echo "Multiple removable devices: $dev_name, $found_dev_name" 1>&2
       exit 1
     fi
+    
+    if ! blkid /dev/$dev_name; then
+      echo "blkid failed on $dev_name" 1&>2
+      continue
+    fi
+    
     found_dev_name=$dev_name
   fi
 done
