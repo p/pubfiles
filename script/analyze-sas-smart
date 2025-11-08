@@ -1,0 +1,59 @@
+#!/usr/bin/env ruby
+
+require_relative '../lib/ruby/format_helpers'
+require 'time'
+require 'rugged'
+
+class SmartInfo
+  def initialize(text)
+    text.split("\n").each do |line|
+      case line
+      when /\ALocal Time is:(.+)/
+        @time = Time.parse($1)
+      when /\Aread:/
+        values = line.split(/\s+/)
+        @read_corrected_fast = Integer(values[1])
+        @read_corrected_delayed = Integer(values[2])
+        @rereads = Integer(values[3])
+        @read_corrected = Integer(values[4])
+        @read_correction_invocations = Integer(values[5])
+        @read_bytes_processed = (Float(values[6]) * 10**9).to_i
+        @read_uncorrected = Integer(values[7])
+      end
+    end
+  end
+
+  attr_reader :time
+  attr_reader :read_corrected_fast, :read_corrected_delayed,
+    :rereads, :read_corrected, :read_correction_invocations,
+    :read_bytes_processed, :read_uncorrected
+end
+
+repo = Rugged::Repository.new('.')
+
+file_path = ARGV.shift
+
+walker = Rugged::Walker.new(repo)
+walker.push(repo.head.target.oid)
+history = []
+walker.each do |commit|
+  commit.diff.each_delta do |delta|
+    history.push(commit.oid) if delta.new_file[:path] == file_path
+  end
+end
+
+prev = nil
+history.each do |oid|
+  blob = repo.blob_at(oid, file_path)
+  #p blob.methods-Object.methods
+  info = SmartInfo.new(blob.text)
+  if prev
+    puts "At #{prev.time}, for previous #{friendly_time(prev.time - info.time)}:"
+    puts "#{friendly_size(prev.read_bytes_processed - info.read_bytes_processed)} read"
+    puts "#{prev.read_correction_invocations - info.read_correction_invocations} read corrections"
+    puts
+
+    #p info
+  end
+  prev = info
+end
