@@ -43,7 +43,7 @@ end
 
 error = false
 devices.each do |path|
-  output = `smartctl -a #{path}`
+  output = `smartctl -x #{path}`
   if [64, 128].include?($?.exitstatus)
     warn "#{path}: smartctl: errors in SMART data; continuing"
     error = true
