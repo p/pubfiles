@@ -20,4 +20,13 @@
 #
 # I haven't tried this to see if there are additional steps that are required.
 
+# Write back cache may be disabled.
+# Check with:
+#
+# smartctl -x /dev/sdX
+#
+# Use sdparm to enable as follows:
+#
+# sdparm --set=WCE /dev/sdX
+
 exec sg_format -F -P 0 -v --fmtpinfo=0 -s 4096 "$@"
