@@ -7,7 +7,7 @@ have() {
 if have sg_start; then
   sg_stop() {
     device="$1"
-    if test -n "$device"; then
+    if test -z "$device"; then
       echo 'Usage: sg_stop device' 1>&2
       return 1
     fi
