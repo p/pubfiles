@@ -3,25 +3,3 @@ export PATH=~/bin:$PATH
 have() {
   which "$@" >/dev/null 2>&1
 }
-
-if have sg_start; then
-  sg_stop() {
-    device="$1"
-    if test -z "$device"; then
-      echo 'Usage: sg_stop device' 1>&2
-      return 1
-    fi
-    
-    if echo "$device" |egrep -q '^[a-zA-Z0-9]+$'; then
-      device="/dev/$device"
-    fi
-    
-    if ! test -e "$device"; then
-      echo "Device does not exist: $device" 1>&2
-      return 1
-    fi
-    
-    sg_sync "$device" &&
-    sg_start -rS "$device"
-  }
-fi

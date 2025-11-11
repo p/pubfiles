@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+
+require_relative '../lib/ruby/child_process_facade'
+
+if ARGV.empty?
+  raise "Usage: sg_stop device..."
+end
+
+error = false
+threads = ARGV.map do |device|
+  if device =~ /\A\w+\z/
+    device = "/dev/#{device}"
+  end
+
+  unless File.exist?(device)
+    warn "Device does not exist: #{device}"
+    error = true
+  end
+
+  Thread.new do
+    ChildProcessFacade.check_call(['sg_sync', device])
+    sleep 5
+    ChildProcessFacade.check_call(['sg_start', '-rS', device])
+  end.tap do |thread|
+    thread.name = device
+  end
+end
+
+threads.each do |thread|
+  begin
+    thread.join
+  rescue => exc
+    puts "#{thread.name}: error: #{exc.class}: #{exc}"
+    error = true
+  end
+end
+
+exit(error ? 1 : 0)
