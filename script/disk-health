@@ -44,12 +44,43 @@ end
 error = false
 devices.each do |path|
   output = `smartctl -x #{path}`
-  if [64, 128].include?($?.exitstatus)
-    warn "#{path}: smartctl: errors in SMART data; continuing"
-    error = true
-  elsif $?.exitstatus != 0
-    warn "#{path}: smartctl failed"
-    next
+  status = $?.exitstatus
+  if status != 0
+    if status & 1 > 0
+      raise "Bad smartctl usage? failed with exit status #{status} for #{path}"
+    end
+    if status & 2 > 0
+      warn "#{path}: smartctl failed: could not open device (exit status #{status})"
+      next
+    end
+    if status & 4 > 0
+      warn "#{path}: smartctl failed: command failed or checksum error (exit status #{status}), continuing"
+      error = true
+    end
+    if status & 8 > 0
+      warn "#{path}: smartctl failed: DISK IS FAILING (exit status #{status}), continuing"
+      error = true
+    end
+    if status & 16 > 0
+      warn "#{path}: smartctl failed: ATTRIBUTE VALUE OVER FAILURE THRESHOLD (exit status #{status}), continuing"
+      error = true
+    end
+    if status & 32 > 0
+      warn "#{path}: smartctl failed: ATTRIBUTE VALUE OVER FAILURE THRESHOLD in the past (exit status #{status}), continuing"
+      error = true
+    end
+    if status & 64 > 0
+      warn "#{path}: smartctl failed: errors in error log (exit status #{status}), continuing"
+      error = true
+    end
+    if status & 128 > 0
+      warn "#{path}: smartctl failed: errors in self-test log (exit status #{status}), continuing"
+      error = true
+    end
+    # Should never happen since the status is 8 bits
+    if status & ~255 != 0
+      raise "Unhandled status for smartctl: #{status} for #{path}"
+    end
   end
 
   vendor = nil
