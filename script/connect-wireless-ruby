@@ -14,6 +14,7 @@ autoload :OptionParser, 'optparse'
 #gem 'childprocess'
 autoload :ChildProcess, 'childprocess'
 require_relative '../lib/ruby/global_helpers'
+require_relative '../lib/ruby/child_process_facade'
 
 class Error < StandardError
 end
@@ -28,116 +29,6 @@ class NoIpAddress < Error
 end
 
 class NoDefaultGateway < Error
-end
-
-class CalledProcessError < Error
-end
-
-module Sub
-
-  module_function def uncheck_call(cmd, env: nil)
-    start_process(cmd, env: env).tap do |process|
-      process.wait
-    end
-  end
-
-  module_function def start_and_forward(cmd, env: nil)
-    puts "[CWR] Starting: #{cmd.join(' ')}"
-    process = ChildProcess.new(*cmd)
-    process.io.inherit!
-    rd, wr = IO.pipe
-    apply_env(process, env)
-    process.start
-    p process.wait
-  end
-
-  module_function def check_call(cmd, env: nil)
-    process = uncheck_call(cmd, env: env)
-    check_exit_code(process, cmd)
-  end
-
-  module_function def check_output(cmd, env: nil)
-    puts "[CWR] Get output: #{cmd.join(' ')}"
-    process = ChildProcess.new(*cmd)
-    process.io.inherit!
-    process.io.stdout = Tempfile.new("child-output")
-    process.io.stderr = Tempfile.new("child-error")
-    begin
-      apply_env(process, env)
-      process.start
-      process.wait
-      check_exit_code(process, cmd)
-      process.io.stdout.rewind
-      process.io.stdout.read
-    ensure
-      process.io.stdout.close
-      process.io.stderr.close
-    end
-  end
-
-  module_function def start_process(cmd, env: nil)
-    puts "[CWR] Starting: #{cmd.join(' ')}"
-    process = ChildProcess.new(*cmd)
-    process.io.inherit!
-    apply_env(process, env)
-    process.start
-    process
-  end
-
-  module_function def start_process_pipe(cmd, env: nil)
-    puts "[CWR] Starting pipe: #{cmd.join(' ')}"
-    rd, wr = IO.pipe
-    pid = fork do
-      rd.close
-      STDOUT.reopen(wr)
-      STDERR.reopen(wr)
-      wr.close
-
-      if env
-        env.each do |k, v|
-          ENV[k] = v
-        end
-      end
-
-      exec(*cmd)
-    end
-
-    wr.close
-    cmd_name = File.basename(cmd.first)
-    thread = Thread.new do
-      loop do
-        chunk = rd.readline
-        if chunk.nil?
-          break
-        end
-        STDOUT << "[#{cmd_name}] #{chunk}"
-      rescue EOFError
-        # swallow
-      end
-    end
-
-    {pid: pid, thread: thread}
-  end
-
-  private
-
-  module_function def apply_env(process, env)
-    if env
-      env.each do |k, v|
-        process.environment[k.to_s] = v
-      end
-    end
-  end
-
-  module_function def format_cmd(cmd)
-    cmd.join(' ')
-  end
-
-  module_function def check_exit_code(process, cmd)
-    unless process.exit_code == 0
-      raise CalledProcessError, "Failed to execute: #{format_cmd(cmd)} (exit code #{process.exit_code})"
-    end
-  end
 end
 
 module Utils
@@ -192,11 +83,11 @@ module Helpers
 
   def clear_interface_ips(ifname)
     # https://superuser.com/questions/153559/how-can-i-clear-the-ip-address-of-ethernet-interface-without-cycling-the-interfa
-    Sub.check_call(['ip', 'addr', 'flush', 'dev', ifname])
+    ChildProcessFacade.check_call(['ip', 'addr', 'flush', 'dev', ifname])
   end
 
   def get_interface_ip(ifname)
-    output = Sub.check_output(['ip', '-j', 'address', 'show', ifname])
+    output = ChildProcessFacade.check_output(['ip', '-j', 'address', 'show', ifname])
     result = JSON.parse(output)
     if ais = result.first['addr_info']
       if ais.empty?
@@ -216,7 +107,7 @@ module Helpers
   end
 
   def get_default_gateway
-    lines = Sub.check_output(%w(netstat -rn)).split("\n")
+    lines = ChildProcessFacade.check_output(%w(netstat -rn)).split("\n")
     lines.each do |line|
       if line.start_with?('0.0.0.0')
         return line.split(/\s+/, 2).first
@@ -227,19 +118,19 @@ module Helpers
 
   def unblock_rfkill
     if Utils.have('rfkill')
-      output = Sub.check_output(%w(rfkill))
+      output = ChildProcessFacade.check_output(%w(rfkill))
       output.split("\n").each do |line|
         id, type, device, soft, hard = line.strip.split(/\s+/)
         if type == 'wlan' && soft == 'blocked'
           puts("Unblocking rfkill")
-          Sub.check_call(['rfkill', 'unblock', id])
+          ChildProcessFacade.check_call(['rfkill', 'unblock', id])
         end
       end
     end
   end
 
   def get_iwconfig(ifname)
-    output = Sub.check_output(['iwconfig', ifname])
+    output = ChildProcessFacade.check_output(['iwconfig', ifname])
     state = {associated: false}
     if output =~ /\bESSID:"([^"]*)"/
       # SSID is escaped here, try to interpret it as UTF-8
@@ -267,8 +158,8 @@ module Helpers
   def get_wpa_state(ifname)
     state = {}
     begin
-      output = Sub.check_output(['wpa_cli', '-i', ifname, 'status'])
-    rescue CalledProcessError
+      output = ChildProcessFacade.check_output(['wpa_cli', '-i', ifname, 'status'])
+    rescue ChildProcessFacade::CalledProcessError
     else
       if output =~ /\bwpa_state=(\w+)/
         state[:wpa_state] = $1
@@ -288,8 +179,8 @@ class Runner
 
     if auto?
       @keep_wired_up = !!begin
-        Sub.check_output(%w(dmidecode -s system-family)).strip =~ /^ThinkPad X280/
-      rescue CalledProcessError
+        ChildProcessFacade.check_output(%w(dmidecode -s system-family)).strip =~ /^ThinkPad X280/
+      rescue ChildProcessFacade::CalledProcessError
         false
       end
     end
@@ -332,11 +223,11 @@ class Runner
   def delete_processes(*names)
     names.each do |proc_name|
       Utils.pkill_exe_basename(proc_name)
-      #Sub.uncheck_call(['pkill', proc_name])
+      #ChildProcessFacade.uncheck_call(['pkill', proc_name])
     end
     names.each do |proc_name|
       Utils.pkill_exe_basename(proc_name, signal: 'KILL')
-      #Sub.uncheck_call(['pkill', '-9', proc_name])
+      #ChildProcessFacade.uncheck_call(['pkill', '-9', proc_name])
     end
   end
 
@@ -345,11 +236,11 @@ class Runner
 
     if auto? && keep_wired_up?
       wired_ifnames.each do |ifname|
-        Sub.uncheck_call(['ifconfig', ifname, 'up'])
+        ChildProcessFacade.uncheck_call(['ifconfig', ifname, 'up'])
       end
     end
 
-    Sub.uncheck_call(%w,service NetworkManager stop,)
+    ChildProcessFacade.uncheck_call(%w,service NetworkManager stop,)
 
     delete_processes(*%w(ifdown ifup dhclient wpa_supplicant NetworkManager))
 
@@ -376,7 +267,7 @@ class Runner
       end
     else
       wired_ifnames.each do |ifname|
-        Sub.uncheck_call(['ifconfig', ifname, 'down'])
+        ChildProcessFacade.uncheck_call(['ifconfig', ifname, 'down'])
       end
     end
 
@@ -386,27 +277,27 @@ class Runner
     end
 
     %w(ifdown ifup dhclient wpa_supplicant).each do |proc_name|
-      #Sub.uncheck_call(['pkill', '-9', proc_name])
+      #ChildProcessFacade.uncheck_call(['pkill', '-9', proc_name])
       Utils.pkill_exe_basename(proc_name, signal: 'KILL')
     end
 
     if have_ifdown = Utils.have('ifdown')
-      Sub.uncheck_call(['ifdown', wireless_ifname])
+      ChildProcessFacade.uncheck_call(['ifdown', wireless_ifname])
       wired_ifnames.each do |ifname|
-        Sub.uncheck_call(['ifdown', ifname])
+        ChildProcessFacade.uncheck_call(['ifdown', ifname])
       end
     end
-    Sub.uncheck_call(%w,service NetworkManager stop,)
+    ChildProcessFacade.uncheck_call(%w,service NetworkManager stop,)
     delete_processes(*%w(NetworkManager))
 
     unblock_rfkill
 
-    Sub.check_call(['ifconfig', wireless_ifname, 'up'])
+    ChildProcessFacade.check_call(['ifconfig', wireless_ifname, 'up'])
 
     start_wpa_supplicant
 
     puts('Running dhclient')
-    Sub.check_call(['dhclient', '-v', wireless_ifname])
+    ChildProcessFacade.check_call(['dhclient', '-v', wireless_ifname])
 
     FileUtils.mkdir_p(state_dir)
     path = File.join(state_dir, 'config.json')
@@ -452,9 +343,9 @@ class Runner
       clear_interface_ips(ifname)
     end
 
-    Sub.check_call(['ifconfig', wired_ifname, 'up'])
+    ChildProcessFacade.check_call(['ifconfig', wired_ifname, 'up'])
 
-    Sub.check_call(['dhclient', '-v', wired_ifname])
+    ChildProcessFacade.check_call(['dhclient', '-v', wired_ifname])
 
     # Assuming, should check that the connection actually worked.
     @connected = :wired
@@ -468,7 +359,7 @@ class Runner
           start_wpa_supplicant
           # TODO check if we already have an IP address
           puts('Running dhclient')
-          Sub.check_call(['dhclient', '-v', wireless_ifname])
+          ChildProcessFacade.check_call(['dhclient', '-v', wireless_ifname])
           need_start = false
         end
 
@@ -528,7 +419,7 @@ class Runner
         sleep 3
       rescue WpaSupplicantFailed, NoIpAddress
         need_start = true
-        #Sub.uncheck_call(%w(pkill -9 wpa_supplicant))
+        #ChildProcessFacade.uncheck_call(%w(pkill -9 wpa_supplicant))
         Utils.pkill_exe_basename('wpa_supplicant', signal: 'KILL')
         sleep 1
       end
@@ -538,7 +429,7 @@ class Runner
   def list_wireless_ssids
     identify_interfaces
     wireless_ifname = wireless_ifnames.first
-    output = Sub.check_output(['iwlist', wireless_ifname, 'scanning'])
+    output = ChildProcessFacade.check_output(['iwlist', wireless_ifname, 'scanning'])
     ssids = []
     output.split("\n").each do |line|
       if line =~ /\bESSID:"(.+)"\z/
@@ -570,7 +461,7 @@ class Runner
     wireless = []
     wired = []
 
-    output = Sub.check_output(%w(iwconfig))
+    output = ChildProcessFacade.check_output(%w(iwconfig))
     # "no wireless extensions" lines are printed to standard error
     output.split(/[\r\n]+/).each do |line|
       if line =~ %r,\A(\w+),
@@ -579,7 +470,7 @@ class Runner
       end
     end
 
-    output = Sub.check_output(%w(ip -j a))
+    output = ChildProcessFacade.check_output(%w(ip -j a))
     infos = {}
     JSON.parse(output).each do |info|
       if info.fetch('link_type') == 'ether'
@@ -619,7 +510,7 @@ class Runner
     # Probably is network-dependent.
     release_ip_in_background
 
-    Sub.uncheck_call(%w,service NetworkManager stop,)
+    ChildProcessFacade.uncheck_call(%w,service NetworkManager stop,)
     delete_processes(*%w(NetworkManager))
 
     dir = '/etc/network/interfaces.d'
@@ -635,7 +526,7 @@ class Runner
       end
     end
 
-    Sub.check_call(['iwconfig', wireless_ifname, 'essid', ssid])
+    ChildProcessFacade.check_call(['iwconfig', wireless_ifname, 'essid', ssid])
 
     if auth?
       continue_starting_wpa_supplicant
@@ -655,7 +546,7 @@ class Runner
 
       puts "Resetting ssid for #{wireless_ifname}"
 
-      Sub.check_call(['iwconfig', wireless_ifname, 'essid', ssid])
+      ChildProcessFacade.check_call(['iwconfig', wireless_ifname, 'essid', ssid])
       sleep 1
     end
   end
@@ -710,10 +601,10 @@ EOT
     end
 
     begin
-      Sub.check_call(%W(wpa_cli -i #{wireless_ifname} status))
-    rescue CalledProcessError
+      ChildProcessFacade.check_call(%W(wpa_cli -i #{wireless_ifname} status))
+    rescue ChildProcessFacade::CalledProcessError
     else
-      Sub.check_call(%W(wpa_cli -i #{wireless_ifname} terminate))
+      ChildProcessFacade.check_call(%W(wpa_cli -i #{wireless_ifname} terminate))
       sleep 1
     end
 
@@ -722,7 +613,7 @@ EOT
     # TODO detach from controlling terminal here
     binary = 'wpa_supplicant'
     #binary = '/home/me/apps/exp/hostap/wpa_supplicant/wpa_supplicant'
-    @wpa_process_info = Sub.start_process_pipe([binary,
+    @wpa_process_info = ChildProcessFacade.start_process_pipe([binary,
       '-D', 'nl80211,wext', '-i', wireless_ifname,
       '-f', wpa_supplicant_log_path,
       '-c', wpa_conf_path, '-d',
@@ -770,7 +661,7 @@ EOT
       puts 'ssid: %s, wpa: %s, elapsed: %d' % [state[:ssid], state[:wpa_state], elapsed]
       sleep 1
     end
-  rescue CalledProcessError => exc
+  rescue ChildProcessFacade::CalledProcessError => exc
     new_exc = WpaSupplicantFailed.new("#{exc.class}: #{exc}")
     new_exc.backtrace = exc.backtrace
     raise new_exc
@@ -808,7 +699,7 @@ EOT
   end
 
   def default_gw_ok?
-    output = Sub.check_output(%w(netstat -rn))
+    output = ChildProcessFacade.check_output(%w(netstat -rn))
     lines = output.split("\n").select do |line|
       line.start_with?('0.0.0.0')
     end
@@ -828,9 +719,9 @@ EOT
   def start_dhclient
     wait_for_ip_release
 
-    #Sub.uncheck_call(%w(pkill dhclient))
+    #ChildProcessFacade.uncheck_call(%w(pkill dhclient))
     Utils.pkill_exe_basename('dhclient', signal: 'KILL')
-    Sub.check_call(['dhclient', '-v', wireless_ifname])
+    ChildProcessFacade.check_call(['dhclient', '-v', wireless_ifname])
   end
 
   # Calls `dhclient -r` to release the IP on the interaface, if any.
