@@ -18,9 +18,17 @@ threads = ARGV.map do |device|
   end
 
   Thread.new do
+    # TODO do not sync if the drive is already spun down
     ChildProcessFacade.check_call(['sg_sync', device])
+    # 3 seconds is definitely not enough, disk is spun back up
     sleep 5
+
     ChildProcessFacade.check_call(['sg_start', '-rS', device])
+
+    # Check if the drive is really spun down
+    # TODO Verify sdparm is installed before invoking it, and
+    # eat the output.
+    #ChildProcessFacade.uncheck_call(['sdparm', '-C', 'ready', device])
   end.tap do |thread|
     thread.name = device
   end
