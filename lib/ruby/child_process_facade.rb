@@ -2,7 +2,7 @@
 autoload :ChildProcess, 'childprocess'
 
 module ChildProcessFacade
-  class CalledProcessError < Error
+  class CalledProcessError < StandardError
   end
 
   module_function def uncheck_call(cmd, env: nil)
