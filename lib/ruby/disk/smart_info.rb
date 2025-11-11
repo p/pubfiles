@@ -1,4 +1,5 @@
-class SmartInfo
+module Disk; end
+class Disk::SmartInfo
   def initialize(text)
     text.split("\n").each do |line|
       case line

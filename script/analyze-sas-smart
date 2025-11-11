@@ -22,7 +22,7 @@ ARGV.each do |file_path|
   history.each do |oid|
     blob = repo.blob_at(oid, file_path)
     #p blob.methods-Object.methods
-    info = SmartInfo.new(blob.text)
+    info = Disk::SmartInfo.new(blob.text)
     if prev
       puts "At #{prev.time}, for previous #{friendly_time(prev.time - info.time)}:"
       puts "#{friendly_size(prev.read_bytes_processed - info.read_bytes_processed)} read"
