@@ -37,4 +37,17 @@ fi
 
 part_name=`basename $(dirname $(ls /sys/block/$found_dev_name/*/partition))`
 
-mount -o uid=me,gid=me /dev/$part_name /mnt/tmp
+user=
+if test -f /etc/setup.conf; then
+  user=`egrep ^main_user= /etc/setup.conf |cut -c 11-`
+fi
+if test -z "$user"; then
+  if id me >/dev/null 2>&1; then
+    user=me
+  else
+    echo 'Cannot determine user to use' 2>&1
+    exit
+  fi
+fi
+
+mount -o uid=$user,gid=$user /dev/$part_name /mnt/tmp
