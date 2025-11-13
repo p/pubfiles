@@ -2,11 +2,27 @@
 
 set -e
 
+prefix=false
+
+while getopts p opt; do
+  case $opt in
+  p)
+    prefix=true
+    ;;
+  *)
+    echo "Bogus option $opt" 1>&2
+    exit 1
+    ;;
+  esac
+done
+shift $((OPTIND-1))
+
 device="$1"
 dest="$2"
 
 if test -z "$dest"; then
   echo "Usage: mount-luks device destination" 1>&2
+  echo "       mount-luks -p device prefix" 1>&2
   exit 1
 fi
 
@@ -23,9 +39,11 @@ if test "$device" != "$original_device"; then
   echo "Adjusted device from $original_device to $device" 1>&2
 fi
 
-original_dest="$dest"
-if ! echo "$dest" |fgrep -q /; then
-  dest="/mnt/$dest"
+if ! $prefix; then
+  original_dest="$dest"
+  if ! echo "$dest" |fgrep -q /; then
+    dest="/mnt/$dest"
+  fi
 fi
 
 if test "$dest" != "$original_dest"; then
@@ -42,6 +60,11 @@ if test -e /dev/mapper/"$label"; then
   echo "luks already opened? skipping" 1>&2
 else
   cryptsetup open "$device" "$label"
+fi
+
+if $prefix; then
+  dest="$dest/$label"
+  mkdir -p "$dest"
 fi
 
 mount -o noatime,nodiratime /dev/mapper/"$label" "$dest"
