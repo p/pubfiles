@@ -27,3 +27,7 @@ Also removes NetApp parity data, if present.
 ## Rewrite dead sectors
 
     for x in $(for lba in `smartctl -x /dev/sdX |grep Require.Write |awk '{print $3}' `; do  dec=`echo "ibase=16; $(echo $lba |tr a-z A-Z)" | bc`; echo $dec; done); do sg_write_verify -I 4096 -l $x /dev/sdX; done
+
+## Change LUKS label
+
+    cryptsetup config /dev/sdX --label YOURLABEL
