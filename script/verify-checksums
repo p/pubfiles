@@ -11,6 +11,10 @@ class Runner
   attr_reader :options
   attr_reader :checksums
 
+  def size_only?
+    options[:size_only]
+  end
+
   def run
     puts 'Reading checksums...'
     @checksums = File.open(options.fetch(:path)) do |f|
@@ -53,7 +57,7 @@ class Runner
           if ref_info = all_ref_checksums[path]
             if ref_info['error']
               error_in_reference = true
-            elsif info.fetch('sha1') == ref_info.fetch('sha1') &&
+            elsif (size_only? || info.fetch('sha1') == ref_info.fetch('sha1')) &&
               info.fetch('size') == ref_info.fetch('size')
             then
               next
@@ -70,7 +74,7 @@ class Runner
                 if ref_info['error']
                   error_in_reference = true
                 elsif ref_info.fetch('size') == info.fetch('size') &&
-                  ref_info.fetch('sha1') == info.fetch('sha1')
+                  (size_only? || ref_info.fetch('sha1') == info.fetch('sha1'))
                 then
                   found = true
                   if options[:verbose]
@@ -122,6 +126,10 @@ OptionParser.new do |opts|
 
   opts.on('-g', '--progress', 'Show progress') do
     options[:progress] = true
+  end
+
+  opts.on('-z', '--size-only', 'Check paths and sizes only, ignore checksums') do
+    options[:size_only] = true
   end
 end.parse!
 

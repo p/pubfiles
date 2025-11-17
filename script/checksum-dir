@@ -53,6 +53,10 @@ class Runner
     options[:subdirs]
   end
 
+  def size_only?
+    options[:size_only]
+  end
+
   def start_path
     @start_path ||= begin
       options.fetch(:start_path).tap do |path|
@@ -126,12 +130,12 @@ class Runner
       end
 
       begin
-        checksum = checksum(path)
-
         sums[rel_path] = {
-          sha1: checksum,
           size: File.stat(path).size,
         }
+        unless size_only?
+          sums[rel_path][:sha1] = checksum(path)
+        end
         @anything_summed = true
       rescue IOError, SystemCallError => exc
         STDERR.puts "Error checksumming #{path}: #{exc.class}: #{exc}"
@@ -225,6 +229,10 @@ OptionParser.new do |opts|
 
   opts.on("-w", "--write=PATH", "Specify output file") do |v|
     options[:out_path] = v
+  end
+
+  opts.on('-z', '--size-only', 'Record paths and sizes, do not checksum') do
+    options[:size_only] = true
   end
 end.parse!
 
