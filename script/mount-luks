@@ -20,9 +20,9 @@ shift $((OPTIND-1))
 device="$1"
 dest="$2"
 
-if test -z "$dest"; then
+if test -z "$device" || (! $prefix && test -z "$dest"); then
   echo "Usage: mount-luks device destination" 1>&2
-  echo "       mount-luks -p device prefix" 1>&2
+  echo "       mount-luks -p device [prefix]" 1>&2
   exit 1
 fi
 
@@ -63,7 +63,11 @@ else
 fi
 
 if $prefix; then
+  if test -z "$dest"; then
+    dest=/mnt/disk
+  fi
   dest="$dest/$label"
+  echo "Using $dest as mount point" 1>&2
   mkdir -p "$dest"
 fi
 
