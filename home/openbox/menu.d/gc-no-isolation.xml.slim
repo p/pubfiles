@@ -3,3 +3,17 @@ menu#gc-no-isolation[label="GC no isolation"]
     action[name="Execute"]
       command
         | google-chrome
+  item[label="Restart"]
+    action[name="Execute"]
+      command
+        | sh -c 'pkill -9 chrome; sleep 1; google-chrome'
+  item[label="Kill"]
+    action[name="Execute"]
+      command
+        | pkill -9 chrome
+
+menu#chromium-no-isolation[label="Chromium no isolation"]
+  item[label="Launch"]
+    action[name="Execute"]
+      command
+        | chromium --no-sandbox
