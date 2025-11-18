@@ -31,3 +31,8 @@ Also removes NetApp parity data, if present.
 ## Change LUKS label
 
     cryptsetup config /dev/sdX --label YOURLABEL
+
+## Check Seagate Hand Drive Usage
+
+FARM metrics:
+https://www.gadget-style.ru/102148-seagate-exos-hdd-power-on-hours-farm-test-guide/
