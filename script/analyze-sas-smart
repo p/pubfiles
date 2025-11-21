@@ -27,7 +27,7 @@ ARGV.each do |file_path|
       puts "At #{prev.time}, for previous #{friendly_time(prev.time - info.time)}:"
       puts "#{friendly_size(prev.read_bytes_processed - info.read_bytes_processed)} read"
       puts "#{prev.read_corrected - info.read_corrected} read errors corrected (#{'%.3f' % ((prev.read_corrected - info.read_corrected) / ((prev.read_bytes_processed - info.read_bytes_processed).to_f / 1024**3))} per GB)"
-      puts "#{prev.read_correction_invocations - info.read_correction_invocations} read correction invocations (#{'%.3f' % ((prev.read_correction_invocations - info.read_correction_invocations) / (info.read_bytes_processed.to_f / 1024**3))} per GB)"
+      puts "#{prev.read_correction_invocations - info.read_correction_invocations} read correction invocations (#{'%.3f' % ((prev.read_correction_invocations - info.read_correction_invocations) / ((prev.read_bytes_processed - info.read_bytes_processed).to_f / 1024**3))} per GB)"
       puts "#{friendly_size(prev.write_bytes_processed - info.write_bytes_processed)} written"
       puts "#{prev.write_corrected - info.write_corrected} write errors corrected (#{'%.3f' % ((prev.write_corrected - info.write_corrected) / ((prev.write_bytes_processed - info.write_bytes_processed).to_f / 1024**3))} per GB)"
       puts "#{prev.write_correction_invocations - info.write_correction_invocations} write correction invocations (#{'%.3f' % ((prev.write_correction_invocations - info.write_correction_invocations) / (info.write_bytes_processed.to_f / 1024**3))} per GB)"
