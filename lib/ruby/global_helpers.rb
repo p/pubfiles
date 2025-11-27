@@ -3,6 +3,7 @@
 autoload :Etc, 'etc'
 
 module GlobalHelpers
+  extend self
 
   def have?(bin)
     ENV.fetch('PATH').split(':').any? { |path| File.exist?(File.join(path, bin)) }
