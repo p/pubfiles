@@ -1,10 +1,12 @@
 #!/usr/bin/env ruby
 
 require 'optparse'
+autoload :Find, 'find'
 autoload :FileUtils, 'fileutils'
 autoload :Etc, 'etc'
 autoload :ERB, 'erb'
 require_relative 'lib/ruby/global_helpers'
+require_relative 'lib/ruby/fs_helpers'
 
 options = {}
 OptionParser.new do |opts|
@@ -56,8 +58,8 @@ class Installer
         # xinitrc.tpl
         rm_f('~/.xinitrc')
 
-        template = File.read(File.join(File.dirname(__FILE__), 'home/xinitrc.erb'))
-        out = ERB.new(template).result(binding)
+        template_path = File.join(File.dirname(__FILE__), 'home/xinitrc.erb')
+        out = evaluate_erb_template(template_path)
         write_file(out, '~/.xinitrc')
       end
 
@@ -91,7 +93,8 @@ class Installer
 
       if have?('mpv')
         # Scripts do not work
-        #install_file('home/mpv', '~/.config/mpv')
+        #install_file('home/mpv', '~/.config')
+        install_dir_individually('home/mpv', '~/.config/mpv')
       end
     end
   end
@@ -165,6 +168,29 @@ class Installer
     end
   end
 
+  def install_dir_individually(src, dest)
+    src = src.sub(%r,/+\z,, '')
+    Find.find(src) do |src_path|
+      next if File.directory?(src_path)
+
+      rel_path = FsHelpers.relativize(src, src_path)
+      dest_path = File.join(dest, rel_path)
+      if src_path.end_with?('.erb')
+        contents = evaluate_erb_template(src_path)
+
+        dest_path = dest_path.sub(%r,\.erb\z,, '')
+        dest_path = maybe_expand_dest(dest_path)
+        dest_parent = File.dirname(dest_path)
+        FileUtils.mkdir_p(dest_parent)
+        File.open(dest_path, 'w') do |f|
+          f << contents
+        end
+      else
+        install_file(src_path, dest_path)
+      end
+    end
+  end
+
   def write_file(contents, dest)
     dest = maybe_expand_dest(dest)
     File.open(dest, 'w') do |f|
@@ -184,6 +210,14 @@ class Installer
 
   def ln_sf(src, dest)
     FileUtils.ln_sf(src, maybe_expand_dest(dest))
+  end
+
+  def evaluate_erb_template(path)
+    ERB.new(File.read(path)).result(get_binding)
+  end
+
+  def get_binding
+    binding
   end
 end
 

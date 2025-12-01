@@ -2,7 +2,11 @@ hwdec
 
 # Limit yt-dlp quality:
 # https://github.com/mpv-player/mpv/issues/4241
-ytdl-format=bestvideo[height<=?1440][fps<=?30]+bestaudio/best
+#ytdl-format=bestvideo[height<=?1440][fps<=?30]+bestaudio/best
+ytdl-format=bestvideo[height<=?1080][fps<=?60]+bestaudio/best
 
 # mpv configuration info:
 # https://iamscum.wordpress.com/guides/videoplayback-guide/mpv-conf/
+
+# Start in full screen mode
+fullscreen=yes
