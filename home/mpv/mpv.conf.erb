@@ -2,8 +2,24 @@ hwdec
 
 # Limit yt-dlp quality:
 # https://github.com/mpv-player/mpv/issues/4241
-#ytdl-format=bestvideo[height<=?1440][fps<=?30]+bestaudio/best
-ytdl-format=bestvideo[height<=?1080][fps<=?60]+bestaudio/best
+<% if Socket.gethostname == 'deep' %>
+  <% ytdl_formats = [
+    'bestvideo[height=1440][fps<=30]',
+    'bestvideo[height=1440]',
+    'bestvideo[height>=1080][height<=?1440][fps=30]',
+    'bestvideo[height>=1080][height<=?1440]',
+    'bestvideo',
+  ] %>
+<% else %>
+  <% ytdl_formats = [
+    'bestvideo[height=1080][fps=30]',
+    'bestvideo[height=1080]',
+    'bestvideo[height=1440][fps=30]',
+    'bestvideo[height=1440]',
+    'bestvideo',
+  ] %>
+<% end %>
+ytdl-format=<%= ytdl_formats.map { |f| "#{f}+bestaudio" }.join('/') %>
 
 # mpv configuration info:
 # https://iamscum.wordpress.com/guides/videoplayback-guide/mpv-conf/

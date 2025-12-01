@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 
 require 'optparse'
+# For Socket.hostname in configuration .erb template files
+autoload :Socket, 'socket'
 autoload :Find, 'find'
 autoload :FileUtils, 'fileutils'
 autoload :Etc, 'etc'
