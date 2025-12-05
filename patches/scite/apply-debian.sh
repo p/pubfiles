@@ -5,6 +5,20 @@
 
 set -e
 
+version=
+while getopts v: opt; do
+  case $opt in
+  v)
+    version="$OPTARG"
+    ;;
+  *)
+    echo "Bogus option $opt" 1>&2
+    exit 1
+    ;;
+  esac
+done
+shift $((OPTIND-1))
+
 if test "$1" = -u; then
   if test `id -u` != 0; then
     exec sudo "$0" "$@"
@@ -25,7 +39,11 @@ tmpdir="`mktemp -d`"
 
 cd "$tmpdir"
 
-apt-get source scite
+spec=scite
+if test -n "$version"; then
+  spec="$spec=$version"
+fi
+apt-get source $spec
 cd scite-*
 (cd scite &&
 patch -p1 <"$src"/patch-tab-width-5.1.3.diff)
