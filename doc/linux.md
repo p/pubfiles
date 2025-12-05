@@ -20,3 +20,19 @@ https://serverfault.com/questions/5336/how-do-i-make-linux-recognize-a-new-sata-
 
 https://askubuntu.com/questions/1250841/ubuntu-20-04-elantech-touchpad-not-working
 https://www.sumarsono.com/manjaro-fixing-elan-touchpad-issues/
+
+## AppArmor
+
+If a program has AppArmor configuration, and is launched with a custom
+configuration file, it's likely to be accessing paths outside of the supplied
+AppArmor configuration which will trigger AppArmor warnings in logs.
+
+Solution is either to create a new AppArmor profile for the custom
+configuration or disable AppArmor for the program completely, which
+can be done by creating (e.g. touching, does not have to be a symlink)
+file in `/etc/apparmor.d/disable` matching the name of the profile in
+`/etc/apparmor.d`:
+
+    touch /etc/apparmor.d/disable/program-name
+
+Reference: https://wiki.ubuntu.com/DebuggingApparmor

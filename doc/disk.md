@@ -12,7 +12,15 @@ Also removes NetApp parity data, if present.
 
 ## Read Grown Defect List
 
-    sginfo -d /dev/X
+    sginfo -d /dev/sdX
+
+## Read Drive Log
+
+    sg_logs -A /dev/sdX
+
+This should include information about failed and reallocated sectors
+identified by background scans, but this seems to be either not available
+in all drives or most drives do not locate bad sectors in this way.
 
 ## Remove SED (Self-Encrypting Drive) Encryption
 
@@ -32,7 +40,15 @@ Also removes NetApp parity data, if present.
 
     cryptsetup config /dev/sdX --label YOURLABEL
 
-## Check Seagate Hand Drive Usage
+## Check Seagate Hard Drive Usage
 
 FARM metrics:
 https://www.gadget-style.ru/102148-seagate-exos-hdd-power-on-hours-farm-test-guide/
+
+## File System Fragmentation
+
+    e2freefrag
+
+## Disk Queue Depth
+
+    iostat -x
