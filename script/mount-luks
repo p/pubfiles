@@ -56,6 +56,13 @@ if test -z "$label"; then
   exit 1
 fi
 
+# Set write-back cache because it seems to be getting cleared on its own.
+# Is the setting not surviving power-off?
+# Enabling the cache on e.g. /dev/sda1 does work the same as enabling it
+# on /dev/sda, thus we can use a partition device here instead of the
+# whole disk device.
+sdparm --set=WCE "$device"
+
 if test -e /dev/mapper/"$label"; then
   echo "luks already opened? skipping" 1>&2
 else
