@@ -49,6 +49,7 @@ class Runner
       basename_index[bn] << ref_path
     end
 
+    puts 'Verifying...'
     with_progress do |bar|
       checksums.each do |path, info|
         begin
