@@ -1,13 +1,38 @@
 #!/usr/bin/env ruby
 
+require 'optparse'
 require_relative '../lib/ruby/child_process_facade'
 
+options = {}
+parser = OptionParser.new do |opts|
+  opts.banner = "Usage: sg_stop [-u] [-n|-f] device..."
+
+  opts.on('-u', '--unmount', 'Unmount partitions on the device') do
+    options[:unmount] = true
+  end
+
+  opts.on('-n', '--dry-run', 'Show what would be done but do not do it') do
+    options[:dry_run] = true
+  end
+
+  opts.on('-f', '--force', 'Force operation') do
+    options[:force] = true
+  end
+end
+parser.parse!
+
 if ARGV.empty?
-  raise "Usage: sg_stop device..."
+  puts parser.help
+  exit 1
 end
 
 error = false
 threads = ARGV.map do |device|
+  if device =~ /\A(sd[a-z])\d+\z/
+    # Use whole drive device, not partition
+    @device = $1
+  end
+
   if device =~ /\A\w+\z/
     device = "/dev/#{device}"
   end
@@ -15,20 +40,85 @@ threads = ARGV.map do |device|
   unless File.exist?(device)
     warn "Device does not exist: #{device}"
     error = true
+    next
   end
 
   Thread.new do
-    # TODO do not sync if the drive is already spun down
-    ChildProcessFacade.check_call(['sg_sync', device])
-    # 3 seconds is definitely not enough, disk is spun back up
-    sleep 5
+    # Checking drive status should not spin it up and should perform no writes
+    # or otherwise alter any state.
+    #unless options[:dry_run]
+      unless options[:force]
+        process = ChildProcessFacade.uncheck_call(['sdparm', '-C', 'ready', device])
+        if process.exit_code == 2
+          warn "Device #{device} is reported as not ready, use -f to stop anyway"
+          error = true
+          Thread.current.kill
+        end
+      end
+    #end
 
-    ChildProcessFacade.check_call(['sg_start', '-rS', device])
+    if options[:unmount]
+      device_basename = File.basename(device)
+      slave_paths = Dir.glob("/sys/devices/virtual/block/dm-*/slaves/#{device_basename}*")
+      slave_paths.each do |path|
+        dm_numbered_name = File.basename(File.dirname(File.dirname(path)))
+        dm_name = File.read("/sys/devices/virtual/block/#{dm_numbered_name}/dm/name").strip
+
+        IO.readlines('/etc/mtab').each do |line|
+          dev, mounted = line.split(' ')
+          if dev == File.join('/dev/mapper', dm_name)
+            if options[:dry_run]
+              puts "Run: umount #{mounted}"
+            else
+              ChildProcessFacade.check_call(['umount', mounted])
+            end
+          end
+        end
+
+        # TODO run cryptsetup status #{dm_name} if we can't close a closed device.
+        if options[:dry_run]
+          puts "Run: cryptsetup close #{dm_name}"
+        else
+          ChildProcessFacade.check_call(['cryptsetup', 'close', dm_name])
+        end
+      end
+    end
+
+    # TODO do not sync if the drive is already spun down
+    if options[:dry_run]
+      puts "Run: sg_sync #{device}"
+    else
+      ChildProcessFacade.check_call(['sg_sync', device])
+      # 3 seconds is definitely not enough, disk is spun back up.
+      # Try 10 seconds to be safe.
+      sleep 10
+    end
+
+    if options[:dry_run]
+      puts "Run: sg_start -rS #{device}"
+    else
+      ChildProcessFacade.check_call(['sg_start', '-rS', device])
+    end
 
     # Check if the drive is really spun down
     # TODO Verify sdparm is installed before invoking it, and
     # eat the output.
-    #ChildProcessFacade.uncheck_call(['sdparm', '-C', 'ready', device])
+    unless options[:dry_run]
+      spun_down = false
+      15.times do
+        process = ChildProcessFacade.uncheck_call(['sdparm', '-C', 'ready', device])
+        if process.exit_code == 2
+          # not ready
+          spun_down = true
+          break
+        end
+        sleep 1
+      end
+      unless spun_down
+        warn "Device is not reporting as spun down after 15 seconds"
+        error = true
+      end
+    end
   end.tap do |thread|
     thread.name = device
   end
