@@ -32,4 +32,10 @@
 # See also:
 # https://serverfault.com/questions/857271/better-performance-when-hdd-write-cache-is-disabled-hgst-ultrastar-7k6000-and
 
-exec sg_format -F -P 0 -v --fmtpinfo=0 -s 4096 "$@"
+sector_size=4096
+if test "$1" = 512; then
+  sector_size=512
+  shift
+fi
+
+exec sg_format -F -P 0 -v --fmtpinfo=0 -s $sector_size "$@"
