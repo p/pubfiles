@@ -1,5 +1,5 @@
-deb http://sledjhamr.org/devuan/merged excalibur main contrib non-free non-free-firmware
-deb-src http://sledjhamr.org/devuan/merged excalibur main contrib non-free non-free-firmware
+deb http://sledjhamr.org/devuan/merged freia main contrib non-free non-free-firmware
+deb-src http://sledjhamr.org/devuan/merged freia main contrib non-free non-free-firmware
 
 #deb http://sledjhamr.org/devuan/merged testing main contrib non-free non-free-firmware
 #deb-src http://sledjhamr.org/devuan/merged testing main contrib non-free non-free-firmware
