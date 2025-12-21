@@ -2,6 +2,7 @@
 # Read the user manual for documentation: http://www.musicpd.org/doc/user/
 # or /usr/share/doc/mpd/html/user.html
 
+# Additional config can be done in /etc/mpd/mpd_local.conf (cf. include_optional)
 
 # Files and directories #######################################################
 #
@@ -419,3 +420,5 @@ audio_output {
 filesystem_charset		"UTF-8"
 #
 ###############################################################################
+
+include_optional "mpd_local.conf"
