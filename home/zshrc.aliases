@@ -93,3 +93,7 @@ xscite(){
 ss() {
 	~/apps/pubfiles/script/scite-ext "$@" &
 }
+
+p() {
+	awk "{print \$$1}"
+}
