@@ -86,6 +86,14 @@ threads = ARGV.map do |device|
 
     # TODO do not sync if the drive is already spun down
     if options[:dry_run]
+      puts "Run: sync"
+    else
+      ChildProcessFacade.check_call(['sync'])
+      sleep 5
+    end
+
+    # TODO do not sync if the drive is already spun down
+    if options[:dry_run]
       puts "Run: sg_sync #{device}"
     else
       ChildProcessFacade.check_call(['sg_sync', device])
