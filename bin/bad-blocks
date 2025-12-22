@@ -1,0 +1,57 @@
+#!/usr/bin/env ruby
+
+# Bad block detective. See:
+# https://www.dzhang.com/blog/2018/04/16/identifying-file-associated-with-bad-sector-ext2-ext3-ext4
+# https://superuser.com/questions/490787/reverse-lookup-of-inode-file-from-offset-in-raw-device-on-linux-and-ext3-4
+
+require 'optparse'
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: bad-blocks -d device [-D fs-device] block..."
+
+  # E.g. /dev/sda
+  opts.on("-d", "--device DEVICE", "Device of physical drive") do |v|
+    options[:device] = v
+  end
+
+  # E.g. /dev/mapper/XXX for luks devices
+  opts.on("-D", "--fs-device DEVICE", "Device for filesystem") do |v|
+    options[:fs_device] = v
+  end
+
+  opts.on('-f', '--from LBA', 'Check range from this LBA') do |v|
+    options[:start_lba] = Integer(v)
+  end
+
+  opts.on('-t', '--to LBA', 'Check range to this LBA') do |v|
+    options[:end_lba] = Integer(v)
+  end
+end.parse!
+
+unless device = options[:device]
+  raise 'Device is required'
+end
+
+block_size = 4096
+output = `badblocks -b #{block_size} #{device} #{options.fetch(:end_lba)} #{options.fetch(:start_lba)}`
+puts output
+bad_lbas = output.split("\n").map { |v| Integer(v) }
+
+partition_offset = 256
+fs_lbas = bad_lbas.map { |lba| lba - partition_offset }
+
+fs_device = options[:fs_device] || device
+output = `debugfs -R "icheck #{fs_lbas.join(' ')}" #{fs_device}`
+puts output
+inodes = Set.new
+output.split("\n")[1..].each do |line|
+  lba, inode = line.split("\t", 2).map { |v| Integer(v) }
+  inodes << inode
+end
+
+output = `debugfs -R "ncheck #{inodes.join(' ')}" #{fs_device}`
+puts output
+output.split("\n")[1..].each do |line|
+  inode, path = line.split("\t", 2)
+end
