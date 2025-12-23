@@ -52,3 +52,13 @@ https://www.gadget-style.ru/102148-seagate-exos-hdd-power-on-hours-farm-test-gui
 ## Disk Queue Depth
 
     iostat -x
+
+## sk,asc,ascq in SMART background test error log
+
+https://en.wikipedia.org/wiki/Key_Code_Qualifier
+
+## File System Selection
+
+https://linuxvox.com/blog/storing-accessing-up-to-10-million-files-in-linux/
+
+XFS: read up on allocsize option
