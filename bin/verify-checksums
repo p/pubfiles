@@ -21,6 +21,16 @@ class Runner
       YAML.load(f)
     end.fetch('sums')
 
+    if options[:total_size]
+      require_relative '../lib/ruby/format_helpers'
+
+      total_size = @checksums.inject(0) do |sum, (path, info)|
+        sum + info.fetch('size', 0)
+      end
+      puts "Total size: #{friendly_size(total_size)}"
+      return
+    end
+
     all_ref_checksums = {}
     options.fetch(:ref_paths).each do |ref_path|
       puts "Reading reference... #{ref_path}"
@@ -132,8 +142,14 @@ OptionParser.new do |opts|
   opts.on('-z', '--size-only', 'Check paths and sizes only, ignore checksums') do
     options[:size_only] = true
   end
+
+  opts.on('-S', '--total-size', 'Report total size of the files and exit') do
+    options[:total_size] = true
+  end
 end.parse!
 
-options.fetch(:ref_paths)
+unless options[:total_size]
+  options.fetch(:ref_paths)
+end
 
 Runner.new(path: ARGV.shift, **options).run
