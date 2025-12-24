@@ -36,3 +36,19 @@ file in `/etc/apparmor.d/disable` matching the name of the profile in
     touch /etc/apparmor.d/disable/program-name
 
 Reference: https://wiki.ubuntu.com/DebuggingApparmor
+
+## Apt modernize sources
+
+https://daniel-lange.com/archives/192-Make-apt-shut-up-about-modernize-sources-in-Trixie.html
+
+
+
+Alternatively add
+
+# Keep apt shut about preferring the "deb822" sources file format
+APT::Get::Update::SourceListWarnings "false";
+
+to /etc/apt/apt.conf.d/10quellsourceformatwarnings .
+
+Format difference:
+https://connectemoi.eu/posts/deb822/
