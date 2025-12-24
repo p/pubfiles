@@ -1,18 +1,19 @@
 #gem 'childprocess'
 autoload :ChildProcess, 'childprocess'
+autoload :Tempfile, 'tempfile'
 
 module ChildProcessFacade
   class CalledProcessError < StandardError
   end
 
-  module_function def uncheck_call(cmd, env: nil)
-    start_process(cmd, env: env).tap do |process|
+  module_function def uncheck_call(cmd, env: nil, stdin_data: nil)
+    start_process(cmd, env: env, stdin_data: stdin_data).tap do |process|
       process.wait
     end
   end
 
   module_function def start_and_forward(cmd, env: nil)
-    puts "[CWR] Starting: #{cmd.join(' ')}"
+    puts "[CPF] Starting: #{cmd.join(' ')}"
     process = ChildProcess.new(*cmd)
     process.io.inherit!
     rd, wr = IO.pipe
@@ -21,13 +22,13 @@ module ChildProcessFacade
     p process.wait
   end
 
-  module_function def check_call(cmd, env: nil)
-    process = uncheck_call(cmd, env: env)
+  module_function def check_call(cmd, env: nil, stdin_data: nil)
+    process = uncheck_call(cmd, env: env, stdin_data: stdin_data)
     check_exit_code(process, cmd)
   end
 
   module_function def check_output(cmd, env: nil)
-    puts "[CWR] Get output: #{cmd.join(' ')}"
+    puts "[CPF] Get output: #{cmd.join(' ')}"
     process = ChildProcess.new(*cmd)
     process.io.inherit!
     process.io.stdout = Tempfile.new("child-output")
@@ -45,17 +46,27 @@ module ChildProcessFacade
     end
   end
 
-  module_function def start_process(cmd, env: nil)
-    puts "[CWR] Starting: #{cmd.join(' ')}"
+  module_function def start_process(cmd, env: nil, stdin_data: nil)
+    puts "[CPF] Starting: #{cmd.join(' ')}"
     process = ChildProcess.new(*cmd)
-    process.io.inherit!
+    if stdin_data
+      process.duplex = true
+      process.io.stdout = STDOUT
+      process.io.stderr = STDERR
+    else
+      process.io.inherit!
+    end
     apply_env(process, env)
     process.start
+    if stdin_data
+      process.io.stdin << stdin_data
+      process.io.stdin.close
+    end
     process
   end
 
   module_function def start_process_pipe(cmd, env: nil)
-    puts "[CWR] Starting pipe: #{cmd.join(' ')}"
+    puts "[CPF] Starting pipe: #{cmd.join(' ')}"
     rd, wr = IO.pipe
     pid = fork do
       rd.close

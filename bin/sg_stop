@@ -2,6 +2,7 @@
 
 require 'optparse'
 require_relative '../lib/ruby/child_process_facade'
+require_relative '../lib/ruby/disk/helpers'
 
 options = {}
 parser = OptionParser.new do |opts|
@@ -28,16 +29,9 @@ end
 
 error = false
 threads = ARGV.map do |device|
-  if device =~ /\A(sd[a-z])\d+\z/
-    # Use whole drive device, not partition
-    @device = $1
-  end
-
-  if device =~ /\A\w+\z/
-    device = "/dev/#{device}"
-  end
-
-  unless File.exist?(device)
+  begin
+    device = Disk::Helpers.resolve_root_device(device)
+  rescue Errno::EEXIST => exc
     warn "Device does not exist: #{device}"
     error = true
     next

@@ -1,3 +1,76 @@
-#!/bin/sh
+#!/usr/bin/env ruby
 
-exec cryptsetup luksFormat --type=luks2 "$@"
+require 'optparse'
+require_relative '../lib/ruby/child_process_facade'
+require_relative '../lib/ruby/disk/helpers'
+autoload :FileUtils, 'fileutils'
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: format-luks [-l label] device"
+
+  opts.on('-l', '--label LABEL', 'Label') do |v|
+    options[:label] = v
+  end
+
+  opts.on('-p', '--partition', 'Create the first partition on the device') do
+    options[:partition] = true
+  end
+
+  opts.on('-m', '--mount', 'mkfs and mount') do
+    options[:mount] = true
+  end
+end.parse!
+
+if ARGV.length != 1
+  puts parser.help
+  exit 1
+end
+
+device = ARGV.shift
+device = Disk::Helpers.resolve_whole_device(device)
+
+puts "Working on #{device}"
+
+label = options.fetch(:label)
+
+if options[:partition]
+  # https://superuser.com/questions/332252/how-to-create-and-format-a-partition-using-a-bash-script
+  #ChildProcessFacade.check_call(['parted', '-s', device, 'mklabel', 'gpt'])
+  #Subprocess.check_call(['parted', device, 'mkpart', 'gpt'])
+  # Type is "Linux user's home"
+  stdin_data = <<-EOT
+label: gpt
+type=773f91ef-66d4-49b5-bd83-d683bf40ad16
+EOT
+  ChildProcessFacade.check_call(['sfdisk', device], stdin_data: stdin_data)
+end
+
+# TODO verify there is only one partition?
+partition = device + '1'
+unless File.exist?(partition)
+  raise "Partition does not exist"
+end
+
+cmd = ['cryptsetup', 'luksFormat', '--type=luks2']
+if label
+  luks_label = "#{label}-luks"
+  cmd += ["--label=#{luks_label}"]
+end
+cmd << partition
+ChildProcessFacade.check_call(cmd)
+
+if options[:mount]
+  # TODO what if label is not given?
+  unless label
+    raise NotImplementedError
+  end
+  ChildProcessFacade.check_call(['cryptsetup', 'open', partition, label])
+
+  mapper_path = "/dev/mapper/#{label}"
+  ChildProcessFacade.check_call(['mkfs.ext4', '-L', label, mapper_path])
+
+  dest = "/mnt/disk/#{label}"
+  FileUtils.mkdir_p(dest)
+  ChildProcessFacade.check_call(['mount', '-o', 'noatime,nodiratime', mapper_path, dest])
+end
