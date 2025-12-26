@@ -45,8 +45,10 @@ https://daniel-lange.com/archives/192-Make-apt-shut-up-about-modernize-sources-i
 
 Alternatively add
 
+```
 # Keep apt shut about preferring the "deb822" sources file format
 APT::Get::Update::SourceListWarnings "false";
+```
 
 to /etc/apt/apt.conf.d/10quellsourceformatwarnings .
 
