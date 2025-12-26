@@ -93,6 +93,15 @@ elif is_debian && ! is_ubuntu; then
  install_sources $BASE/../config/apt/debian/$release/sources.list
 fi
 
+# Disable modernize sources warning
+# https://daniel-lange.com/archives/192-Make-apt-shut-up-about-modernize-sources-in-Trixie.html
+
+cat <<-EOT |tee /etc/apt/apt.conf.d/10-quell-source-format-warnings
+# Keep apt shut about preferring the "deb822" sources file format
+# https://daniel-lange.com/archives/192-Make-apt-shut-up-about-modernize-sources-in-Trixie.html
+APT::Get::Update::SourceListWarnings "false";
+EOT
+
 if ! apt-cache show gcc >/dev/null 2>&1; then
   echo 'Failed to apt-cache show gcc' 1>&2
   exit 1
