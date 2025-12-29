@@ -62,3 +62,6 @@ https://docs.kernel.org/scsi/scsi-parameters.html
 ```
 scsi_mod.scan=sync
 ```
+
+See also:
+https://wiki.debian.org/Persistent_disk_names
