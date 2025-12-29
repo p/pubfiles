@@ -31,6 +31,10 @@ with open(CONFIG_FILE) as f:
                 args.append('net.ifnames=0')
             if 'biosdevname=0' not in args:
                 args.append('biosdevname=0')
+            # SCSI device order
+            # https://docs.kernel.org/scsi/scsi-parameters.html
+            if 'scsi_mod.scan=sync' not in args:
+                args.append('scsi_mod.scan=sync')
             # Remove quiet option while we are here
             if 'quiet' in args:
                 args.remove('quiet')

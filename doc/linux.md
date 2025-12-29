@@ -54,3 +54,11 @@ to /etc/apt/apt.conf.d/10quellsourceformatwarnings .
 
 Format difference:
 https://connectemoi.eu/posts/deb822/
+
+## Order SCSI Disks
+
+https://docs.kernel.org/scsi/scsi-parameters.html
+
+```
+scsi_mod.scan=sync
+```
