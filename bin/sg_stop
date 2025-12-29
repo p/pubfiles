@@ -30,7 +30,7 @@ end
 error = false
 threads = ARGV.map do |device|
   begin
-    device = Disk::Helpers.resolve_root_device(device)
+    device = Disk::Helpers.resolve_whole_device(device)
   rescue Errno::EEXIST => exc
     warn "Device does not exist: #{device}"
     error = true
