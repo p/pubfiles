@@ -20,10 +20,15 @@ shift $((OPTIND-1))
 device="$1"
 dest="$2"
 
-if test -z "$device" || (! $prefix && test -z "$dest"); then
+if test -z "$device"; then
   echo "Usage: mount-luks device destination" 1>&2
   echo "       mount-luks -p device [prefix]" 1>&2
+  echo "       mount-luks device" 1>&2
   exit 1
+fi
+
+if test -z "$dest"; then
+  prefix=true
 fi
 
 original_device="$device"
@@ -63,19 +68,21 @@ fi
 # whole disk device.
 sdparm --set=WCE "$device"
 
-if test -e /dev/mapper/"$label"; then
+name=`echo "$label" |sed -e s/-luks$//`
+
+if test -e /dev/mapper/"$name"; then
   echo "luks already opened? skipping" 1>&2
 else
-  cryptsetup open "$device" "$label"
+  cryptsetup open "$device" "$name"
 fi
 
 if $prefix; then
   if test -z "$dest"; then
     dest=/mnt/disk
   fi
-  dest="$dest/$label"
+  dest="$dest/$name"
   echo "Using $dest as mount point" 1>&2
   mkdir -p "$dest"
 fi
 
-mount -o noatime,nodiratime /dev/mapper/"$label" "$dest"
+mount -o noatime,nodiratime /dev/mapper/"$name" "$dest"
