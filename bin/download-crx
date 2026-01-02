@@ -26,6 +26,8 @@ class Downloader
     when %r,\A([a-z0-9]+)\z,
       @slug = nil
       @id = $1
+    when %r,\Ahttps?://.+\.crx\z,
+      @download_url = id_or_url
     else
       raise ArgumentError, "Bogus id or URL: #{id_or_url}"
     end
@@ -34,7 +36,7 @@ class Downloader
   attr_reader :id
 
   def download_url
-    "https://clients2.google.com/service/update2/crx?response=redirect&prodversion=89.0&x=id%3D#{id}%26installsource%3Dondemand%26uc&acceptformat=crx2,crx3"
+    @download_url || "https://clients2.google.com/service/update2/crx?response=redirect&prodversion=89.0&x=id%3D#{id}%26installsource%3Dondemand%26uc&acceptformat=crx2,crx3"
   end
 
   def contents
