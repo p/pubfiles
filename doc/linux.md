@@ -57,11 +57,239 @@ https://connectemoi.eu/posts/deb822/
 
 ## Order SCSI Disks
 
+Doing this in "normally" appears to be impossible.
+
+There is a kernel parameter to scan SCSI devices "synchronously":
+
 https://docs.kernel.org/scsi/scsi-parameters.html
 
 ```
 scsi_mod.scan=sync
 ```
 
-See also:
+I don't understand what this does exactly because I still get:
+
+```
+[    0.954722] mpt2sas_cm0: sending port enable !!
+[    0.955520] mpt2sas_cm0: hba_port entry: 00000000041815a3, port: 255 is added to hba_port list
+[    0.957519] mpt2sas_cm0: host_add: handle(0x0001), sas_addr(0x5003005700dbf999), phys(8)
+[    0.958316] mpt2sas_cm0: handle(0x9) sas_address(0x5000cca2423785e5) port_type(0x1)
+[    0.958563] mpt2sas_cm0: handle(0xb) sas_address(0x5000cca2558594d9) port_type(0x1)
+[    0.958794] mpt2sas_cm0: handle(0xc) sas_address(0x5000cca24249be29) port_type(0x1)
+[    0.959024] mpt2sas_cm0: handle(0xa) sas_address(0x5000cca25584e7e1) port_type(0x1)
+[    0.970221] mpt2sas_cm0: port enable: SUCCESS
+[    0.971261] scsi 0:0:0:0: SSP: handle(0x000a), sas_addr(0x5000cca25584e7e1), phy(3), device_name(0x5000cca25584e7e3)
+[    0.974389]  end_device-0:0: add: handle(0x000a), sas_addr(0x5000cca25584e7e1)
+[    0.975424] scsi 0:0:1:0: SSP: handle(0x0009), sas_addr(0x5000cca2423785e5), phy(0), device_name(0x5000cca2423785e7)
+[    0.979657]  end_device-0:1: add: handle(0x0009), sas_addr(0x5000cca2423785e5)
+[    0.980593] scsi 0:0:2:0: SSP: handle(0x000b), sas_addr(0x5000cca2558594d9), phy(1), device_name(0x5000cca2558594db)
+[    0.984257]  end_device-0:2: add: handle(0x000b), sas_addr(0x5000cca2558594d9)
+[    0.985087] scsi 0:0:3:0: SSP: handle(0x000c), sas_addr(0x5000cca24249be29), phy(2), device_name(0x5000cca24249be2b)
+[    0.989246]  end_device-0:3: add: handle(0x000c), sas_addr(0x5000cca24249be29)
+[    1.116607] ata2: SATA link down (SStatus 4 SControl 300)
+[    1.116636] ata3: SATA link down (SStatus 4 SControl 300)
+[    1.116662] ata4: SATA link down (SStatus 4 SControl 300)
+[    1.116689] ata1: SATA link up 6.0 Gbps (SStatus 133 SControl 300)
+[    1.117037] ata1.00: ACPI cmd f5/00:00:00:00:00:e0(SECURITY FREEZE LOCK) filtered out
+[    1.117046] ata1.00: ACPI cmd b1/c1:00:00:00:00:e0(DEVICE CONFIGURATION OVERLAY) filtered out
+[    1.117052] ata1.00: ATA-9: SanDisk SDSA6GM-016G-1006, U221006, max UDMA/133
+[    1.117056] ata1.00: 31277232 sectors, multi 1: LBA48 NCQ (depth 32)
+[    1.118556] ata1.00: Features: Dev-Sleep DIPM
+[    1.119577] ata1.00: ACPI cmd f5/00:00:00:00:00:e0(SECURITY FREEZE LOCK) filtered out
+[    1.119587] ata1.00: ACPI cmd b1/c1:00:00:00:00:e0(DEVICE CONFIGURATION OVERLAY) filtered out
+[    1.120712] ata1.00: configured for UDMA/133
+[    1.153181] sd 1:0:0:0: [sdd] 31277232 512-byte logical blocks: (16.0 GB/14.9 GiB)
+[    1.153199] sd 1:0:0:0: [sdd] Write Protect is off
+[    1.153202] sd 1:0:0:0: [sdd] Mode Sense: 00 3a 00 00
+[    1.153221] sd 1:0:0:0: [sdd] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+[    1.153256] sd 1:0:0:0: [sdd] Preferred minimum I/O size 512 bytes
+[    1.153421] sd 0:0:0:0: [sda] 1465130646 4096-byte logical blocks: (6.00 TB/5.46 TiB)
+[    1.153426] sd 0:0:2:0: [sde] 1465130646 4096-byte logical blocks: (6.00 TB/5.46 TiB)
+[    1.153450] sd 0:0:3:0: [sdb] 1465130646 4096-byte logical blocks: (6.00 TB/5.46 TiB)
+[    1.153963] sd 0:0:0:0: [sda] Write Protect is off
+[    1.153969] sd 0:0:0:0: [sda] Mode Sense: f7 00 10 08
+[    1.154041] sd 0:0:3:0: [sdb] Write Protect is off
+[    1.154045] sd 0:0:3:0: [sdb] Mode Sense: f7 00 10 08
+[    1.154288] sd 0:0:1:0: [sdc] 1465130646 4096-byte logical blocks: (6.00 TB/5.46 TiB)
+[    1.154649] sd 0:0:1:0: [sdc] Write Protect is off
+[    1.154652] sd 0:0:1:0: [sdc] Mode Sense: f7 00 10 08
+[    1.154713] sd 0:0:2:0: [sde] Write Protect is off
+[    1.154719] sd 0:0:2:0: [sde] Mode Sense: f7 00 10 08
+[    1.154927] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, supports DPO and FUA
+[    1.155114] sd 0:0:3:0: [sdb] Write cache: enabled, read cache: enabled, supports DPO and FUA
+[    1.155205] sd 0:0:1:0: [sdc] Write cache: enabled, read cache: enabled, supports DPO and FUA
+[    1.157150] sd 0:0:2:0: [sde] Write cache: enabled, read cache: enabled, supports DPO and FUA
+[    1.205955]  sdc: sdc1
+[    1.206109] sd 0:0:1:0: [sdc] Attached SCSI disk
+[    1.213176]  sda: sda1
+[    1.213432] sd 0:0:0:0: [sda] Attached SCSI disk
+[    1.217393]  sdb: sdb1
+[    1.217517] sd 0:0:3:0: [sdb] Attached SCSI disk
+[    1.231907]  sdd: sdd1 sdd2 sdd3
+[    1.232579] sd 1:0:0:0: [sdd] Attached SCSI disk
+[    1.242586]  sde: sde1
+[    1.242854] sd 0:0:2:0: [sde] Attached SCSI disk
+```
+
+What happened here:
+- First disk device is `sdd` for some reason.
+- The drives on SAS controller are, in port order: `sda`, `sdc`, `sde`, `sdb`.
+- `scsi 0:0:0:0` got assigned to `phy(3)`.
+- The SATA SSD is in the middle of my SAS HDDs.
+
+The reason for this dumpster fire of device names, I am assuming,
+is that all of the devices are probed in parallel and whichever disk responds
+first gets `sda` assigned to it, and so on. And because I have two controllers
+(the SATA one on the mainboard and a SAS card) those naturally also get
+probed in parallel, and are probably returning the drives in parallel, which
+is how the SATA SSD ends up in the middle of SAS HDDs. And, of course,
+any of these drives may be missing at boot, or may go missing at any time
+while the system is running (in theory, the SSD can't go anywhere because it's
+the boot drive), which is why the order of devices is "arbitrary" and
+must be so.
+
+What I care more about however is that now `iostat` output puts the SSD
+in the middle of HDDs, because it shows the `sdX` devices in order.
+And when I operate on the drives I have to always get tripped up by `sdd`
+being the boot drive and not a data drive.
+
+Many people are asking how to fix this but nobody is getting answers.
+Examples:
+- https://askubuntu.com/questions/371049/how-are-dev-sda-and-dev-sdb-chosen
+- https://superuser.com/questions/1608246/how-do-i-configure-which-disk-becomes-dev-sda
+- https://unix.stackexchange.com/questions/498115/how-to-control-order-of-disk-devices-during-ubuntu-linux-installation
+- https://unix.stackexchange.com/questions/723903/how-can-i-order-dev-sdx-block-devices-names-by-hardware-path-on-linux
+- https://unix.stackexchange.com/questions/281282/how-to-prevent-sda-sdb-changes-between-boots
+
+The non-answer which is given is "set up so-called 'persistent device names'
+via udev', e.g. here:
 https://wiki.debian.org/Persistent_disk_names
+
+The problem with this non-answer is that while it is certainly possible to
+boot the system by referencing labels in `fstab`, for example, this does
+nothing to make the running system usable, because utilities like `iostat`
+still output `sdX` devices which make no sense.
+
+And, while it is possible, for example, to feed the "persistent block device
+names" to `fdisk`, do you really want to work with this:
+
+```
+# fdisk -l /dev/disk/by-path/pci-0000:01:00.0-sas-phy3-lun-0
+Disk /dev/disk/by-path/pci-0000:01:00.0-sas-phy3-lun-0: 5.46 TiB, 6001175126016 bytes, 1465130646 sectors
+Disk model: HUS726060AL5211 
+Units: sectors of 1 * 4096 = 4096 bytes
+Sector size (logical/physical): 4096 bytes / 4096 bytes
+I/O size (minimum/optimal): 4096 bytes / 131072 bytes
+Disklabel type: gpt
+Disk identifier: 886DE28C-7CDC-4B30-A3D7-F87565E61E44
+
+Device                                                  Start        End    Sectors  Size Type
+/dev/disk/by-path/pci-0000:01:00.0-sas-phy3-lun-0-part1   256 1465130495 1465130240  5.5T Linux temporary data
+```
+
+Now yes, it does say `phy3` in there, but I also have the `pci-0000:01:00.0`
+which I don't care about and here is the kicker: on the SAS breakout cable,
+the drive connectors are marked "1" through "4", and of course this
+`lun3` (the fourth one, since luns are starting from 0) does not correspond
+to the drive attached to the connector marked "4".
+So this is just trading short nonsense name for a long nonsense name.
+
+And tools like `smartctl` don't work with these device paths at all.
+Maybe `smartctl` accepts something other than `/dev/sdX` for device path,
+I really don't feel like investigating.
+
+Interestingly, if I unload `mp3sas` and `modprobe` it back in, the drives
+are named in order of their SCSI positions (which still does not match the
+physical layout but at least the kernel itself now manages to order them the
+same):
+
+```
+[33246.100888] mpt2sas_cm0: sending port enable !!
+[33246.101669] mpt2sas_cm0: hba_port entry: 000000004a4284fa, port: 255 is added to hba_port list
+[33246.104310] mpt2sas_cm0: host_add: handle(0x0001), sas_addr(0x5003005700dbf999), phys(8)
+[33246.105126] mpt2sas_cm0: handle(0x9) sas_address(0x5000cca2423785e5) port_type(0x1)
+[33246.105368] mpt2sas_cm0: handle(0xb) sas_address(0x5000cca2558594d9) port_type(0x1)
+[33246.105606] mpt2sas_cm0: handle(0xc) sas_address(0x5000cca24249be29) port_type(0x1)
+[33246.105845] mpt2sas_cm0: handle(0xa) sas_address(0x5000cca25584e7e1) port_type(0x1)
+[33246.114320] mpt2sas_cm0: port enable: SUCCESS
+[33246.115533] scsi 0:0:0:0: SSP: handle(0x000a), sas_addr(0x5000cca25584e7e1), phy(3), device_name(0x5000cca25584e7e3)
+[33246.118875] sd 0:0:0:0: Attached scsi generic sg0 type 0
+[33246.119170]  end_device-0:0: add: handle(0x000a), sas_addr(0x5000cca25584e7e1)
+[33246.119324] sd 0:0:0:0: [sda] 1465130646 4096-byte logical blocks: (6.00 TB/5.46 TiB)
+[33246.119868] sd 0:0:0:0: [sda] Write Protect is off
+[33246.119876] sd 0:0:0:0: [sda] Mode Sense: f7 00 10 08
+[33246.120334] scsi 0:0:1:0: SSP: handle(0x0009), sas_addr(0x5000cca2423785e5), phy(0), device_name(0x5000cca2423785e7)
+[33246.120807] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, supports DPO and FUA
+[33246.122883] sd 0:0:1:0: Attached scsi generic sg1 type 0
+[33246.123145]  end_device-0:1: add: handle(0x0009), sas_addr(0x5000cca2423785e5)
+[33246.123349] sd 0:0:1:0: [sdb] 1465130646 4096-byte logical blocks: (6.00 TB/5.46 TiB)
+[33246.123717] sd 0:0:1:0: [sdb] Write Protect is off
+[33246.123722] sd 0:0:1:0: [sdb] Mode Sense: f7 00 10 08
+[33246.124144] scsi 0:0:2:0: SSP: handle(0x000b), sas_addr(0x5000cca2558594d9), phy(1), device_name(0x5000cca2558594db)
+[33246.124275] sd 0:0:1:0: [sdb] Write cache: enabled, read cache: enabled, supports DPO and FUA
+[33246.140361] sd 0:0:2:0: Attached scsi generic sg2 type 0
+[33246.140808]  end_device-0:2: add: handle(0x000b), sas_addr(0x5000cca2558594d9)
+[33246.141863] scsi 0:0:3:0: SSP: handle(0x000c), sas_addr(0x5000cca24249be29), phy(2), device_name(0x5000cca24249be2b)
+[33246.146677] sd 0:0:3:0: Attached scsi generic sg3 type 0
+[33246.146906]  end_device-0:3: add: handle(0x000c), sas_addr(0x5000cca24249be29)
+[33246.147249] sd 0:0:3:0: [sde] 1465130646 4096-byte logical blocks: (6.00 TB/5.46 TiB)
+[33246.148592] sd 0:0:3:0: [sde] Write Protect is off
+[33246.148598] sd 0:0:3:0: [sde] Mode Sense: f7 00 10 08
+[33246.149575] sd 0:0:2:0: [sdc] 1465130646 4096-byte logical blocks: (6.00 TB/5.46 TiB)
+[33246.150965] sd 0:0:2:0: [sdc] Write Protect is off
+[33246.150971] sd 0:0:2:0: [sdc] Mode Sense: f7 00 10 08
+[33246.151297] sd 0:0:3:0: [sde] Write cache: enabled, read cache: enabled, supports DPO and FUA
+[33246.153578] sd 0:0:2:0: [sdc] Write cache: enabled, read cache: enabled, supports DPO and FUA
+[33246.170243]  sda: sda1
+[33246.170479] sd 0:0:0:0: [sda] Attached SCSI disk
+[33246.172592]  sdb: sdb1
+[33246.172725] sd 0:0:1:0: [sdb] Attached SCSI disk
+[33246.204537]  sde: sde1
+[33246.204724] sd 0:0:3:0: [sde] Attached SCSI disk
+[33246.219373]  sdc: sdc1
+[33246.219533] sd 0:0:2:0: [sdc] Attached SCSI disk
+```
+
+The reporting order is still messed up but at least the end result makes a
+little more sense. Of coures, I still have `sdd` in the middle of these drives,
+and there's no way to fix that once the system is booted.
+
+The best solution, then, is as follows:
+
+1. Blacklist `mpt3sas` so that the SAS drives are not probed during boot.
+This removes the race between the SATA controller and the SAS one, so you are
+guaranteed to have `sda` for the SATA drive:
+
+```
+echo blacklist mpt3sas |tee /etc/modprobe.d/blacklist-mpt3sas.conf
+update-initramfs -u
+```
+
+The blacklist configuration must be in initramfs, hence the call to update it.
+
+2. Load `mpt3sas` once the system comes up:
+
+```
+modprobe mpt3sas
+```
+
+Nice fast parallel boot eh?
+
+By the way, FreeBSD had disk devices in BIOS order at least between 4.x
+through 5.x when I was using it, and it had different naming schemes for
+ATA and SCSI devices, so you'd get for example `ad4` for your only ATA drive
+but it would stay as `ad4` the entire time, and if you move it to another
+connector on the mainboard you could get it to be before or after another
+drive. SCSI drives were named `daX`, I never had any while I ran FreeBSD.
+Linux dumps both types of drives into `sdX` namespace, which is also
+justified in some way, and maybe some people want all of their drives to
+be just be called "disk" (or, maybe, `C:`?) but why is there no setting to
+separate ATA from SCSI disks and have something like a probe delay for every
+controller/port/drive to have sensible device names once the system is up?
+I have seen references to server boot times already being excessive but
+personally my machines usually stay up for months at a time thus the difference
+in boot time between 15 seconds and a minute really is insignificant.
+
+## X11 & Gnome
+
+https://www.reddit.com/r/archlinux/comments/1nr7xz3/how_to_restore_x11_with_gnome_49/
