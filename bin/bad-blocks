@@ -21,19 +21,45 @@ OptionParser.new do |opts|
   end
 
   opts.on('-f', '--from LBA', 'Check range from this LBA') do |v|
-    options[:start_lba] = Integer(v)
+    options[:start_lba] = v
   end
 
   opts.on('-t', '--to LBA', 'Check range to this LBA') do |v|
-    options[:end_lba] = Integer(v)
+    options[:end_lba] = v
+  end
+
+  opts.on('-x', '--hex', 'LBAs are given in hex') do
+    options[:hex] = true
+  end
+
+  opts.on('-b', '--block-size SIZE', 'Block size (512, 4096)') do |v|
+    options[:block_size] = Integer(v)
   end
 end.parse!
+
+if start_lba = options[:start_lba]
+  if options[:hex]
+    start_lba = Integer(start_lba, 16)
+  else
+    start_lba = Integer(start_lba)
+  end
+  options[:start_lba] = start_lba
+end
+
+if end_lba = options[:end_lba]
+  if options[:hex]
+    end_lba = Integer(end_lba, 16)
+  else
+    end_lba = Integer(end_lba)
+  end
+  options[:end_lba] = end_lba
+end
 
 unless device = options[:device]
   raise 'Device is required'
 end
 
-block_size = 4096
+block_size = options[:block_size] || 4096
 output = `badblocks -b #{block_size} #{device} #{options.fetch(:end_lba)} #{options.fetch(:start_lba)}`
 puts output
 bad_lbas = output.split("\n").map { |v| Integer(v) }
