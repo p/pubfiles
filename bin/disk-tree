@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'json'
-require 'yaml'
+autoload :YAML, 'yaml'
 require_relative '../lib/ruby/disk/io_stats'
 require_relative '../lib/ruby/disk/info'
 require_relative '../lib/ruby/format_helpers'
