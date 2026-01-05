@@ -87,7 +87,7 @@ disk_infos.each do |disk, di|
   else
     File.basename(disk)
   end
-  puts "#{'%-10s' % name}   #{'%10s' % di[:size]}  #{'%-20s' % di[:model]}      Serial: #{di[:serial]}"
+  puts "#{'%-10s' % name}   #{'%10s' % friendly_size(di[:size])}  #{'%-20s' % di[:model]}      Serial: #{di[:serial]}"
 
   stats = Disk::IOStats.new(disk)
   puts "stats: \

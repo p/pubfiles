@@ -45,7 +45,7 @@ class Disk::Info
   end
 
   def size
-    fdisk_status[:size]
+    smartctl_status.dig(:user_capacity, :bytes)
   end
 
   def model
