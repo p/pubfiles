@@ -53,8 +53,25 @@ class LinkCleaner
   private
 
   def clean_via_regexp(contents)
-    cleaned = contents.gsub(%r,(https://www.amazon.com/[^/]+/dp/\w+)/ref=\w+(?:/[-\d]+)?\?\S+,, '\1')
-    cleaned.gsub!(%r,(https://www.amazon.com/gp/product/\w+)/ref=\w+(?:/[-\d]+)?\?\S+,, '\1')
+    amazon_cleaner = lambda do |m|
+      uri = URI.parse($1)
+      orig_uri = URI.parse(m)
+      if orig_uri.query
+        params = CGI.parse(orig_uri.query)
+        params.select! do |key, value|
+          # sprefix: search keyword
+          %w(sprefix).include?(key)
+        end
+        uri.query = params.map do |key, value|
+          "#{key}=#{CGI.escape(value.first)}"
+        end.join('&')
+        uri.query = nil if uri.query.empty?
+      end
+      uri.to_s
+    end
+
+    cleaned = contents.gsub(%r,(https://www.amazon.com/[^/]+/dp/\w+)/ref=\w+(?:/[-\d]+)?\?\S+,, &amazon_cleaner)
+    cleaned.gsub!(%r,(https://www.amazon.com/gp/product/\w+)/ref=\w+(?:/[-\d]+)?\?\S+,, &amazon_cleaner)
     cleaned.gsub!(%r,(https://www.ebay.com/itm(?:/[^/]+)?/\d+)\?\S+,) do |m|
       uri = URI.parse(m)
       if uri.query
