@@ -93,8 +93,13 @@ in #{friendly_time(stats.time_spent_writing)} \
     info = Disk::Info.new(part)
 
     final_part = pi[:mapper] || part
-    status = `df -h #{final_part}`.split("\n")[1]
-    fs, size, used, avail, perc, mounted = status.split(/\s+/)
+    final_info = Disk::Info.new(final_part)
+    fs = final_info.fs_type
+    size = final_info.size
+    used = final_info.fs_used
+    avail = final_info.fs_avail
+    perc = final_info.fs_avail_percent
+    mounted = final_info.mount_point
     if fs == 'udev'
       fs, size, used, avail, perc, mounted = nil
     end
@@ -104,7 +109,8 @@ in #{friendly_time(stats.time_spent_writing)} \
       ' ' * 33
     end
     mount_info = if fs
-      " -> #{'%-20s' % mounted} #{'%4s' % perc} used"
+      used_msg = perc && "#{'%4s' % (100 - perc)}% used"
+      " -> #{'%-20s' % mounted} #{used_msg}"
     else
       ''
     end

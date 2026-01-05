@@ -96,7 +96,39 @@ class Disk::Info
     lsblk_status.fetch(:label)
   end
 
+  def fs_type
+    lsblk_status.fetch(:fstype)
+  end
+
+  def fs_used
+    to_i_maybe(lsblk_status.fetch(:fsused))
+  end
+
+  def fs_avail
+    to_i_maybe(lsblk_status.fetch(:fsavail))
+  end
+
+  def fs_avail_percent
+    if fs_avail
+      (fs_avail / size.to_f * 100).to_i
+    else
+      nil
+    end
+  end
+
+  def mount_point
+    lsblk_status.fetch(:mountpoint)
+  end
+
   private
+
+  def to_i_maybe(value)
+    if value.nil?
+      nil
+    else
+      Integer(value)
+    end
+  end
 
   def partition_pattern
     if device_name =~ /\bnvme/
@@ -131,7 +163,7 @@ class Disk::Info
 
   def lsblk_status
     @lsblk_status ||= begin
-      output = `lsblk -Jdo TYPE,LABEL,SIZE --bytes #{device_name}`
+      output = `lsblk -Jdo TYPE,LABEL,SIZE,FSTYPE,FSUSED,FSAVAIL,MOUNTPOINT --bytes #{device_name}`
       raise "lsblk failed for #{device_name}" unless $?.exitstatus == 0
       JSON.parse(output, symbolize_names: true).fetch(:blockdevices).first
     end
