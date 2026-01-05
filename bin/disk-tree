@@ -41,9 +41,9 @@ dms.each do |dm|
   next if File.basename(dm) == 'control'
   dev_num = File.basename(File.readlink(dm))
 
-  info = `lsblk -Jdo TYPE #{dm}`
-  info = JSON.parse(info).fetch('blockdevices')[0]
-  type = info.fetch('type')
+  info = Disk::Info.new(dm)
+  type = info.type
+  label = info.label
   if type == 'crypt'
     status = `cryptsetup status #{dm}`
     if status =~ /device:\s+(\S+)/
@@ -51,7 +51,6 @@ dms.each do |dm|
     else
       raise "'cryptsetup status' failed or produced unexpected output for '#{dm}'"
     end
-    blkid_status = blkid(dm)
   else
     # TODO
     device = nil
@@ -64,7 +63,7 @@ dms.each do |dm|
 
   dm_infos[dm] = {
     device: device,
-    label: blkid_status[:label],
+    label: label,
     device_num: dev_num,
   }
   parent = if device =~ /nvme/
@@ -77,7 +76,7 @@ dms.each do |dm|
     raise NotImplementedError
   end
   m = disk_infos[parent][:part_infos][device] || {}
-  m.update(mapper: dm, mapper_label: blkid_status[:label], mapper_device_num: dev_num)
+  m.update(mapper: dm, mapper_label: label, mapper_device_num: dev_num)
 end
 
 disk_infos.each do |disk, di|
@@ -100,7 +99,7 @@ in #{friendly_time(stats.time_spent_writing)} \
 "
 
   di[:part_infos].each do |part, pi|
-    blkid_status = blkid(part)
+    info = Disk::Info.new(part)
 
     final_part = pi[:mapper] || part
     status = `df -h #{final_part}`.split("\n")[1]
@@ -109,12 +108,7 @@ in #{friendly_time(stats.time_spent_writing)} \
       fs, size, used, avail, perc, mounted = nil
     end
     mapper_info = if pi[:mapper]
-      label = if blkid_status[:mapper_label]
-        " label=#{pi[:mapper_label]}"
-      else
-        ''
-      end
-      " via #{'%-21s' % File.basename(pi[:mapper])} #{label}(#{pi[:mapper_device_num]})"
+      " via #{'%-21s' % File.basename(pi[:mapper])} (#{pi[:mapper_device_num]})"
     else
       ' ' * 33
     end
@@ -123,11 +117,7 @@ in #{friendly_time(stats.time_spent_writing)} \
     else
       ''
     end
-    label = if blkid_status[:label]
-      " [#{blkid_status[:label]}]"
-    else
-      ''
-    end
+    label = info.label
     puts "  #{'%-10s' % File.basename(part)} #{'%10s' % pi[:size]} #{label}#{mapper_info}#{mount_info}"
   end
 end

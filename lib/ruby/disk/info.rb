@@ -82,6 +82,15 @@ class Disk::Info
     end
   end
 
+  # @return "disk" | "part" | "crypt"
+  def type
+    lsblk_status.fetch(:type)
+  end
+
+  def label
+    lsblk_status.fetch(:label)
+  end
+
   private
 
   def partition_pattern
@@ -112,6 +121,14 @@ class Disk::Info
       output = `smartctl -ji #{device_name}`
       raise "Smartctl failed for #{device_name}" unless $?.exitstatus == 0
       JSON.parse(output, symbolize_names: true)
+    end
+  end
+
+  def lsblk_status
+    @lsblk_status ||= begin
+      output = `lsblk -Jdo TYPE,LABEL #{device_name}`
+      raise "lsblk failed for #{device_name}" unless $?.exitstatus == 0
+      JSON.parse(output, symbolize_names: true).fetch(:blockdevices).first
     end
   end
 end
