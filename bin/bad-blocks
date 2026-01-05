@@ -39,6 +39,10 @@ OptionParser.new do |opts|
   opts.on('-b', '--block-size SIZE', 'Block size (512, 4096)') do |v|
     options[:block_size] = Integer(v)
   end
+
+  opts.on('-w', '--write', 'Write to the identified blocks') do
+    options[:write] = true
+  end
 end.parse!
 
 if start_lba = options[:start_lba]
@@ -85,20 +89,35 @@ else
   bad_lbas = output.split("\n").map { |v| Integer(v) }
 end
 
-partition_offset = 256
-fs_lbas = bad_lbas.map { |lba| lba - partition_offset }
+if options[:write]
+  bad_lbas.each do |lba|
+    puts "Writing: #{lba} to #{device}"
+    system("sg_dd if=/dev/zero of=#{device} bs=#{block_size} seek=#{lba} count=1")
+  end
+else
+  partition_offset = 256
+  fs_lbas = bad_lbas.map { |lba| lba - partition_offset }
 
-fs_device = options[:fs_device] || device
-output = `debugfs -R "icheck #{fs_lbas.join(' ')}" #{fs_device}`
-puts output
-inodes = Set.new
-output.split("\n")[1..].each do |line|
-  lba, inode = line.split("\t", 2).map { |v| Integer(v) }
-  inodes << inode
-end
+  fs_device = options[:fs_device] || device
+  output = `debugfs -R "icheck #{fs_lbas.join(' ')}" #{fs_device}`
+  puts output
+  inodes = Set.new
+  output.split("\n")[1..].each do |line|
+    lba, inode = line.split("\t", 2).map do |v|
+      if v == '<block not found>'
+        nil
+      else
+        Integer(v)
+      end
+    end
+    if inode
+      inodes << inode
+    end
+  end
 
-output = `debugfs -R "ncheck #{inodes.join(' ')}" #{fs_device}`
-puts output
-output.split("\n")[1..].each do |line|
-  inode, path = line.split("\t", 2)
+  output = `debugfs -R "ncheck #{inodes.join(' ')}" #{fs_device}`
+  puts output
+  output.split("\n")[1..].each do |line|
+    inode, path = line.split("\t", 2)
+  end
 end
