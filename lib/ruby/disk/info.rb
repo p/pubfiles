@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+autoload :JSON, 'json'
+
 module Disk; end
 class Disk::Info
   def self.all(nvme: true, sd: true)
@@ -23,6 +25,15 @@ class Disk::Info
     end
   end
 
+  def self.background_scan_log_entries(device_name)
+    output = `smartctl --log=background -j #{device_name}`
+    raise "Smartctl failed for #{device_name}" unless $?.exitstatus == 0
+    info = JSON.parse(output, symbolize_names: true).fetch(:scsi_background_scan)
+    info.select do |(key, v)|
+      key.start_with?('result_')
+    end.values
+  end
+
   def initialize(device_name)
     @device_name = device_name
   end
@@ -38,11 +49,19 @@ class Disk::Info
   end
 
   def model
-    smartctl_status[:model] || fdisk_status[:model]
+    smartctl_status.fetch(:model_name)
   end
 
   def serial
-    smartctl_status[:serial]
+    smartctl_status.fetch(:serial_number)
+  end
+
+  def logical_block_size
+    smartctl_status.fetch(:logical_block_size)
+  end
+
+  def block_size
+    logical_block_size
   end
 
   def scsi?
@@ -89,17 +108,10 @@ class Disk::Info
   end
 
   def smartctl_status
-    @smartctl_status ||= {}.tap do |status|
-      output = `smartctl -a #{device_name}`
-
-      if output =~ /Serial [nN]umber:\s+(\S+)/
-        status[:serial] = $1
-      end
-      if output =~ /Device Model:\s+(.+?)\n/
-        status[:model] = $1
-      end
-
-      status.freeze
+    @smartctl_status ||= begin
+      output = `smartctl -ji #{device_name}`
+      raise "Smartctl failed for #{device_name}" unless $?.exitstatus == 0
+      JSON.parse(output, symbolize_names: true)
     end
   end
 end

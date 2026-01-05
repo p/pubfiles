@@ -32,6 +32,10 @@ OptionParser.new do |opts|
     options[:hex] = true
   end
 
+  opts.on('-s', '--smart', 'Read bad blocks from SMART background scan log') do
+    options[:smart_log] = true
+  end
+
   opts.on('-b', '--block-size SIZE', 'Block size (512, 4096)') do |v|
     options[:block_size] = Integer(v)
   end
@@ -59,10 +63,27 @@ unless device = options[:device]
   raise 'Device is required'
 end
 
-block_size = options[:block_size] || 4096
-output = `badblocks -b #{block_size} #{device} #{options.fetch(:end_lba)} #{options.fetch(:start_lba)}`
-puts output
-bad_lbas = output.split("\n").map { |v| Integer(v) }
+unless block_size = options[:block_size]
+  require_relative '../lib/ruby/disk/info'
+  info = Disk::Info.new(device)
+  block_size = info.block_size
+  puts "Using block size: #{block_size}"
+end
+
+if options[:smart_log]
+  require_relative '../lib/ruby/disk/info'
+  log = Disk::Info.background_scan_log_entries(device)
+  bad_lbas = log.select do |entry|
+    entry.dig(:reassign_status, :value) == 1
+  end.map do |entry|
+    entry.fetch(:lba)
+  end
+  puts "Bad LBAs from SMART: #{bad_lbas.join(', ')}"
+else
+  output = `badblocks -b #{block_size} #{device} #{options.fetch(:end_lba)} #{options.fetch(:start_lba)}`
+  puts output
+  bad_lbas = output.split("\n").map { |v| Integer(v) }
+end
 
 partition_offset = 256
 fs_lbas = bad_lbas.map { |lba| lba - partition_offset }
