@@ -6,14 +6,6 @@ require_relative '../lib/ruby/disk/io_stats'
 require_relative '../lib/ruby/disk/info'
 require_relative '../lib/ruby/format_helpers'
 
-def blkid(device)
-  status = `blkid #{device}`
-  if status =~ /LABEL="([^"]+)/
-    label = $1
-  end
-  {label: label}
-end
-
 di = Disk::Info.all
 
 disk_infos = {}
