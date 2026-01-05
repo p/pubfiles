@@ -293,3 +293,123 @@ in boot time between 15 seconds and a minute really is insignificant.
 ## X11 & Gnome
 
 https://www.reddit.com/r/archlinux/comments/1nr7xz3/how_to_restore_x11_with_gnome_49/
+
+## Memory Limiting
+
+`ulimit -m` does not work because it's ignored by the kernel:
+https://linuxvox.com/blog/why-ulimit-can-t-limit-resident-memory-successfully-and-how/
+and
+https://unix.stackexchange.com/questions/129587/does-ulimit-m-not-work-on-modern-linux.
+
+cgroups is the only solution that works.
+Documentation for cgroups seems to be atrocious though so the following
+commands are cobbled together from various internet sources.
+The instructions below are for cgroups v2. It seems that there are at least
+some API changes between v1 and v2, and given the general lack of documentation,
+what the API changes are exactly is probably impossible to figure out.
+
+I have this added to the kernel command line:
+
+```
+cgroup_enable=memory
+```
+
+I don't know if this is needed for v2 or maybe it was a v1 incantation
+that now does nothing.
+
+Then, the cgroup filesystem needs to be mounted:
+
+```
+mount -t cgroup2 none /sys/fs/cgroup
+```
+
+Then, memory limits must be enabled:
+
+```
+echo '+memory' | sudo tee /sys/fs/cgroup/cgroup.subtree_control
+```
+
+Then, create a group:
+
+```
+mkdir /sys/fs/cgroup/limited
+```
+
+Set its memory limit:
+
+```
+echo 100M |tee /sys/fs/cgroup/limited/memory.max       
+```
+
+To apply the memory limit to a running process:
+
+```
+echo $PID > /sys/fs/cgroup/limite/cgroup.procs
+```
+
+To launch a process in a cgroup:
+
+```
+cgexec -g memory:limited program ...
+```
+
+Here the `memory:` part is required for some reason, and the command
+requires root privileges.
+
+In the best tradition of garbage interfaces, `cgexec` produces nonsensical
+error messages and uses an environment variable to be verbose:
+
+```
+CGROUP_LOGLEVEL=INFO cgexec -g memory:limited echo hi
+
+Warning: cannot write tid 15498 to /sys/fs/cgroup//limited/cgroup.procs:Permission denied
+Warning: cgroup_attach_task_pid failed: 50007
+cgroup change of group failed
+```
+
+All of the actual issues are labeled "warning" too, because why provide
+accurate diagnostics?
+
+### Launch in cgroup
+
+Todo:
+- https://askubuntu.com/questions/1406329/how-to-run-cgexec-without-sudo-as-current-user-on-ubuntu-22-04-with-cgroups-v2
+- https://unix.stackexchange.com/questions/725112/using-cgroups-v2-without-root
+
+### Background
+
+- https://marc.info/?l=linux-kernel&m=113951956111878
+- http://web.archive.org/web/20231116005246/https://bugzilla.kernel.org/show_bug.cgi?id=5167
+- https://github.com/parke/rlimit_rss
+- https://chrisdown.name/2019/07/18/linux-memory-management-at-scale.html
+- https://superuser.com/questions/1502287/what-is-the-history-behind-ulimit-m-rlimit-rss-not-working
+
+It is possible to limit RSS, as the experimental module is showing.
+The issue with doing it seems to be (at least) that pages in swap do not
+count as RSS, thus paging a program into memory from swap could get it
+killed due to exceeding RSS. (This is not necessarily a showstopper -
+if the amount of swap in a system is much less than the amount of RAM,
+disregarding how much of a program is in swap is still workable and will
+produce meaningful behavior.)
+
+The other option was to implement a limit on, let's say, "RSS+swap", but
+there was no label for such a thing, and I guess developers did not want
+to apply "RSS" label to "RSS+swap", and just gave up on implementing anything
+instead.
+
+References:
+- https://linuxvox.com/blog/why-ulimit-can-t-limit-resident-memory-successfully-and-how/
+- https://unix.stackexchange.com/questions/44985/limit-memory-usage-for-a-single-linux-process
+- https://unix.stackexchange.com/questions/725112/using-cgroups-v2-without-root
+- https://askubuntu.com/questions/1406329/how-to-run-cgexec-without-sudo-as-current-user-on-ubuntu-22-04-with-cgroups-v2
+
+Alternative instructions - for cgroups v1?
+https://unix.stackexchange.com/questions/44985/limit-memory-usage-for-a-single-linux-process
+
+```
+cgcreate -g memory:myGroup
+echo 500M > /sys/fs/cgroup/memory/myGroup/memory.limit_in_bytes
+echo 5G > /sys/fs/cgroup/memory/myGroup/memory.memsw.limit_in_bytes
+```
+
+Comments say this is not working.
