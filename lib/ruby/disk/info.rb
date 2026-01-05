@@ -45,7 +45,12 @@ class Disk::Info
   end
 
   def size
-    smartctl_status.dig(:user_capacity, :bytes)
+    # We can read the whole disk size via smartctl and this could be faster
+    # if we already have smartctl output, but we need to be careful to
+    # only use smartctl if we are operating on the entire disk.
+    #smartctl_status.dig(:user_capacity, :bytes)
+
+    Integer(lsblk_status.fetch(:size))
   end
 
   def model
@@ -126,7 +131,7 @@ class Disk::Info
 
   def lsblk_status
     @lsblk_status ||= begin
-      output = `lsblk -Jdo TYPE,LABEL #{device_name}`
+      output = `lsblk -Jdo TYPE,LABEL,SIZE --bytes #{device_name}`
       raise "lsblk failed for #{device_name}" unless $?.exitstatus == 0
       JSON.parse(output, symbolize_names: true).fetch(:blockdevices).first
     end

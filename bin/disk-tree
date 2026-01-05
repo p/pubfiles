@@ -12,9 +12,8 @@ disk_infos = {}
 di.each do |info|
   part_infos = {}
   info.partition_device_names.each do |part|
-    status = `fdisk -l #{part}`
-    part_size = "#{status.split(/\s+/)[2]} #{status.split(/\s+/)[3].sub(',', '')}" rescue '???'
-    part_infos[part] = {size: part_size}
+    part_info = Disk::Info.new(part)
+    part_infos[part] = {size: part_info.size}
   end
 
   disk_infos[info.device_name] = {
@@ -110,7 +109,7 @@ in #{friendly_time(stats.time_spent_writing)} \
       ''
     end
     label = info.label
-    puts "  #{'%-10s' % File.basename(part)} #{'%10s' % pi[:size]} #{label}#{mapper_info}#{mount_info}"
+    puts "  #{'%-10s' % File.basename(part)} #{'%10s' % friendly_size(pi[:size])} #{label}#{mapper_info}#{mount_info}"
   end
 end
 puts
