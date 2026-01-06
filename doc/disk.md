@@ -62,3 +62,7 @@ https://en.wikipedia.org/wiki/Key_Code_Qualifier
 https://linuxvox.com/blog/storing-accessing-up-to-10-million-files-in-linux/
 
 XFS: read up on allocsize option
+
+## SMART Attributes
+
+https://www.backblaze.com/blog/making-sense-of-ssd-smart-stats/
