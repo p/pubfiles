@@ -29,14 +29,18 @@
 	puu = push u -u
 
 [user]
-	name = Oleg Pudeyev
-	email = code@olegp.name
+	name = Unicorn Enterprises
+	email = une@narnia
+
 [merge]
         log = True
+
 [core]
 	excludesfile = ~/.gitignore
+
 [push]
 	default = simple
+
 [pull]
 	# ff = only overrides rebase = true
 	#ff = only

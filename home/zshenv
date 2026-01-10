@@ -11,8 +11,8 @@ _maybe_add_to_path "$HOME/bin"
 _maybe_add_to_path "$HOME/.local/bin"
 
 if test -f /etc/debian_version; then
-  export DEBEMAIL=oleg@bsdpower.com
-  export DEBFULLNAME='Oleg Pudeyev'
+  export DEBEMAIL=une@narnia
+  export DEBFULLNAME='Unicorn Enterprises'
 fi
 
 _maybe_add_to_path "$HOME/.rbenv/bin"
