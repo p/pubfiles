@@ -308,14 +308,27 @@ The instructions below are for cgroups v2. It seems that there are at least
 some API changes between v1 and v2, and given the general lack of documentation,
 what the API changes are exactly is probably impossible to figure out.
 
-I have this added to the kernel command line:
+### Enable Controller
+
+Find out which controllers you have enabled:
+
+```
+# cat /sys/fs/cgroup/cgroup.controllers                          
+cpuset memory
+```
+
+If `memory` is not present, enable it by adding to the kernel command line
+(and reboot):
 
 ```
 cgroup_enable=memory
 ```
 
-I don't know if this is needed for v2 or maybe it was a v1 incantation
-that now does nothing.
+To enable multiple controllers, add multiple arguments:
+
+```
+cgroup_enable=memory cgroup_enable=cpuset
+```
 
 Then, the cgroup filesystem needs to be mounted:
 
@@ -376,12 +389,64 @@ In order to put a process into a cgroup, the user trying to do so must have
 write access to the existing cgroup (if there isn't one explicitly set, it's
 "root") and the new cgroup. Meaning, if we want to launch a process into a
 cgroup as a non-root user, the shell of that user must be placed into the
-right cgroup by root:
+right cgroup by root, as described above.
+
+Once the shell is in a cgroup, all processed launched from it (including
+those that change the user via `sudo`) stay in that cgroup. Meaning, there
+sort of is no need to change cgroup as non-root user.
+
+However, it's important to verify that memory restriction is active, by
+querying the current cgroup and its limits:
 
 ```
+% cat /proc/self/cgroup 
+12:misc:/
+11:rdma:/
+10:pids:/
+9:hugetlb:/
+8:net_prio:/
+7:perf_event:/
+6:net_cls:/
+5:freezer:/
+4:devices:/
+3:blkio:/
+2:cpuacct:/
+1:cpu:/
+0::/limited
 ```
 
-Todo:
+The important line here is the last one, for the controller "0" (whatever
+that means).
+
+A process not in any cgroup (technically, in the root one) wlll show:
+
+```
+# cat /proc/self/cgroup 
+12:misc:/
+11:rdma:/
+10:pids:/
+9:hugetlb:/
+8:net_prio:/
+7:perf_event:/
+6:net_cls:/
+5:freezer:/
+4:devices:/
+3:blkio:/
+2:cpuacct:/
+1:cpu:/
+0::/
+```
+
+And check limits:
+
+```
+% cat /sys/fs/cgroup/limited/memory.max
+104857600
+% cat /sys/fs/cgroup/limited/memory.swap.max 
+104857600
+```
+
+References:
 - https://askubuntu.com/questions/1406329/how-to-run-cgexec-without-sudo-as-current-user-on-ubuntu-22-04-with-cgroups-v2
 - https://unix.stackexchange.com/questions/725112/using-cgroups-v2-without-root
 
