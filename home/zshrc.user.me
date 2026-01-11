@@ -1,0 +1,5 @@
+if id sandbox >/dev/null 2>&1; then
+  sandbox() {
+    sudo -iHu sandbox zsh -l
+  }
+fi
