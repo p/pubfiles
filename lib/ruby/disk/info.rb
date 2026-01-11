@@ -4,6 +4,8 @@ autoload :JSON, 'json'
 
 module Disk; end
 class Disk::Info
+  class SmartctlError < StandardError; end
+
   def self.all(nvme: true, sd: true)
     patterns = []
     if nvme
@@ -27,7 +29,7 @@ class Disk::Info
 
   def self.background_scan_log_entries(device_name)
     output = `smartctl --log=background -j #{device_name}`
-    raise "Smartctl failed for #{device_name}" unless $?.exitstatus == 0
+    raise SmartctlError, "Smartctl failed for #{device_name}" unless $?.exitstatus == 0
     info = JSON.parse(output, symbolize_names: true).fetch(:scsi_background_scan)
     info.select do |(key, v)|
       key.start_with?('result_')
@@ -54,11 +56,13 @@ class Disk::Info
   end
 
   def model
-    smartctl_status.fetch(:model_name)
+    #smartctl_status.fetch(:model_name)
+    lsblk_status.fetch(:model)
   end
 
   def serial
-    smartctl_status.fetch(:serial_number)
+    #smartctl_status.fetch(:serial_number)
+    lsblk_status.fetch(:serial)
   end
 
   def logical_block_size
@@ -155,15 +159,15 @@ class Disk::Info
 
   def smartctl_status
     @smartctl_status ||= begin
-      output = `smartctl -ji #{device_name}`
-      raise "Smartctl failed for #{device_name}" unless $?.exitstatus == 0
+      output = `smartctl -ji #{device_name} -T permissive`
+      raise SmartctlError, "Smartctl failed for #{device_name}" unless $?.exitstatus == 0
       JSON.parse(output, symbolize_names: true)
     end
   end
 
   def lsblk_status
     @lsblk_status ||= begin
-      output = `lsblk -Jdo TYPE,LABEL,SIZE,FSTYPE,FSUSED,FSAVAIL,MOUNTPOINT --bytes #{device_name}`
+      output = `lsblk -Jdo TYPE,LABEL,SIZE,FSTYPE,FSUSED,FSAVAIL,MOUNTPOINT,MODEL,SERIAL --bytes #{device_name}`
       raise "lsblk failed for #{device_name}" unless $?.exitstatus == 0
       JSON.parse(output, symbolize_names: true).fetch(:blockdevices).first
     end
