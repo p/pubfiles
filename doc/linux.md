@@ -344,7 +344,7 @@ echo 100M |tee /sys/fs/cgroup/limited/memory.max
 To apply the memory limit to a running process:
 
 ```
-echo $PID > /sys/fs/cgroup/limite/cgroup.procs
+echo $PID > /sys/fs/cgroup/limited/cgroup.procs
 ```
 
 To launch a process in a cgroup:
@@ -356,8 +356,8 @@ cgexec -g memory:limited program ...
 Here the `memory:` part is required for some reason, and the command
 requires root privileges.
 
-In the best tradition of garbage interfaces, `cgexec` produces nonsensical
-error messages and uses an environment variable to be verbose:
+`cgexec` produces nonsensical error messages and uses an environment variable
+to output diagnostics:
 
 ```
 CGROUP_LOGLEVEL=INFO cgexec -g memory:limited echo hi
@@ -367,14 +367,74 @@ Warning: cgroup_attach_task_pid failed: 50007
 cgroup change of group failed
 ```
 
-All of the actual issues are labeled "warning" too, because why provide
-accurate diagnostics?
+All of the actual issues, which are errors, are labeled "warning", they
+couldn't even get that right.
 
 ### Launch in cgroup
+
+In order to put a process into a cgroup, the user trying to do so must have
+write access to the existing cgroup (if there isn't one explicitly set, it's
+"root") and the new cgroup. Meaning, if we want to launch a process into a
+cgroup as a non-root user, the shell of that user must be placed into the
+right cgroup by root:
+
+```
+```
 
 Todo:
 - https://askubuntu.com/questions/1406329/how-to-run-cgexec-without-sudo-as-current-user-on-ubuntu-22-04-with-cgroups-v2
 - https://unix.stackexchange.com/questions/725112/using-cgroups-v2-without-root
+
+### What Memory Limit?
+
+I did a simple test of the memory limit by setting it to 100 MB and reading
+1 GB from `/dev/zero` in a Ruby process. Imagine my surprise when the program
+successfully ran to completion!
+
+What happens here is once the "memory" limit (of 100 MB in this case)
+is reached, the kernel simply allocates pages from swap. So my program that
+was supposed to be limited to 100 MB of memory allocated 100 GB of RAM and
+1 GB of swap and ran just fine. Cool.
+
+References for this behavior:
+- https://unix.stackexchange.com/questions/799261/how-does-the-linux-kernel-decide-whether-to-deny-memory-allocation-or-invoke-the/799271#799271
+- https://unix.stackexchange.com/questions/727101/why-do-processes-on-linux-crash-if-they-use-a-lot-of-memory-yet-still-less-than?rq=1
+
+In other words, the "memory" limit is the same thing as an RSS limit except
+the kernel is actively helping programs evade it (and the programs can get
+killed at any time when they page memory in from wap). So now instead of simply
+limiting RSS with all of the caveats, we have the same exact
+no-actually-memory-limit with cgroups with a ton of setup steps and awkwardness.
+Hmm.
+
+I checked the process death behavior by running the following command
+which reads 1 GB from /dev/zero - this passes the 100 MB memory limit:
+
+```
+% ruby -e "a=File.open('/dev/zero').read(1_000_000_000); puts a.length"              
+1000000000
+```
+
+But, trying to uppercase this giant string kills the process:
+
+```
+% ruby -e "a=File.open('/dev/zero').read(1_000_000_000); a.upcase; puts a.length"
+zsh: killed     ruby -e 
+```
+
+By the way, I noticed that the memory was being allocated from swap by
+looking at `top` output. On an otherwise idle system, while the test program
+was running and its memory consumption (RSS) was reported as around 100 MB,
+the global swap used increased to 1 GB.
+
+To fix this, we also need to limit swap:
+
+```
+echo 100M |tee /sys/fs/cgroup/limited/memory.swap.max       
+```
+
+Do not make the mistake of writing to `swap.max` instead of `memory.max` -
+this produces no errors but also does not do anything.
 
 ### Background
 
