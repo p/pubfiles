@@ -66,3 +66,5 @@ XFS: read up on allocsize option
 ## SMART Attributes
 
 https://www.backblaze.com/blog/making-sense-of-ssd-smart-stats/
+
+https://github.com/Seagate/openSeaChest/wiki/Drive-Health-and-SMART
