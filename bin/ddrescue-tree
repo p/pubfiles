@@ -1,0 +1,84 @@
+#!/usr/bin/env ruby
+
+autoload :FileUtils, 'fileutils'
+autoload :Find, 'find'
+autoload :JSON, 'json'
+require 'optparse'
+require_relative '../lib/ruby/fs_helpers'
+require_relative '../lib/ruby/child_process_facade'
+
+class Runner
+  def initialize(**opts)
+    @options = opts
+  end
+
+  attr_reader :options
+
+  def state_root
+    options.fetch(:state_root)
+  end
+
+  def source_paths
+    options.fetch(:source_paths)
+  end
+
+  def dest_root
+    options.fetch(:dest_root)
+  end
+
+  def run
+    source_paths.each do |source_root|
+      # Use rsync behavior for destination calculation
+      this_dest_root = if source_root.end_with?('/')
+        dest_root
+      else
+        File.join(dest_root, File.basename(source_root))
+      end
+
+      Find.find(source_root) do |source_path|
+        next if source_path == source_root
+
+        rel = FsHelpers.relativize(source_root, source_path)
+        dest_path = File.join(this_dest_root, rel)
+        state_path = File.join(state_root, File.basename(source_root), rel + '.state')
+        mark_path = File.join(state_root, File.basename(source_root), rel + '.mark')
+        if File.exist?(dest_path) && !File.exist?(state_path) && !Flie.exist?(mark_path)
+          # Assume this was copied successfully
+          puts "Assume OK: #{source_path}"
+          next
+        end
+
+        if File.directory?(source_path)
+          puts "Directory: #{source_path}"
+          FileUtils.mkdir(dest_path)
+          next
+        end
+
+        # Use ddrescue
+        puts "ddrescue: #{source_path} -> #{dest_path}, state: #{state_path}"
+        FileUtils.mkdir_p(File.dirname(state_path))
+        # ddrescue can exit after making a zero-length destination file
+        FileUtils.touch(mark_path)
+        ChildProcessFacade.check_call(['ddrescue', source_path, dest_path, state_path])
+      end
+    end
+  end
+end
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: ddrescue-tree -s state-dir src... dest"
+
+  opts.on("-s", "--state PATH", "Path to state directory") do |v|
+    options[:state_root] = v
+  end
+end.parse!
+
+if ARGV.length < 2
+  raise "Usage: at least two paths are required"
+end
+
+options[:dest_root] = ARGV.pop
+options[:source_paths] = ARGV
+
+Runner.new(**options).run
