@@ -42,7 +42,7 @@ class Runner
         dest_path = File.join(this_dest_root, rel)
         state_path = File.join(state_root, File.basename(source_root), rel + '.state')
         mark_path = File.join(state_root, File.basename(source_root), rel + '.mark')
-        if File.exist?(dest_path) && !File.exist?(state_path) && !Flie.exist?(mark_path)
+        if File.exist?(dest_path) && !File.exist?(state_path) && !File.exist?(mark_path)
           # Assume this was copied successfully
           puts "Assume OK: #{source_path}"
           next
@@ -59,7 +59,11 @@ class Runner
         FileUtils.mkdir_p(File.dirname(state_path))
         # ddrescue can exit after making a zero-length destination file
         FileUtils.touch(mark_path)
-        ChildProcessFacade.check_call(['ddrescue', source_path, dest_path, state_path])
+        opts = ['-p']
+        if max = options[:max_read_errors]
+          opts << '-X' << max.to_s
+        end
+        ChildProcessFacade.uncheck_call(['ddrescue', *opts, source_path, dest_path, state_path])
       end
     end
   end
@@ -71,6 +75,10 @@ OptionParser.new do |opts|
 
   opts.on("-s", "--state PATH", "Path to state directory") do |v|
     options[:state_root] = v
+  end
+
+  opts.on("-X", "--max-read-errors NUM", "Maximum number of read errors allowed for ddrescue") do |v|
+    options[:max_read_errors] = Integer(v)
   end
 end.parse!
 
