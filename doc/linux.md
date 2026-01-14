@@ -501,6 +501,21 @@ echo 100M |tee /sys/fs/cgroup/limited/memory.swap.max
 Do not make the mistake of writing to `swap.max` instead of `memory.max` -
 this produces no errors but also does not do anything.
 
+### Delegation
+
+https://www.man7.org/linux/man-pages/man7/cgroups.7.html
+
+       Note: one consequence of these delegation containment rules is
+       that the unprivileged delegatee can't place the first process into
+       the delegated subtree; instead, the delegater must place the first
+       process (a process owned by the delegatee) into the delegated
+       subtree.
+
+It is still not possible to launch a new process in a cgroups as a non-root user.
+
+Also:
+https://unix.stackexchange.com/questions/754605/how-to-add-pid-inside-cgroup-procs-with-non-root-privileges-in-cgroup-v2-in-ubun
+
 ### Background
 
 - https://marc.info/?l=linux-kernel&m=113951956111878
