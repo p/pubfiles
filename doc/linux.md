@@ -465,6 +465,14 @@ References for this behavior:
 - https://unix.stackexchange.com/questions/799261/how-does-the-linux-kernel-decide-whether-to-deny-memory-allocation-or-invoke-the/799271#799271
 - https://unix.stackexchange.com/questions/727101/why-do-processes-on-linux-crash-if-they-use-a-lot-of-memory-yet-still-less-than?rq=1
 
+And, curiously, 
+https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html
+says:
+
+> While not completely water-tight, all major memory usages by a given cgroup are tracked so that the total memory consumption can be accounted and controlled to a reasonable extent.
+
+Except "controlled" apparently means the data is simply moved to swap.
+
 In other words, the "memory" limit is the same thing as an RSS limit except
 the kernel is actively helping programs evade it (and the programs can get
 killed at any time when they page memory in from wap). So now instead of simply
@@ -500,6 +508,12 @@ echo 100M |tee /sys/fs/cgroup/limited/memory.swap.max
 
 Do not make the mistake of writing to `swap.max` instead of `memory.max` -
 this produces no errors but also does not do anything.
+
+https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html
+implies that cgroups v1 had a function to limit memory and swap usage
+together:
+
+> The main argument for a combined memory+swap facility in the original cgroup design
 
 ### Delegation
 
@@ -553,3 +567,16 @@ echo 5G > /sys/fs/cgroup/memory/myGroup/memory.memsw.limit_in_bytes
 ```
 
 Comments say this is not working.
+
+### Delete cgroup
+
+```
+cgdelete controllers:path
+```
+
+https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html
+says the directory in sysfs can be removed.
+
+## Dropping Privileges
+
+https://blog.habets.se/2022/03/Dropping-privileges.html
