@@ -1,3 +1,10 @@
+## Disable Middle-Click Paste
+
+disable middle click paste:
+https://askubuntu.com/questions/4507/how-do-i-disable-middle-mouse-button-click-paste
+https://unix.stackexchange.com/questions/24330/how-can-i-turn-off-middle-mouse-button-paste-functionality-in-all-programs
+https://github.com/milaq/XMousePasteBlock
+
 ## Disable IPv6
 
 https://linuxconfig.org/how-to-disable-ipv6-on-linux
