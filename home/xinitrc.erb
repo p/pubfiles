@@ -1,9 +1,15 @@
 #!/bin/sh
 
+# https://unix.stackexchange.com/questions/281858/difference-between-xinitrc-xsession-and-xsessionrc
+# ubuntu with gdm3 is not running .xinitrc nor .xsession.
+# It is however invoking .xsessionrc (which is a Debian-specific feature).
+# Solution: move .xinitrc to .xsessionrc and remove the
+# init_as_configured line (since the window manager will be invoked elsehow).
+
 # . <%= File.join(pub_root, 'home/xinitrc.lib.sh') %>
 . $HOME/apps/pubfiles/home/xinitrc.lib.sh
 
-xset -b
-
 common_init
+
+# Remove this line if renaming .xinitrc to .xsessionrc on ubuntus.
 init_as_configured
