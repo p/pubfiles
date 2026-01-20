@@ -571,7 +571,7 @@ class Runner
       ChildProcessFacade.check_call(['ifconfig', wireless_ifname, 'down'])
       ChildProcessFacade.check_call(['ifconfig', wireless_ifname, 'up'])
       ChildProcessFacade.check_call(['iwconfig', wireless_ifname, 'essid', ssid])
-      sleep 1
+      sleep 5
     end
   end
 
