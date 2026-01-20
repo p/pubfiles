@@ -18,17 +18,48 @@ merge_defaults() {
 	[ -f $usermodmap ] && /usr/X11R6/bin/xmodmap $usermodmap
 }
 
+init_screen_lock() {
+  #have xscreensaver && xscreensaver -no-splash &
+
+  skip_lock=false
+  if test -e /etc/setup.conf && grep -q skip_lock=true /etc/setup.conf; then
+    skip_lock=true
+  fi
+  if $skip_lock; then
+    # For now, make screen stay on all the time if locking is disabled.
+    xset s off
+    xset -dpms
+  else
+    if have xss-lock && have xsecurelock; then
+      xset s 600
+      xss-lock env \
+        XSECURELOCK_PASSWORD_PROMPT=asterisks \
+        XSECURELOCK_SHOW_HOSTNAME=1 \
+        XSECURELOCK_SHOW_USERNAME=1 \
+        XSECURELOCK_AUTH_FOREGROUND_COLOR=rgb:aa/aa/aa \
+        XSECURELOCK_DISCARD_FIRST_KEYPRESS=0 \
+        xsecurelock &
+    fi
+
+    if have xautolock && have xsecurelock; then
+      xautolock -time 15 -locker 'env XSECURELOCK_PASSWORD_PROMPT=asterisks XSECURELOCK_SHOW_HOSTNAME=1 XSECURELOCK_SHOW_USERNAME=1 xsecurelock' &
+    fi
+  fi
+}
+
 common_init() {
-	#xset dpms 0 0 600
-	if test "`hostname -s`" = athena; then
-		layout=x41
-	else
-		layout=dvorak
-	fi
-	setxkbmap us $layout
-	
-	# This needs to be done for each br-* account
-	#forward_xauth
+  #xset dpms 0 0 600
+  if test "`hostname -s`" = athena; then
+          layout=x41
+  else
+          layout=dvorak
+  fi
+  setxkbmap us $layout
+  
+  # This needs to be done for each br-* account
+  #forward_xauth
+  
+  init_screen_lock
 }
 
 have_screen() {
@@ -73,30 +104,3 @@ init_as_configured() {
 		init_single_head;;
 	esac
 }
-
-#have xscreensaver && xscreensaver -no-splash &
-
-skip_lock=false
-if test -e /etc/setup.conf && grep -q skip_lock=true /etc/setup.conf; then
-  skip_lock=true
-fi
-if $skip_lock; then
-  # For now, make screen stay on all the time if locking is disabled.
-  xset s off
-  xset -dpms
-else
-  if have xss-lock && have xsecurelock; then
-    xset s 600
-    xss-lock env \
-      XSECURELOCK_PASSWORD_PROMPT=asterisks \
-      XSECURELOCK_SHOW_HOSTNAME=1 \
-      XSECURELOCK_SHOW_USERNAME=1 \
-      XSECURELOCK_AUTH_FOREGROUND_COLOR=rgb:aa/aa/aa \
-      XSECURELOCK_DISCARD_FIRST_KEYPRESS=0 \
-      xsecurelock &
-  fi
-
-  if have xautolock && have xsecurelock; then
-    xautolock -time 15 -locker 'env XSECURELOCK_PASSWORD_PROMPT=asterisks XSECURELOCK_SHOW_HOSTNAME=1 XSECURELOCK_SHOW_USERNAME=1 xsecurelock' &
-  fi
-fi
