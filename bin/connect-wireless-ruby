@@ -552,6 +552,10 @@ class Runner
     end
   end
 
+  # ssid sometimes either doesn't get set the first time or, after it is set,
+  # the interface quits working while ssid is still set to the correct value.
+  # This method tries to get the interface into a working state with the
+  # specified ssid.
   def really_set_ssid(ssid)
     loop do
       state = get_iwconfig(wireless_ifname)
@@ -561,6 +565,11 @@ class Runner
 
       puts "Resetting ssid for #{wireless_ifname}"
 
+      # Simply setting ssid does nothing.
+      # Changing ssid to another value and back also does nothing.
+      # Bringing the interface down and back up seems to reset it.
+      ChildProcessFacade.check_call(['ifconfig', wireless_ifname, 'down'])
+      ChildProcessFacade.check_call(['ifconfig', wireless_ifname, 'up'])
       ChildProcessFacade.check_call(['iwconfig', wireless_ifname, 'essid', ssid])
       sleep 1
     end
