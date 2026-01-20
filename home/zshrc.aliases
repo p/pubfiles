@@ -3,6 +3,7 @@ have() {
 }
 
 if test -n "$DISPLAY"; then
+if false; then
   if have waterfox; then
     iw() { waterfox -no-remote --ProfileManager & }
     if have iceweasel; then
@@ -15,7 +16,8 @@ if test -n "$DISPLAY"; then
   elif have firefox; then
     iw() { firefox -no-remote --ProfileManager & }
   fi
-  
+fi
+
   if have xsecurelock; then
     lock() {
       env XSECURELOCK_PASSWORD_PROMPT=asterisks XSECURELOCK_SHOW_HOSTNAME=1 XSECURELOCK_SHOW_USERNAME=1 xsecurelock
@@ -67,23 +69,13 @@ fi
 
 alias g=grep
 
-ff() {
-  find "$@" |sort
-}
-
 f() { for i in "$@"; do feh -dZFY --cache-size 128 "$i"/*; done }
 fa() { for i in "$@"; do feh -dZFY --cache-size 128 --auto-rotate "$i"/*; done }
-
-gcou() { git checkout -b "$1" --track upstream/"$1" }
 
 alias pk='pkill -f'
 
 cdiff() {
   diff "$@" |colordiff |less -R
-}
-
-gr() {
-  git reset "$@" && git checkout "$@"
 }
 
 xscite(){
