@@ -19,6 +19,9 @@ require_relative '../lib/ruby/child_process_facade'
 class Error < StandardError
 end
 
+class ConfigurationFilesMissing < Error
+end
+
 class WpaSupplicantFailed < Error
 end
 
@@ -176,6 +179,18 @@ class Runner
 
   def initialize(**opts)
     @options = opts.dup.freeze
+
+    missing_files = []
+    %i(ca_cert_path user_cert_path user_key_path).each do |key|
+      if value = options[key]
+        unless File.exist?(value)
+          missing_files << "#{key}: #{value}"
+        end
+      end
+    end
+    if missing_files.any?
+      raise ConfigurationFilesMissing, "Missing files: #{missing_files.join(', ')}"
+    end
 
     if auto?
       @keep_wired_up = !!begin
@@ -569,9 +584,12 @@ class Runner
         user_key_path: :private_key,
         user_key_password: :private_key_passwd,
       }.each do |k, mapped_k|
-      p auth_options
         if value = auth_options[k]
-        p [k,mapped_k,value]
+          if k.end_with?('_path')
+            unless File.exist?(value)
+              warn "missing file: #{value} for #{k}"
+            end
+          end
           contents << "  #{mapped_k}=\"#{value}\"\n"
         end
       end
