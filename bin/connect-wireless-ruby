@@ -350,6 +350,25 @@ class Runner
     File.umask(orig_umask & ~0444)
     begin
       ChildProcessFacade.check_call(['dhclient', '-v', ifname])
+
+      if dns_address = options[:dns_address]
+        File.open('/etc/resolv.conf', 'r+') do |f|
+          lines = []
+          IO.readlines(f).each do |line|
+            if line.start_with?('nameserver')
+              # skip
+            else
+              lines << line
+            end
+          end
+          lines << "nameserver #{dns_address}"
+          f.rewind
+          f.truncate(0)
+          lines.each do |line|
+            f << line << "\n"
+          end
+        end
+      end
     ensure
       File.umask(orig_umask)
     end
@@ -836,6 +855,12 @@ OptionParser.new do |opts|
 
   opts.on('--state-dir PATH', 'Path to state directory to use') do |v|
     options[:state_dir] = v
+  end
+
+  opts.on('--dns ADDRESS', 'Override DNS server address') do |v|
+    # This is currently implemented in a hacky way and will be overwritten
+    # back by dhclient eventually.
+    options[:dns_address] = v
   end
 end.parse!
 
