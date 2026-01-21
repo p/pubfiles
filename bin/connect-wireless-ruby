@@ -312,7 +312,18 @@ class Runner
     start_wpa_supplicant
 
     puts('Running dhclient')
-    ChildProcessFacade.check_call(['dhclient', '-v', wireless_ifname])
+    # dhclient will write /etc/resolv.conf, we need to ensure that
+    # file is world-readable.
+    # Some systems have a restrictive umask (e.g. 027) which would
+    # make resolv.conf readable only by root.
+    # Adjust the umask here.
+    orig_umask = File.umask
+    File.umask(orig_umask & ~0444)
+    begin
+      ChildProcessFacade.check_call(['dhclient', '-v', wireless_ifname])
+    ensure
+      File.umask(orig_umask)
+    end
 
     FileUtils.mkdir_p(state_dir)
     path = File.join(state_dir, 'config.json')
