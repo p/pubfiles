@@ -311,19 +311,7 @@ class Runner
 
     start_wpa_supplicant
 
-    puts('Running dhclient')
-    # dhclient will write /etc/resolv.conf, we need to ensure that
-    # file is world-readable.
-    # Some systems have a restrictive umask (e.g. 027) which would
-    # make resolv.conf readable only by root.
-    # Adjust the umask here.
-    orig_umask = File.umask
-    File.umask(orig_umask & ~0444)
-    begin
-      ChildProcessFacade.check_call(['dhclient', '-v', wireless_ifname])
-    ensure
-      File.umask(orig_umask)
-    end
+    run_dhclient(wireless_ifname)
 
     FileUtils.mkdir_p(state_dir)
     path = File.join(state_dir, 'config.json')
@@ -351,6 +339,22 @@ class Runner
     end
   end
 
+  def run_dhclient(ifname)
+    puts('Running dhclient')
+    # dhclient will write /etc/resolv.conf, we need to ensure that
+    # file is world-readable.
+    # Some systems have a restrictive umask (e.g. 027) which would
+    # make resolv.conf readable only by root.
+    # Adjust the umask here.
+    orig_umask = File.umask
+    File.umask(orig_umask & ~0444)
+    begin
+      ChildProcessFacade.check_call(['dhclient', '-v', ifname])
+    ensure
+      File.umask(orig_umask)
+    end
+  end
+
   def find_active_wired_ifname
     wired_ifnames.detect do |ifname|
       path = "/sys/class/net/#{ifname}/operstate"
@@ -371,7 +375,7 @@ class Runner
 
     ChildProcessFacade.check_call(['ifconfig', wired_ifname, 'up'])
 
-    ChildProcessFacade.check_call(['dhclient', '-v', wired_ifname])
+    run_dhclient(wired_ifname)
 
     # Assuming, should check that the connection actually worked.
     @connected = :wired
@@ -384,8 +388,7 @@ class Runner
         if need_start
           start_wpa_supplicant
           # TODO check if we already have an IP address
-          puts('Running dhclient')
-          ChildProcessFacade.check_call(['dhclient', '-v', wireless_ifname])
+          run_dhlcient(wireless_ifname)
           need_start = false
         end
 
@@ -759,7 +762,7 @@ EOT
 
     #ChildProcessFacade.uncheck_call(%w(pkill dhclient))
     Utils.pkill_exe_basename('dhclient', signal: 'KILL')
-    ChildProcessFacade.check_call(['dhclient', '-v', wireless_ifname])
+    run_dhclient(wireless_ifname)
   end
 
   # Calls `dhclient -r` to release the IP on the interaface, if any.
