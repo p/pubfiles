@@ -134,3 +134,22 @@ setup_encrypt() {
 setup_decrypt() {
   echo "$1" |openssl aes-256-cbc -d -a -pass pass:`cat /etc/setup.secret` -pbkdf2
 }
+
+add_hosts_entry() {
+  local host="$1"
+  local ip="$2"
+  
+  if test -z "$host"; then
+    echo add_hosts_entry: missing host name 1>&2
+    return 1
+  fi
+  
+  if test -z "$ip"; then
+    ip=127.0.0.1
+  fi
+  
+  line="$ip $host"
+  if ! fgrep -qx "$line" /etc/hosts; then
+    echo "$line" |tee -a /etc/hosts
+  fi
+}
