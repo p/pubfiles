@@ -8,3 +8,7 @@ https://stackoverflow.com/questions/11757477/understanding-tcpdump-filter-bit-ma
 ## Troubleshooting resolv.conf changes
 
 https://askubuntu.com/questions/819343/link-local-fe80-addresses-without-scope-make-their-way-into-etc-resolv-conf?rq=1
+
+## Tuning Initial Congestion Window Parameter
+
+https://www.cdnplanet.com/blog/tune-tcp-initcwnd-for-optimum-performance/

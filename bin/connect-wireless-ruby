@@ -4,6 +4,14 @@
 # doesn't bring up the wireless interface? run ifconfig up manually?
 
 # Inspiration: https://github.com/dmelo/vswm
+#
+# Looks to be a similar tool: https://wiki.archlinux.org/title/Netctl
+# Other network managers:
+# https://wiki.archlinux.org/title/Network_configuration#Network_managers
+#
+# Use wpa_passphrase to avoid having the passphrase in configuration files
+# in plain text:
+# https://wiki.archlinux.org/title/Wpa_supplicant#Connecting_with_wpa_passphrase
 
 autoload :Find, 'find'
 autoload :YAML, 'yaml'
