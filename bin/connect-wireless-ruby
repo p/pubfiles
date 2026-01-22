@@ -415,7 +415,7 @@ class Runner
         if need_start
           start_wpa_supplicant
           # TODO check if we already have an IP address
-          run_dhlcient(wireless_ifname)
+          run_dhclient(wireless_ifname)
           need_start = false
         end
 
