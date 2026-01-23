@@ -82,7 +82,7 @@ xscite(){
 	sed -e 's/^ *//' -e 's/[ :].*//'  |xargs scite
 }
 
-ss() {
+s() {
 	~/apps/pubfiles/script/scite-ext "$@" &
 }
 
