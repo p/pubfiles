@@ -158,5 +158,5 @@ add_sudoers_nopasswd() {
   local from_user="$1"
   local to_user="$2"
   
-  echo "$from_user ALL = ($to_user) NOPASSWD: ALL' |tee /etc/sudoers.d/"$from_user"-"$to_user"
+  echo "$from_user ALL = ($to_user) NOPASSWD: ALL" |tee /etc/sudoers.d/"$from_user"-"$to_user"
 }
