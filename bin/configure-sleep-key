@@ -6,7 +6,7 @@ set -e
 
 BASE=`dirname $0`/..
 
-. $BASE/script/common.sh
+. $BASE/lib/sh/common.sh
 
 if ! is_laptop; then
   echo 'error: not a laptop' 1>&2

@@ -15,13 +15,13 @@ chmod +x $HOME/bin/m
 # install dependencies
 
 if echo "$0" |grep -q /; then
-  BASE=`dirname "$0"`
+  BASE=`dirname "$0"`/..
 else
   echo "Cannot determine base directory" 1>&2
   exit 2
 fi
 
-. $BASE/common.sh
+. $BASE/lib/sh/common.sh
 
 # for enterprise server
 if is_ubuntu; then

@@ -19,7 +19,7 @@ else
   exit 2
 fi
 
-. $BASE/script/common.sh
+. $BASE/lib/sh/common.sh
 
 install_if_needed uxplay
 

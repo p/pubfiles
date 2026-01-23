@@ -47,7 +47,7 @@ if test -n "$1"; then
   exit 1
 fi
 
-. $BASE/script/common.sh
+. $BASE/lib/sh/common.sh
 
 install_if_needed python3-daemonize
 

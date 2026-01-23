@@ -15,12 +15,12 @@ fi
 . /etc/setup.conf
 
 if echo "$0" |grep -q /; then
-  BASE=`dirname "$0"`
+  BASE=`dirname "$0"`/..
 else
   echo "Cannot determine base directory" 1>&2
   exit 2
 fi
 
-. $BASE/common.sh
+. $BASE/lib/sh/common.sh
 
 install_if_needed simplescreenrecorder

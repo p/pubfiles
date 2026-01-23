@@ -39,13 +39,13 @@ fi
 . /etc/setup.conf
 
 if echo "$0" |grep -q /; then
-  BASE=`dirname "$0"`
+  BASE=`dirname "$0"`/..
 else
   echo "Cannot determine base directory" 1>&2
   exit 2
 fi
 
-. $BASE/common.sh
+. $BASE/lib/sh/common.sh
 
 install_sources() {
   sources_list_src="$1"
@@ -88,9 +88,9 @@ if test "$DEBIAN_FRONTEND" != noninteractive; then
 fi
 
 if is_devuan; then
- install_sources $BASE/../config/apt/devuan/$release/sources.list
+ install_sources $BASE/config/apt/devuan/$release/sources.list
 elif is_debian && ! is_ubuntu; then
- install_sources $BASE/../config/apt/debian/$release/sources.list
+ install_sources $BASE/config/apt/debian/$release/sources.list
 fi
 
 # Disable modernize sources warning
@@ -192,11 +192,11 @@ EOT
   # Installed by pm-utils
   if test -d /etc/pm/sleep.d; then
     # Force wake up laptop's screen upon resume, unsure if this is working.
-    install -m 555 -o root -g root -t /etc/pm/sleep.d $BASE/../config/pm/sleep.d/screen
+    install -m 555 -o root -g root -t /etc/pm/sleep.d $BASE/config/pm/sleep.d/screen
   fi
   
   # TODO make conditional based on system?
-  install -m 444 -o root -g root -t /etc/X11/xorg.conf.d $BASE/../config/xorg.conf.d/99-disable-touch-screen.conf
+  install -m 444 -o root -g root -t /etc/X11/xorg.conf.d $BASE/config/xorg.conf.d/99-disable-touch-screen.conf
 fi
 
 install_if_needed firmware-linux
@@ -278,7 +278,7 @@ if is_laptop; then
     install_if_needed firmware-iwlwifi
   fi
 
-  $BASE/configure-hdparm
+  $BASE/bin/configure-hdparm
 fi
 
 if true; then
@@ -310,27 +310,27 @@ for mod in bluetooth btrtl btmtk btintel btbcm btusb; do
 done |tee /etc/modprobe.d/blacklist-bluetooth.conf
 
 if is_laptop; then
-  $BASE/disable-lid-suspend
+  $BASE/bin/disable-lid-suspend
 fi
 
 if test -f /usr/bin/gtkterm2; then
   update-alternatives --set x-terminal-emulator /usr/bin/gtkterm2
 fi
 
-$BASE/configure-password-delay
-$BASE/configure-service-restart
+$BASE/bin/configure-password-delay
+$BASE/bin/configure-service-restart
 
 mkdir -p /etc/sudoers.d
-for f in $BASE/../config/sudoers.d/*; do
+for f in $BASE/config/sudoers.d/*; do
   install -m 400 "$f" /etc/sudoers.d
 done
 
-for f in "$BASE"/../config/boot.d/*; do
+for f in "$BASE"/config/boot.d/*; do
   mkdir -p /etc/boot.d
   install -m 550 -o root -g root "$f" /etc/boot.d/"$(basename "$f")"
 done
 
-install -m 444 -o root -g root "$BASE"/../config/ssh/ssh_config.d/known_hosts.conf /etc/ssh/ssh_config.d/known_hosts.conf
+install -m 444 -o root -g root "$BASE"/config/ssh/ssh_config.d/known_hosts.conf /etc/ssh/ssh_config.d/known_hosts.conf
 
 # https://www.tecmint.com/set-system-locales-in-linux/
 if have update-locale; then
@@ -349,7 +349,7 @@ if is_laptop; then
 
   if is_thinkpad; then
     install -m 444 -o root -g root -t /etc/udev/rules.d \
-      "$BASE"/../config/udev/rules.d/90-brightnessctl.rules
+      "$BASE"/config/udev/rules.d/90-brightnessctl.rules
   fi
 fi
 
@@ -361,7 +361,7 @@ tee /etc/default/grub.d/text-mode.cfg <<-EOT
 GRUB_TERMINAL=console
 EOT
 
-$BASE/restore-netif-names
+$BASE/bin/restore-netif-names
 
 # https://unix.stackexchange.com/questions/390184/dmesg-read-kernel-buffer-failed-permission-denied
 echo 'kernel.dmesg_restrict = 0' |tee /etc/sysctl.d/dmesg_permit.conf
@@ -384,7 +384,7 @@ sysctl net.ipv6.conf.all.disable_ipv6=1
 if test -f /etc/setup.conf; then
   value=`egrep '^[[:space:]]*tmp_zram=' /etc/setup.conf |awk -F = '{print $2}' |sed -Ee 's/[[:space:]]*#.*//'`
   if test -n "$value"; then
-    cat $BASE/../config/boot.d.template/tmp-zram |sed -Ee "s,^SIZE=.*,SIZE=$value," |tee /etc/boot.d/tmp-zram
+    cat $BASE/config/boot.d.template/tmp-zram |sed -Ee "s,^SIZE=.*,SIZE=$value," |tee /etc/boot.d/tmp-zram
     chmod +x /etc/boot.d/tmp-zram
   fi
 fi
@@ -401,11 +401,11 @@ fi
 
 if install_mm; then
   mkdir -p /etc/mplayer
-  install -m 444 -t /etc/mplayer $BASE/../config/mplayer/mplayer.conf
-  install -m 444 -t /etc/mplayer $BASE/../config/mplayer/input.conf
+  install -m 444 -t /etc/mplayer $BASE/config/mplayer/mplayer.conf
+  install -m 444 -t /etc/mplayer $BASE/config/mplayer/input.conf
 fi
 
-$BASE/generate-setup-key
+$BASE/bin/generate-setup-key
 
 cat <<-EOT |tee /etc/gitattributes
 *.[jJ][pP][gG] -delta
@@ -424,7 +424,7 @@ EOT
 echo 'Run sensors-detect if you haven'"'"'t to load kernel modules for hardware sersors.'
 
 if test -d /opt/pubfiles; then
-  install -m 555 -t /etc/boot.d -o root -g root $BASE/boot-as-configured
+  install -m 555 -t /etc/boot.d -o root -g root $BASE/bin/boot-as-configured
 fi
 
 if test -n "$br_users"; then
@@ -432,7 +432,7 @@ if test -n "$br_users"; then
     if ! echo $user |grep -q ^br-; then
       user=br-$user
     fi
-    $BASE/setup-$user
+    $BASE/bin/setup-$user
   done
 fi
 
@@ -445,14 +445,14 @@ if is_headful; then
 fi
 
 if is_laptop; then
-  "$BASE"/configure-sleep-key
+  "$BASE"/bin/configure-sleep-key
 fi
 
 mkdir -p /root/bin
 if test -e /root/.zshrc; then
-  if ! diff -q /root/.zshrc $BASE/../home/zshrc.root; then
-    echo "warning: /root/.zshrc exists and differs from $BASE/../home/zshrc.root /root/.zshrc, leaving alone" 1>&2
+  if ! diff -q /root/.zshrc $BASE/home/zshrc.root; then
+    echo "warning: /root/.zshrc exists and differs from $BASE/home/zshrc.root /root/.zshrc, leaving alone" 1>&2
   fi
 else
-  install -m 555 $BASE/../home/zshrc.root /root/.zshrc
+  install -m 555 $BASE/home/zshrc.root /root/.zshrc
 fi
