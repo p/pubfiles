@@ -25,6 +25,14 @@ module FsHelpers
     end.sort
   end
 
+  module_function def single_child!(path)
+    entries = entries_in_path(path)
+    if entries.length != 1
+      raise "Expected one child in #{path} but have: #{entries}"
+    end
+    File.join(path, entries.first)
+  end
+
   module_function def relativize_symlink_target(target, link_path)
     unless target.start_with?('/')
       raise "Target must be absolute: #{target}"
