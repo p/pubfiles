@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+autoload :Find, 'find'
+
 module FsHelpers
 
   def self.relativize(start, path)
@@ -73,5 +75,16 @@ module FsHelpers
       end
     end
     true
+  end
+
+  # Not disk usage - we do not account for waste in filesystem clusters
+  module_function def path_total_size(path)
+    total = 0
+    Find.find(path) do |path|
+      if File.file?(path)
+        total += File.stat(path).size
+      end
+    end
+    total
   end
 end
