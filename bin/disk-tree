@@ -6,6 +6,8 @@ require_relative '../lib/ruby/disk/io_stats'
 require_relative '../lib/ruby/disk/info'
 require_relative '../lib/ruby/format_helpers'
 
+include FormatHelpers
+
 di = Disk::Info.all
 
 disk_infos = {}

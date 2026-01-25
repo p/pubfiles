@@ -5,6 +5,8 @@ require_relative '../lib/ruby/disk/smart_info'
 require 'time'
 require 'rugged'
 
+include FormatHelpers
+
 repo = Rugged::Repository.new('.')
 
 ARGV.each do |file_path|
