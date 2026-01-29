@@ -9,3 +9,4 @@ node_modules
 .~lock.*
 .bundle
 yarn-error.log
+.claude
