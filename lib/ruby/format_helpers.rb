@@ -35,6 +35,27 @@ module FormatHelpers
     "#{"%.#{precision}f" % size} PB#{suffix}"
   end
 
+  def size_in_kb(size, suffix: nil, integer: false)
+    unit = "KB#{suffix}"
+
+    if size.respond_to?(:nan?) && size.nan?
+      return "-- #{unit}"
+    end
+
+    if size == 0
+      return "0 #{unit}"
+    end
+
+    size /= 1024.0
+
+    if integer
+      precision = 0
+    else
+      precision = [2-size.round.to_s.length, 0].max
+    end
+    return "#{"%.#{precision}f" % size} #{unit}"
+  end
+
   TIME_UNITS = [
     ['seconds', 60],
     ['minutes', 60],
