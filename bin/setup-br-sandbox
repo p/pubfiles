@@ -16,7 +16,7 @@ if test -z "$main_user"; then
 fi
 
 if test "$main_user" = me; then
-  `dirname "$0"`/setup-br-sandbox-me
+  `dirname "$0"`/setup-br sandbox 2523 me
 elif test "$main_user" = w; then
   exec `dirname "$0"`/setup-br sandbox 2523 w
 else
