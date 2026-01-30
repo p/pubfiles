@@ -5,6 +5,8 @@
 # https://superuser.com/questions/490787/reverse-lookup-of-inode-file-from-offset-in-raw-device-on-linux-and-ext3-4
 
 require 'optparse'
+require_relative '../lib/ruby/disk/info'
+require_relative '../lib/ruby/format_helpers'
 
 options = {}
 OptionParser.new do |opts|
@@ -79,8 +81,27 @@ unless block_size = options[:block_size]
   puts "Using block size: #{block_size}"
 end
 
+if options[:start_lba] && !ARGV.empty?
+  raise 'start LBA provided and block number'
+end
+
+if options[:end_lba] && !ARGV.empty?
+  raise 'start LBA provided and block number'
+end
+
+if ARGV.length > 1
+  raise NotImplementedError
+end
+
+if options[:start_lba] || options[:end_lba]
+  raise 'Should not happen'
+end
+
+options[:start_lba] = options[:end_lba] = Integer(ARGV.shift)
+
+disk_info = Disk::Info.new(device)
+
 if options[:smart_log]
-  require_relative '../lib/ruby/disk/info'
   log = Disk::Info.background_scan_log_entries(device)
   bad_lbas = log.select do |entry|
     entry.dig(:reassign_status, :value) == 1
@@ -89,9 +110,28 @@ if options[:smart_log]
   end
   puts "Bad LBAs from SMART: #{bad_lbas.join(', ')}"
 else
-  output = `badblocks -b #{block_size} #{device} #{options.fetch(:end_lba)} #{options.fetch(:start_lba)}`
+  start_lba = options.fetch(:start_lba)
+  end_lba = options.fetch(:end_lba)
+  puts "Starting at block #{start_lba} with block size of #{block_size} - #{FormatHelpers.friendly_size(start_lba * block_size)} into the disk"
+  if block_size != disk_info.block_size
+    warn "requested block size of #{block_size} but disk block size is #{disk_info.block_size}"
+    start_lba = start_lba * block_size / disk_info.block_size
+    end_lba = (end_lba * block_size / disk_info.block_size.to_f).ceil
+    warn "new limits: from #{start_lba} to #{end_lba}"
+    block_size = disk_info.block_size
+  end
+  cmd = "badblocks -b #{block_size} #{device} #{end_lba} #{start_lba}"
+  puts cmd
+  output = `#{cmd}`
   puts output
+  if $?.exitstatus != 0
+    raise 'badblocks failed'
+  end
   bad_lbas = output.split("\n").map { |v| Integer(v) }
+  if bad_lbas.none?
+    warn 'no bad blocks found'
+    exit
+  end
 end
 
 if options[:write]
