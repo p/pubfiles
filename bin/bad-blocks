@@ -10,6 +10,11 @@ options = {}
 OptionParser.new do |opts|
   opts.banner = "Usage: bad-blocks -d device [-D fs-device] block..."
 
+  opts.on('-h', '--help', 'Show usage') do
+    puts opts.help
+    exit
+  end
+
   # E.g. /dev/sda
   opts.on("-d", "--device DEVICE", "Device of physical drive") do |v|
     options[:device] = v
