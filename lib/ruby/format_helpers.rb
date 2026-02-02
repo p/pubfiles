@@ -63,14 +63,26 @@ module FormatHelpers
     ['days', 1_000_000],
   ]
 
-  def friendly_time(time)
-    TIME_UNITS.each do |(unit, max)|
-      if time < max/2
-        precision = [2-time.round.to_s.length, 0].max
+  SHORT_TIME_UNITS = [
+    ['sec', 60, 90],
+    ['min', 60, 90],
+    ['hr', 24, 36],
+    ['day', 1, 1_000_000],
+  ]
+
+  def friendly_time(time, short: false)
+    units = short ? SHORT_TIME_UNITS : TIME_UNITS
+    units.each do |(unit, divisor, max)|
+      if time < max
+        precision = if %w(sec seconds).include?(unit)
+          0
+        else
+          [2-time.round.to_s.length, 0].max
+        end
         return "#{"%.#{precision}f" % time} #{unit}"
       end
 
-      time /= max.to_f
+      time /= divisor.to_f
     end
 
     raise "Should never get here"
