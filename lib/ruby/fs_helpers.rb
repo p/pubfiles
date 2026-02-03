@@ -66,6 +66,15 @@ module FsHelpers
     end
   end
 
+  module_function def realpath_s(path)
+    path = File.realpath(path)
+    loop do
+      break unless File.symlink?(path)
+      path = File.realpath(File.join(File.dirname(path), File.readlink(path)))
+    end
+    path
+  end
+
   CHUNK_SIZE = 65536
 
   module_function def files_same_contents?(a_path, b_path)
