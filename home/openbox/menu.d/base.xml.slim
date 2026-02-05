@@ -9,24 +9,28 @@ menu#misc-menu[label="Misc"]
     action[name="Execute"]
       command
         | netbeans
+
 menu#waterfox-classic-menu[label="Waterfox Classic"]
   - browser_accounts.each do |br|
     item[label=br.name]
       action[name="Execute"]
         command
           = br.fox_command(waterfox_classic)
+
 menu#waterfox-menu[label="Waterfox"]
   - browser_accounts.each do |br|
     item[label=br.name]
       action[name="Execute"]
         command
           = br.fox_command(waterfox)
+
 menu#firefox-menu[label="Firefox"]
   - browser_accounts.each do |br|
     item[label=br.name]
       action[name="Execute"]
         command
           = br.fox_command(firefox)
+
 menu#kill-browsers-menu[label="Kill Browsers"]
   - browser_accounts.each_with_index do |br, index|
     - if index > 0
@@ -67,6 +71,7 @@ menu#kill-browsers-menu[label="Kill Browsers"]
     action[name="Execute"]
       command
         | ~/apps/pubfiles/script/kill-stuck-foxes
+
 - if have?('chromium') || have?('chrome')
   menu#chromium-menu[label="Chromium"]
     - browser_accounts.each_with_index do |br, index|
@@ -84,6 +89,7 @@ menu#kill-browsers-menu[label="Kill Browsers"]
         action[name="Execute"]
           command
             = br.fresh_chromium_command
+
 - if have?('google-chrome')
   menu#chromium-menu[label="Google Chrome"]
     - browser_accounts.each_with_index do |br, index|
@@ -101,6 +107,7 @@ menu#kill-browsers-menu[label="Kill Browsers"]
         action[name="Execute"]
           command
             = br.fresh_chromium_command('google-chrome')
+
 menu#settings-menu[label="Settings"]
   separator[label="Lock timeout"]
   - [10, 15, 30, 90].each do |interval|
@@ -110,12 +117,18 @@ menu#settings-menu[label="Settings"]
           | sh -c '\ pkill xautolock; \ exec xautolock -time 
           = interval
           |  -locker "env XSECURELOCK_PASSWORD_PROMPT=asterisks XSECURELOCK_SHOW_HOSTNAME=1 XSECURELOCK_SHOW_USERNAME=1 xsecurelock" \ '
-menu#zoom-menu[label="Zoom"]
-  item[label="Launch"]
-    action[name="Execute"]
-      command
-        | ~/apps/pubfiles/script/sudo-x zoom zoom
-  item[label="Kill"]
-    action[name="Execute"]
-      command
-        | sh -c 'pkill -9 zoom; sudo -nu zoom pkill -9 zoom'
+
+- if have?('zoom')
+  menu#zoom-menu[label="Zoom"]
+    item[label="Launch"]
+      action[name="Execute"]
+        command
+          | ~/apps/pubfiles/script/sudo-x zoom zoom
+    item[label="Kill"]
+      action[name="Execute"]
+        command
+          | sh -c 'pkill -9 zoom; sudo -nu zoom pkill -9 zoom'
+    item[label="Close Pup-ups"]
+      action[name="Execute"]
+        command
+          | sh -c 'window-list -n zoom -t -c'
