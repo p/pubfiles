@@ -12,7 +12,7 @@ options = {}
 OptionParser.new do |opts|
   opts.banner = "Usage: extract_claude_auth.rb [options]"
 
-  opts.on("-f", "--state-file FILE", "State file path for YAML output (default: ~/claude_auth.yaml)") do |file|
+  opts.on("-f", "--state-file FILE", "State file path for YAML (default: stdout for extract, stdin for restore)") do |file|
     options[:state_file] = file
   end
 
@@ -26,18 +26,21 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-OUTPUT_YAML_PATH = File.expand_path(options[:state_file] || '~/claude_auth.yaml')
-
 if options[:restore]
   # Restore mode: read YAML and merge into config
   begin
-    yaml_content = File.read(OUTPUT_YAML_PATH)
+    if options[:state_file]
+      yaml_path = File.expand_path(options[:state_file])
+      yaml_content = File.read(yaml_path)
+    else
+      yaml_content = $stdin.read
+    end
     auth_data = YAML.load(yaml_content)
-  rescue Errno::ENOENT
-    puts "Error: #{OUTPUT_YAML_PATH} not found"
+  rescue Errno::ENOENT => e
+    $stderr.puts "Error: #{e.message}"
     exit 1
   rescue Psych::SyntaxError => e
-    puts "Error parsing YAML from #{OUTPUT_YAML_PATH}: #{e.class}: #{e}"
+    $stderr.puts "Error parsing YAML: #{e.class}: #{e}"
     exit 1
   end
 
@@ -46,10 +49,10 @@ if options[:restore]
     config_content = File.read(CLAUDE_CONFIG_PATH)
     config_data = JSON.parse(config_content)
   rescue Errno::ENOENT
-    puts "Error: #{CLAUDE_CONFIG_PATH} not found"
+    $stderr.puts "Error: #{CLAUDE_CONFIG_PATH} not found"
     exit 1
   rescue JSON::ParserError => e
-    puts "Error parsing JSON from #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
+    $stderr.puts "Error parsing JSON from #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
     exit 1
   end
 
@@ -62,28 +65,28 @@ if options[:restore]
   # Write updated config back
   begin
     File.write(CLAUDE_CONFIG_PATH, JSON.pretty_generate(config_data))
-    puts "Authentication data restored successfully!"
-    puts "Updated config: #{CLAUDE_CONFIG_PATH}"
+    $stderr.puts "Authentication data restored successfully!"
+    $stderr.puts "Updated config: #{CLAUDE_CONFIG_PATH}"
   rescue => e
-    puts "Error writing config file to #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
+    $stderr.puts "Error writing config file to #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
     exit 1
   end
 
   # Display summary
-  puts "\nRestored data:"
-  puts "- API Key: #{auth_data['api_key'] ? '[RESTORED]' : '[SKIPPED]'}"
-  puts "- OAuth Account: #{auth_data['oauth_account'] ? auth_data['oauth_account']['emailAddress'] : '[SKIPPED]'}"
-  puts "- User ID: #{auth_data['user_id'] ? '[RESTORED]' : '[SKIPPED]'}"
+  $stderr.puts "\nRestored data:"
+  $stderr.puts "- API Key: #{auth_data['api_key'] ? '[RESTORED]' : '[SKIPPED]'}"
+  $stderr.puts "- OAuth Account: #{auth_data['oauth_account'] ? auth_data['oauth_account']['emailAddress'] : '[SKIPPED]'}"
+  $stderr.puts "- User ID: #{auth_data['user_id'] ? '[RESTORED]' : '[SKIPPED]'}"
 else
   # Extract mode: read config and write to YAML
   begin
     config_content = File.read(CLAUDE_CONFIG_PATH)
     config_data = JSON.parse(config_content)
   rescue Errno::ENOENT
-    puts "Error: #{CLAUDE_CONFIG_PATH} not found"
+    $stderr.puts "Error: #{CLAUDE_CONFIG_PATH} not found"
     exit 1
   rescue JSON::ParserError => e
-    puts "Error parsing JSON from #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
+    $stderr.puts "Error parsing JSON from #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
     exit 1
   end
 
@@ -95,19 +98,26 @@ else
     'custom_api_key_responses' => config_data['customApiKeyResponses']
   }
 
-  # Write to YAML file
+  # Write to YAML file or stdout
   begin
-    File.write(OUTPUT_YAML_PATH, auth_data.to_yaml)
-    puts "Authentication data extracted successfully!"
-    puts "Output saved to: #{OUTPUT_YAML_PATH}"
+    if options[:state_file]
+      yaml_path = File.expand_path(options[:state_file])
+      File.write(yaml_path, auth_data.to_yaml)
+      $stderr.puts "Authentication data extracted successfully!"
+      $stderr.puts "Output saved to: #{yaml_path}"
+    else
+      puts auth_data.to_yaml
+    end
   rescue => e
-    puts "Error writing YAML file to #{OUTPUT_YAML_PATH}: #{e.class}: #{e}"
+    $stderr.puts "Error writing YAML: #{e.class}: #{e}"
     exit 1
   end
 
-  # Display summary
-  puts "\nExtracted data:"
-  puts "- API Key: #{auth_data['api_key'] ? '[PRESENT]' : '[MISSING]'}"
-  puts "- OAuth Account: #{auth_data['oauth_account'] ? auth_data['oauth_account']['emailAddress'] : '[MISSING]'}"
-  puts "- User ID: #{auth_data['user_id'] ? '[PRESENT]' : '[MISSING]'}"
+  # Display summary (only when writing to file)
+  if options[:state_file]
+    $stderr.puts "\nExtracted data:"
+    $stderr.puts "- API Key: #{auth_data['api_key'] ? '[PRESENT]' : '[MISSING]'}"
+    $stderr.puts "- OAuth Account: #{auth_data['oauth_account'] ? auth_data['oauth_account']['emailAddress'] : '[MISSING]'}"
+    $stderr.puts "- User ID: #{auth_data['user_id'] ? '[PRESENT]' : '[MISSING]'}"
+  end
 end
