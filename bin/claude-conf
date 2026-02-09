@@ -123,13 +123,13 @@ if options[:merge]
     exit 1
   end
 
-  # Read existing config
+  # Read existing config or create new one
   begin
     config_content = File.read(CLAUDE_CONFIG_PATH)
     config_data = JSON.parse(config_content)
   rescue Errno::ENOENT
-    $stderr.puts "Error: #{CLAUDE_CONFIG_PATH} not found"
-    exit 1
+    # File doesn't exist, create empty config
+    config_data = {}
   rescue JSON::ParserError => e
     $stderr.puts "Error parsing JSON from #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
     exit 1
