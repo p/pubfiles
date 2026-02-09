@@ -74,17 +74,21 @@ fa() { for i in "$@"; do feh -dZFY --cache-size 128 --auto-rotate "$i"/*; done }
 
 alias pk='pkill -f'
 
-cdiff() {
-  diff "$@" |colordiff |less -R
-}
+if have colordiff; then
+  cdiff() {
+    diff "$@" |colordiff |less -R
+  }
+fi
 
-xscite(){
-	sed -e 's/^ *//' -e 's/[ :].*//'  |xargs scite
-}
+if have scite; then
+  xscite(){
+          sed -e 's/^ *//' -e 's/[ :].*//'  |xargs scite
+  }
 
-s() {
-	~/apps/pubfiles/script/scite-ext "$@" &
-}
+  s() {
+          ~/apps/pubfiles/script/scite-ext "$@" &
+  }
+fi
 
 p() {
 	awk "{print \$$1}"
