@@ -36,9 +36,8 @@ OptionParser.new do |opts|
     options[:sandbox] = true
   end
 
-  opts.on("-r", "--run", "Merge configuration and exec claude binary") do
+  opts.on("-r", "--run", "Merge configuration (if -f given) and exec claude binary") do
     options[:run] = true
-    options[:merge] = true
   end
 
   opts.on("-h", "--help", "Prints this help") do
@@ -48,12 +47,13 @@ OptionParser.new do |opts|
 end.parse!
 
 # Determine if we need to modify config
-needs_modification = options[:reset_install_method] || options[:theme] || options[:sandbox] || options[:merge]
+should_merge = options[:merge] || (options[:run] && options[:state_file])
+needs_modification = options[:reset_install_method] || options[:theme] || options[:sandbox] || should_merge
 
 if needs_modification
   # Read YAML data first if merging
   auth_data = nil
-  if options[:merge]
+  if should_merge
     begin
       if options[:state_file]
         yaml_path = File.expand_path(options[:state_file])
@@ -76,7 +76,7 @@ if needs_modification
     config_content = File.read(CLAUDE_CONFIG_PATH)
     config_data = JSON.parse(config_content)
   rescue Errno::ENOENT
-    if options[:merge]
+    if should_merge
       # File doesn't exist, create empty config for merge
       config_data = {}
     else
@@ -113,7 +113,7 @@ if needs_modification
   end
 
   # Handle merge
-  if options[:merge] && auth_data
+  if should_merge && auth_data
     config_data['primaryApiKey'] = auth_data['api_key'] if auth_data['api_key']
     config_data['oauthAccount'] = auth_data['oauth_account'] if auth_data['oauth_account']
     config_data['userID'] = auth_data['user_id'] if auth_data['user_id']
