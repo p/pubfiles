@@ -32,6 +32,10 @@ OptionParser.new do |opts|
     options[:theme] = theme
   end
 
+  opts.on("--sandbox", "Enable sandbox mode (--dangerously-skip-permissions) for current directory") do
+    options[:sandbox] = true
+  end
+
   opts.on("-h", "--help", "Prints this help") do
     puts opts
     exit
@@ -102,6 +106,38 @@ if options[:theme]
   end
 
   # Exit if this was the only operation requested
+  exit 0 unless options[:merge] || options[:auth] || options[:state_file] || options.key?(:sandbox)
+end
+
+# Handle sandbox option
+if options.key?(:sandbox)
+  begin
+    config_content = File.read(CLAUDE_CONFIG_PATH)
+    config_data = JSON.parse(config_content)
+  rescue Errno::ENOENT
+    $stderr.puts "Error: #{CLAUDE_CONFIG_PATH} not found"
+    exit 1
+  rescue JSON::ParserError => e
+    $stderr.puts "Error parsing JSON from #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
+    exit 1
+  end
+
+  # Set sandbox mode
+  old_value = config_data['dangerouslySkipPermissions']
+  config_data['dangerouslySkipPermissions'] = options[:sandbox]
+
+  # Write updated config back
+  begin
+    File.write(CLAUDE_CONFIG_PATH, JSON.pretty_generate(config_data))
+    $stderr.puts "Sandbox mode updated successfully!"
+    $stderr.puts "Changed: dangerouslySkipPermissions = #{old_value.inspect} -> #{options[:sandbox].inspect}"
+    $stderr.puts "Updated config: #{CLAUDE_CONFIG_PATH}"
+  rescue => e
+    $stderr.puts "Error writing config file to #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
+    exit 1
+  end
+
+  # Exit if this was the only operation requested
   exit 0 unless options[:merge] || options[:auth] || options[:state_file]
 end
 
@@ -140,6 +176,7 @@ if options[:merge]
   config_data['oauthAccount'] = auth_data['oauth_account'] if auth_data['oauth_account']
   config_data['userID'] = auth_data['user_id'] if auth_data['user_id']
   config_data['customApiKeyResponses'] = auth_data['custom_api_key_responses'] if auth_data['custom_api_key_responses']
+  config_data['hasCompletedOnboarding'] = true
 
   # Write updated config back
   begin
