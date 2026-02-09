@@ -144,18 +144,10 @@ if options[:restore]
   # Write updated config back
   begin
     File.write(CLAUDE_CONFIG_PATH, JSON.pretty_generate(config_data))
-    $stderr.puts "Data restored successfully!"
-    $stderr.puts "Updated config: #{CLAUDE_CONFIG_PATH}"
   rescue => e
     $stderr.puts "Error writing config file to #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
     exit 1
   end
-
-  # Display summary
-  $stderr.puts "\nRestored data:"
-  $stderr.puts "- API Key: #{auth_data['api_key'] ? '[RESTORED]' : '[SKIPPED]'}"
-  $stderr.puts "- OAuth Account: #{auth_data['oauth_account'] ? auth_data['oauth_account']['emailAddress'] : '[SKIPPED]'}"
-  $stderr.puts "- User ID: #{auth_data['user_id'] ? '[RESTORED]' : '[SKIPPED]'}"
 else
   # Extract mode: read config and write to YAML
   begin
