@@ -131,11 +131,22 @@ if options.key?(:sandbox)
   old_value = config_data['dangerouslySkipPermissions']
   config_data['dangerouslySkipPermissions'] = options[:sandbox]
 
+  # If --run is also given, set trust for current directory
+  if options[:run]
+    project_path = Dir.pwd
+    config_data['projects'] ||= {}
+    config_data['projects'][project_path] ||= {}
+    config_data['projects'][project_path]['hasTrustDialogAccepted'] = true
+  end
+
   # Write updated config back
   begin
     File.write(CLAUDE_CONFIG_PATH, JSON.pretty_generate(config_data))
     $stderr.puts "Sandbox mode updated successfully!"
     $stderr.puts "Changed: dangerouslySkipPermissions = #{old_value.inspect} -> #{options[:sandbox].inspect}"
+    if options[:run]
+      $stderr.puts "Set: projects[#{Dir.pwd.inspect}].hasTrustDialogAccepted = true"
+    end
     $stderr.puts "Updated config: #{CLAUDE_CONFIG_PATH}"
   rescue => e
     $stderr.puts "Error writing config file to #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
