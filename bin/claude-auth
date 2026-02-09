@@ -1,0 +1,113 @@
+#!/usr/bin/env ruby
+
+require 'json'
+require 'yaml'
+require 'optparse'
+
+# Path to the Claude configuration file
+CLAUDE_CONFIG_PATH = File.expand_path('~/.claude.json')
+
+# Parse command line options
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: extract_claude_auth.rb [options]"
+
+  opts.on("-f", "--state-file FILE", "State file path for YAML output (default: ~/claude_auth.yaml)") do |file|
+    options[:state_file] = file
+  end
+
+  opts.on("-r", "--restore", "Restore mode: merge settings from YAML file into Claude config") do
+    options[:restore] = true
+  end
+
+  opts.on("-h", "--help", "Prints this help") do
+    puts opts
+    exit
+  end
+end.parse!
+
+OUTPUT_YAML_PATH = File.expand_path(options[:state_file] || '~/claude_auth.yaml')
+
+if options[:restore]
+  # Restore mode: read YAML and merge into config
+  begin
+    yaml_content = File.read(OUTPUT_YAML_PATH)
+    auth_data = YAML.load(yaml_content)
+  rescue Errno::ENOENT
+    puts "Error: #{OUTPUT_YAML_PATH} not found"
+    exit 1
+  rescue Psych::SyntaxError => e
+    puts "Error parsing YAML from #{OUTPUT_YAML_PATH}: #{e.class}: #{e}"
+    exit 1
+  end
+
+  # Read existing config
+  begin
+    config_content = File.read(CLAUDE_CONFIG_PATH)
+    config_data = JSON.parse(config_content)
+  rescue Errno::ENOENT
+    puts "Error: #{CLAUDE_CONFIG_PATH} not found"
+    exit 1
+  rescue JSON::ParserError => e
+    puts "Error parsing JSON from #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
+    exit 1
+  end
+
+  # Merge authentication data back into config
+  config_data['primaryApiKey'] = auth_data['api_key'] if auth_data['api_key']
+  config_data['oauthAccount'] = auth_data['oauth_account'] if auth_data['oauth_account']
+  config_data['userID'] = auth_data['user_id'] if auth_data['user_id']
+  config_data['customApiKeyResponses'] = auth_data['custom_api_key_responses'] if auth_data['custom_api_key_responses']
+
+  # Write updated config back
+  begin
+    File.write(CLAUDE_CONFIG_PATH, JSON.pretty_generate(config_data))
+    puts "Authentication data restored successfully!"
+    puts "Updated config: #{CLAUDE_CONFIG_PATH}"
+  rescue => e
+    puts "Error writing config file to #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
+    exit 1
+  end
+
+  # Display summary
+  puts "\nRestored data:"
+  puts "- API Key: #{auth_data['api_key'] ? '[RESTORED]' : '[SKIPPED]'}"
+  puts "- OAuth Account: #{auth_data['oauth_account'] ? auth_data['oauth_account']['emailAddress'] : '[SKIPPED]'}"
+  puts "- User ID: #{auth_data['user_id'] ? '[RESTORED]' : '[SKIPPED]'}"
+else
+  # Extract mode: read config and write to YAML
+  begin
+    config_content = File.read(CLAUDE_CONFIG_PATH)
+    config_data = JSON.parse(config_content)
+  rescue Errno::ENOENT
+    puts "Error: #{CLAUDE_CONFIG_PATH} not found"
+    exit 1
+  rescue JSON::ParserError => e
+    puts "Error parsing JSON from #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
+    exit 1
+  end
+
+  # Extract authentication data
+  auth_data = {
+    'api_key' => config_data['primaryApiKey'],
+    'oauth_account' => config_data['oauthAccount'],
+    'user_id' => config_data['userID'],
+    'custom_api_key_responses' => config_data['customApiKeyResponses']
+  }
+
+  # Write to YAML file
+  begin
+    File.write(OUTPUT_YAML_PATH, auth_data.to_yaml)
+    puts "Authentication data extracted successfully!"
+    puts "Output saved to: #{OUTPUT_YAML_PATH}"
+  rescue => e
+    puts "Error writing YAML file to #{OUTPUT_YAML_PATH}: #{e.class}: #{e}"
+    exit 1
+  end
+
+  # Display summary
+  puts "\nExtracted data:"
+  puts "- API Key: #{auth_data['api_key'] ? '[PRESENT]' : '[MISSING]'}"
+  puts "- OAuth Account: #{auth_data['oauth_account'] ? auth_data['oauth_account']['emailAddress'] : '[MISSING]'}"
+  puts "- User ID: #{auth_data['user_id'] ? '[PRESENT]' : '[MISSING]'}"
+end
