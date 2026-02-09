@@ -130,6 +130,7 @@ if options.key?(:sandbox)
   # Set sandbox mode
   old_value = config_data['dangerouslySkipPermissions']
   config_data['dangerouslySkipPermissions'] = options[:sandbox]
+  config_data['bypassPermissionsModeAccepted'] = true
 
   # If --run is also given, set trust for current directory
   if options[:run]
@@ -144,6 +145,7 @@ if options.key?(:sandbox)
     File.write(CLAUDE_CONFIG_PATH, JSON.pretty_generate(config_data))
     $stderr.puts "Sandbox mode updated successfully!"
     $stderr.puts "Changed: dangerouslySkipPermissions = #{old_value.inspect} -> #{options[:sandbox].inspect}"
+    $stderr.puts "Set: bypassPermissionsModeAccepted = true"
     if options[:run]
       $stderr.puts "Set: projects[#{Dir.pwd.inspect}].hasTrustDialogAccepted = true"
     end
