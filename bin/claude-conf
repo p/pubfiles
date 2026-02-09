@@ -24,11 +24,50 @@ OptionParser.new do |opts|
     options[:restore] = true
   end
 
+  opts.on("--reset-install-method", "Reset the installMethod field in Claude config") do
+    options[:reset_install_method] = true
+  end
+
   opts.on("-h", "--help", "Prints this help") do
     puts opts
     exit
   end
 end.parse!
+
+# Handle reset-install-method option
+if options[:reset_install_method]
+  begin
+    config_content = File.read(CLAUDE_CONFIG_PATH)
+    config_data = JSON.parse(config_content)
+  rescue Errno::ENOENT
+    $stderr.puts "Error: #{CLAUDE_CONFIG_PATH} not found"
+    exit 1
+  rescue JSON::ParserError => e
+    $stderr.puts "Error parsing JSON from #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
+    exit 1
+  end
+
+  # Remove installMethod field
+  if config_data.key?('installMethod')
+    old_value = config_data.delete('installMethod')
+
+    # Write updated config back
+    begin
+      File.write(CLAUDE_CONFIG_PATH, JSON.pretty_generate(config_data))
+      $stderr.puts "Install method reset successfully!"
+      $stderr.puts "Removed: installMethod = #{old_value}"
+      $stderr.puts "Updated config: #{CLAUDE_CONFIG_PATH}"
+    rescue => e
+      $stderr.puts "Error writing config file to #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
+      exit 1
+    end
+  else
+    $stderr.puts "No installMethod field found in config"
+  end
+
+  # Exit if this was the only operation requested
+  exit 0 unless options[:restore] || options[:auth] || options[:state_file]
+end
 
 if options[:restore]
   # Restore mode: read YAML and merge into config
