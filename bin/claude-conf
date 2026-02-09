@@ -28,6 +28,10 @@ OptionParser.new do |opts|
     options[:reset_install_method] = true
   end
 
+  opts.on("--theme THEME", "Set theme (dark, light, dark-ansi, light-ansi, dark-colorblind, light-colorblind)") do |theme|
+    options[:theme] = theme
+  end
+
   opts.on("-h", "--help", "Prints this help") do
     puts opts
     exit
@@ -63,6 +67,38 @@ if options[:reset_install_method]
     end
   else
     $stderr.puts "No installMethod field found in config"
+  end
+
+  # Exit if this was the only operation requested
+  exit 0 unless options[:restore] || options[:auth] || options[:state_file] || options[:theme]
+end
+
+# Handle theme option
+if options[:theme]
+  begin
+    config_content = File.read(CLAUDE_CONFIG_PATH)
+    config_data = JSON.parse(config_content)
+  rescue Errno::ENOENT
+    $stderr.puts "Error: #{CLAUDE_CONFIG_PATH} not found"
+    exit 1
+  rescue JSON::ParserError => e
+    $stderr.puts "Error parsing JSON from #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
+    exit 1
+  end
+
+  # Set theme
+  old_theme = config_data['theme']
+  config_data['theme'] = options[:theme]
+
+  # Write updated config back
+  begin
+    File.write(CLAUDE_CONFIG_PATH, JSON.pretty_generate(config_data))
+    $stderr.puts "Theme updated successfully!"
+    $stderr.puts "Changed: #{old_theme.inspect} -> #{options[:theme].inspect}"
+    $stderr.puts "Updated config: #{CLAUDE_CONFIG_PATH}"
+  rescue => e
+    $stderr.puts "Error writing config file to #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
+    exit 1
   end
 
   # Exit if this was the only operation requested
