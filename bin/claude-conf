@@ -243,5 +243,9 @@ end
 
 # Handle run option
 if options[:run]
-  exec('claude')
+  if options[:sandbox]
+    exec('claude', '--dangerously-skip-permissions')
+  else
+    exec('claude')
+  end
 end
