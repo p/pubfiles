@@ -12,7 +12,7 @@ options = {}
 OptionParser.new do |opts|
   opts.banner = "Usage: extract_claude_auth.rb [options]"
 
-  opts.on("-f", "--state-file FILE", "State file path for YAML (default: stdout for extract, stdin for restore)") do |file|
+  opts.on("-f", "--state-file FILE", "State file path for YAML (default: stdout for extract, stdin for merge)") do |file|
     options[:state_file] = file
   end
 
@@ -20,8 +20,8 @@ OptionParser.new do |opts|
     options[:auth] = true
   end
 
-  opts.on("-r", "--restore", "Restore mode: merge settings from YAML file into Claude config") do
-    options[:restore] = true
+  opts.on("-m", "--merge", "Merge settings from YAML file into Claude config") do
+    options[:merge] = true
   end
 
   opts.on("--reset-install-method", "Reset the installMethod field in Claude config") do
@@ -70,7 +70,7 @@ if options[:reset_install_method]
   end
 
   # Exit if this was the only operation requested
-  exit 0 unless options[:restore] || options[:auth] || options[:state_file] || options[:theme]
+  exit 0 unless options[:merge] || options[:auth] || options[:state_file] || options[:theme]
 end
 
 # Handle theme option
@@ -102,11 +102,11 @@ if options[:theme]
   end
 
   # Exit if this was the only operation requested
-  exit 0 unless options[:restore] || options[:auth] || options[:state_file]
+  exit 0 unless options[:merge] || options[:auth] || options[:state_file]
 end
 
-if options[:restore]
-  # Restore mode: read YAML and merge into config
+if options[:merge]
+  # Merge mode: read YAML and merge into config
   begin
     if options[:state_file]
       yaml_path = File.expand_path(options[:state_file])
