@@ -587,3 +587,10 @@ says the directory in sysfs can be removed.
 ## Dropping Privileges
 
 https://blog.habets.se/2022/03/Dropping-privileges.html
+
+## sshfs
+
+Automatically reconnect:
+https://serverfault.com/questions/6709/sshfs-mount-that-survives-disconnect?rq=1
+
+-o reconnect,ServerAliveInterval=15,ServerAliveCountMax=3
