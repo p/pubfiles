@@ -119,12 +119,4 @@ else
     $stderr.puts "Error writing YAML: #{e.class}: #{e}"
     exit 1
   end
-
-  # Display summary (only when writing to file)
-  if options[:state_file] && options[:auth]
-    $stderr.puts "\nExtracted data:"
-    $stderr.puts "- API Key: #{auth_data['api_key'] ? '[PRESENT]' : '[MISSING]'}"
-    $stderr.puts "- OAuth Account: #{auth_data['oauth_account'] ? auth_data['oauth_account']['emailAddress'] : '[MISSING]'}"
-    $stderr.puts "- User ID: #{auth_data['user_id'] ? '[PRESENT]' : '[MISSING]'}"
-  end
 end
