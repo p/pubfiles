@@ -47,154 +47,79 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-# Handle reset-install-method option
-if options[:reset_install_method]
-  begin
-    config_content = File.read(CLAUDE_CONFIG_PATH)
-    config_data = JSON.parse(config_content)
-  rescue Errno::ENOENT
-    $stderr.puts "Error: #{CLAUDE_CONFIG_PATH} not found"
-    exit 1
-  rescue JSON::ParserError => e
-    $stderr.puts "Error parsing JSON from #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
-    exit 1
-  end
+# Determine if we need to modify config
+needs_modification = options[:reset_install_method] || options[:theme] || options[:sandbox] || options[:merge]
 
-  # Remove installMethod field
-  if config_data.key?('installMethod')
-    old_value = config_data.delete('installMethod')
-
-    # Write updated config back
+if needs_modification
+  # Read YAML data first if merging
+  auth_data = nil
+  if options[:merge]
     begin
-      File.write(CLAUDE_CONFIG_PATH, JSON.pretty_generate(config_data))
-      $stderr.puts "Install method reset successfully!"
-      $stderr.puts "Removed: installMethod = #{old_value}"
-      $stderr.puts "Updated config: #{CLAUDE_CONFIG_PATH}"
-    rescue => e
-      $stderr.puts "Error writing config file to #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
+      if options[:state_file]
+        yaml_path = File.expand_path(options[:state_file])
+        yaml_content = File.read(yaml_path)
+      else
+        yaml_content = $stdin.read
+      end
+      auth_data = YAML.load(yaml_content)
+    rescue Errno::ENOENT => e
+      $stderr.puts "Error: #{e.message}"
+      exit 1
+    rescue Psych::SyntaxError => e
+      $stderr.puts "Error parsing YAML: #{e.class}: #{e}"
       exit 1
     end
-  else
-    $stderr.puts "No installMethod field found in config"
   end
 
-  # Exit if this was the only operation requested
-  exit 0 unless options[:merge] || options[:auth] || options[:state_file] || options[:theme]
-end
-
-# Handle theme option
-if options[:theme]
+  # Read existing config or create new one (for merge mode)
   begin
     config_content = File.read(CLAUDE_CONFIG_PATH)
     config_data = JSON.parse(config_content)
   rescue Errno::ENOENT
-    $stderr.puts "Error: #{CLAUDE_CONFIG_PATH} not found"
-    exit 1
-  rescue JSON::ParserError => e
-    $stderr.puts "Error parsing JSON from #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
-    exit 1
-  end
-
-  # Set theme
-  old_theme = config_data['theme']
-  config_data['theme'] = options[:theme]
-
-  # Write updated config back
-  begin
-    File.write(CLAUDE_CONFIG_PATH, JSON.pretty_generate(config_data))
-    $stderr.puts "Theme updated successfully!"
-    $stderr.puts "Changed: #{old_theme.inspect} -> #{options[:theme].inspect}"
-    $stderr.puts "Updated config: #{CLAUDE_CONFIG_PATH}"
-  rescue => e
-    $stderr.puts "Error writing config file to #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
-    exit 1
-  end
-
-  # Exit if this was the only operation requested
-  exit 0 unless options[:merge] || options[:auth] || options[:state_file] || options.key?(:sandbox)
-end
-
-# Handle sandbox option
-if options.key?(:sandbox)
-  begin
-    config_content = File.read(CLAUDE_CONFIG_PATH)
-    config_data = JSON.parse(config_content)
-  rescue Errno::ENOENT
-    $stderr.puts "Error: #{CLAUDE_CONFIG_PATH} not found"
-    exit 1
-  rescue JSON::ParserError => e
-    $stderr.puts "Error parsing JSON from #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
-    exit 1
-  end
-
-  # Set sandbox mode
-  old_value = config_data['dangerouslySkipPermissions']
-  config_data['dangerouslySkipPermissions'] = options[:sandbox]
-  config_data['bypassPermissionsModeAccepted'] = true
-
-  # If --run is also given, set trust for current directory
-  if options[:run]
-    project_path = Dir.pwd
-    config_data['projects'] ||= {}
-    config_data['projects'][project_path] ||= {}
-    config_data['projects'][project_path]['hasTrustDialogAccepted'] = true
-  end
-
-  # Write updated config back
-  begin
-    File.write(CLAUDE_CONFIG_PATH, JSON.pretty_generate(config_data))
-    $stderr.puts "Sandbox mode updated successfully!"
-    $stderr.puts "Changed: dangerouslySkipPermissions = #{old_value.inspect} -> #{options[:sandbox].inspect}"
-    $stderr.puts "Set: bypassPermissionsModeAccepted = true"
-    if options[:run]
-      $stderr.puts "Set: projects[#{Dir.pwd.inspect}].hasTrustDialogAccepted = true"
-    end
-    $stderr.puts "Updated config: #{CLAUDE_CONFIG_PATH}"
-  rescue => e
-    $stderr.puts "Error writing config file to #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
-    exit 1
-  end
-
-  # Exit if this was the only operation requested
-  exit 0 unless options[:merge] || options[:auth] || options[:state_file]
-end
-
-if options[:merge]
-  # Merge mode: read YAML and merge into config
-  begin
-    if options[:state_file]
-      yaml_path = File.expand_path(options[:state_file])
-      yaml_content = File.read(yaml_path)
+    if options[:merge]
+      # File doesn't exist, create empty config for merge
+      config_data = {}
     else
-      yaml_content = $stdin.read
+      $stderr.puts "Error: #{CLAUDE_CONFIG_PATH} not found"
+      exit 1
     end
-    auth_data = YAML.load(yaml_content)
-  rescue Errno::ENOENT => e
-    $stderr.puts "Error: #{e.message}"
-    exit 1
-  rescue Psych::SyntaxError => e
-    $stderr.puts "Error parsing YAML: #{e.class}: #{e}"
-    exit 1
-  end
-
-  # Read existing config or create new one
-  begin
-    config_content = File.read(CLAUDE_CONFIG_PATH)
-    config_data = JSON.parse(config_content)
-  rescue Errno::ENOENT
-    # File doesn't exist, create empty config
-    config_data = {}
   rescue JSON::ParserError => e
     $stderr.puts "Error parsing JSON from #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
     exit 1
   end
 
-  # Merge authentication data back into config
-  config_data['primaryApiKey'] = auth_data['api_key'] if auth_data['api_key']
-  config_data['oauthAccount'] = auth_data['oauth_account'] if auth_data['oauth_account']
-  config_data['userID'] = auth_data['user_id'] if auth_data['user_id']
-  config_data['customApiKeyResponses'] = auth_data['custom_api_key_responses'] if auth_data['custom_api_key_responses']
-  config_data['hasCompletedOnboarding'] = true
+  # Handle reset-install-method
+  if options[:reset_install_method]
+    config_data.delete('installMethod')
+  end
+
+  # Handle theme
+  if options[:theme]
+    config_data['theme'] = options[:theme]
+  end
+
+  # Handle sandbox
+  if options[:sandbox]
+    config_data['dangerouslySkipPermissions'] = options[:sandbox]
+    config_data['bypassPermissionsModeAccepted'] = true
+
+    # If --run is also given, set trust for current directory
+    if options[:run]
+      project_path = Dir.pwd
+      config_data['projects'] ||= {}
+      config_data['projects'][project_path] ||= {}
+      config_data['projects'][project_path]['hasTrustDialogAccepted'] = true
+    end
+  end
+
+  # Handle merge
+  if options[:merge] && auth_data
+    config_data['primaryApiKey'] = auth_data['api_key'] if auth_data['api_key']
+    config_data['oauthAccount'] = auth_data['oauth_account'] if auth_data['oauth_account']
+    config_data['userID'] = auth_data['user_id'] if auth_data['user_id']
+    config_data['customApiKeyResponses'] = auth_data['custom_api_key_responses'] if auth_data['custom_api_key_responses']
+    config_data['hasCompletedOnboarding'] = true
+  end
 
   # Write updated config back
   begin
@@ -232,8 +157,6 @@ else
     if options[:state_file]
       yaml_path = File.expand_path(options[:state_file])
       File.write(yaml_path, auth_data.to_yaml)
-      $stderr.puts "Data extracted successfully!"
-      $stderr.puts "Output saved to: #{yaml_path}"
     else
       puts auth_data.to_yaml
     end
