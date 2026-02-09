@@ -16,6 +16,10 @@ OptionParser.new do |opts|
     options[:state_file] = file
   end
 
+  opts.on("-a", "--auth", "Export authentication-related parameters") do
+    options[:auth] = true
+  end
+
   opts.on("-r", "--restore", "Restore mode: merge settings from YAML file into Claude config") do
     options[:restore] = true
   end
@@ -65,7 +69,7 @@ if options[:restore]
   # Write updated config back
   begin
     File.write(CLAUDE_CONFIG_PATH, JSON.pretty_generate(config_data))
-    $stderr.puts "Authentication data restored successfully!"
+    $stderr.puts "Data restored successfully!"
     $stderr.puts "Updated config: #{CLAUDE_CONFIG_PATH}"
   rescue => e
     $stderr.puts "Error writing config file to #{CLAUDE_CONFIG_PATH}: #{e.class}: #{e}"
@@ -90,20 +94,23 @@ else
     exit 1
   end
 
-  # Extract authentication data
-  auth_data = {
-    'api_key' => config_data['primaryApiKey'],
-    'oauth_account' => config_data['oauthAccount'],
-    'user_id' => config_data['userID'],
-    'custom_api_key_responses' => config_data['customApiKeyResponses']
-  }
+  # Extract authentication data (only if -a option is specified)
+  auth_data = {}
+  if options[:auth]
+    auth_data = {
+      'api_key' => config_data['primaryApiKey'],
+      'oauth_account' => config_data['oauthAccount'],
+      'user_id' => config_data['userID'],
+      'custom_api_key_responses' => config_data['customApiKeyResponses']
+    }
+  end
 
   # Write to YAML file or stdout
   begin
     if options[:state_file]
       yaml_path = File.expand_path(options[:state_file])
       File.write(yaml_path, auth_data.to_yaml)
-      $stderr.puts "Authentication data extracted successfully!"
+      $stderr.puts "Data extracted successfully!"
       $stderr.puts "Output saved to: #{yaml_path}"
     else
       puts auth_data.to_yaml
@@ -114,7 +121,7 @@ else
   end
 
   # Display summary (only when writing to file)
-  if options[:state_file]
+  if options[:state_file] && options[:auth]
     $stderr.puts "\nExtracted data:"
     $stderr.puts "- API Key: #{auth_data['api_key'] ? '[PRESENT]' : '[MISSING]'}"
     $stderr.puts "- OAuth Account: #{auth_data['oauth_account'] ? auth_data['oauth_account']['emailAddress'] : '[MISSING]'}"
