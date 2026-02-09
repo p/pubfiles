@@ -36,6 +36,11 @@ OptionParser.new do |opts|
     options[:sandbox] = true
   end
 
+  opts.on("-r", "--run", "Merge configuration and exec claude binary") do
+    options[:run] = true
+    options[:merge] = true
+  end
+
   opts.on("-h", "--help", "Prints this help") do
     puts opts
     exit
@@ -223,4 +228,9 @@ else
     $stderr.puts "Error writing YAML: #{e.class}: #{e}"
     exit 1
   end
+end
+
+# Handle run option
+if options[:run]
+  exec('claude')
 end
