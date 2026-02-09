@@ -32,7 +32,7 @@ OptionParser.new do |opts|
     options[:theme] = theme
   end
 
-  opts.on("--sandbox", "Enable sandbox mode (--dangerously-skip-permissions) for current directory") do
+  opts.on("-s", "--sandbox", "Enable sandbox mode (--dangerously-skip-permissions) for current directory") do
     options[:sandbox] = true
   end
 
