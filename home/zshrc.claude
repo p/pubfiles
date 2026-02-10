@@ -1,0 +1,63 @@
+# Shell configuration for claude-* user accounts.
+
+# Claude can be installed via npm or "integrated"? Whatever they call that -
+# a fat binary.
+# Fat binary installation seems to have much shorter startup time.
+# The npm installation is straightforward to specify version of,
+# though fat binary installation probably also can be made to run a
+# specific version.
+#
+# For the npm installation, we need a copy of node, which we install
+# with n into /opt/claude/.n.
+export PATH=/opt/claude/.n/bin:$PATH
+
+# Disable all the things that can take CPU time and steal more info.
+export CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY=1                                                                                          
+export DISABLE_TELEMETRY=1                                                                                                            
+export DISABLE_AUTOUPDATER=1                                                                                                          
+export CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1       
+export CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1
+export DISABLE_ERROR_REPORTING=1
+export DISABLE_BUG_COMMAND=1
+
+export CLAUDE_CODE_THINKING_ANIMATION=simple
+
+# API key alone set via this environment variable is not sufficient.
+# And setting the API key via this environment variable + the rest of
+# claude.json configuration produces a "conflict" nagging message in claude.
+#export ANTHROPIC_API_KEY=`cat ~/.claude.api.key`
+
+# This should be the default location, we need this because we write
+# settings to this file.
+SETTINGS_FILE="$HOME/.claude/settings.json"                                                                                           
+																
+# Create .claude directory if it doesn't exist                                                                                        
+mkdir -p "$HOME/.claude"                  
+
+# Create settings.json with all prompts disabled                                                                                      
+# Note that this does not have all of the environment variable config,
+# and conversely it seems that not everything configurable via environment
+# variable has coresponding settings in the configuration file (or maybe those
+# are not documented).
+  cat > "$SETTINGS_FILE" <<'EOF'                                                                                                        
+  {                                                                                                                                     
+    "env": {                                                                                                                            
+      "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1",                                                                                       
+      "DISABLE_TELEMETRY": "1",                                                                                                         
+      "DISABLE_AUTOUPDATER": "1",                                                                                                       
+      "CLAUDE_CODE_DISABLE_BACKGROUND_TASKS": "1"                                                                                       
+    },                                                                                                                                  
+    "autoUpdates": false,                                                                                                               
+    "companyAnnouncements": []
+  }                                                                                                                                     
+EOF
+
+# Claude permissions are quite sketchy. I think they cannot be relied on for
+# protection against malware. They are useful for preventing claude from
+# running crazy commands, but at the cost of a huge number of prompts
+# that cannot all be disabled and that claude forgets settings for
+# (the "don't ask me again" kind).
+# Therefore, the idea is to run claude in sandboxes, e.g. in dedicated user
+# accounts and have multiple such user accounts, and disable all prompting
+# and rely on git rollbacks if necessary.
+c() { claude --dangerously-skip-permissions }

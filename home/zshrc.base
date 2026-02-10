@@ -10,3 +10,15 @@ zstyle :compinstall filename "$HOME/.zshrc"
 autoload -Uz compinit
 compinit
 # End of lines added by compinstall
+
+main_user=$(
+  if test -f /etc/setup.conf; then
+    . /etc/setup.conf && echo $main_user
+  else
+    echo me
+  fi
+)
+
+if test "$main_user" != `id -un`; then
+  PS1='%B%n%b@%m%% '
+fi
