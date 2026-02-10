@@ -10,7 +10,7 @@ CLAUDE_CONFIG_PATH = File.expand_path('~/.claude.json')
 # Parse command line options
 options = {}
 OptionParser.new do |opts|
-  opts.banner = "Usage: extract_claude_auth.rb [options]"
+  opts.banner = "Usage: claude-conf [options] [directory]"
 
   opts.on("-f", "--state-file FILE", "State file path for YAML (default: stdout for extract, stdin for merge)") do |file|
     options[:state_file] = file
@@ -45,6 +45,16 @@ OptionParser.new do |opts|
     exit
   end
 end.parse!
+
+# Get optional directory argument
+target_directory = ARGV[0]
+if target_directory
+  target_directory = File.expand_path(target_directory)
+  unless File.directory?(target_directory)
+    $stderr.puts "Error: '#{target_directory}' is not a valid directory"
+    exit 1
+  end
+end
 
 # Determine if we need to modify config
 should_merge = options[:merge] || (options[:run] && options[:state_file])
@@ -103,9 +113,9 @@ if needs_modification
     config_data['dangerouslySkipPermissions'] = options[:sandbox]
     config_data['bypassPermissionsModeAccepted'] = true
 
-    # If --run is also given, set trust for current directory
+    # If --run is also given, set trust for target directory
     if options[:run]
-      project_path = Dir.pwd
+      project_path = target_directory || Dir.pwd
       config_data['projects'] ||= {}
       config_data['projects'][project_path] ||= {}
       config_data['projects'][project_path]['hasTrustDialogAccepted'] = true
@@ -168,6 +178,9 @@ end
 
 # Handle run option
 if options[:run]
+  # Change to target directory if specified
+  Dir.chdir(target_directory) if target_directory
+
   if options[:sandbox]
     exec('claude', '--dangerously-skip-permissions')
   else
