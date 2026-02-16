@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Script to add a git remote called 'u' based on the origin remote
+# Converts HTTPS URLs to SSH (git@) format
+
+set -e
+
+# Check if 'u' remote already exists
+if git remote | grep -q "^u$"; then
+    echo "Remote 'u' already exists:"
+    git remote get-url u
+    exit 0
+fi
+
+# Get the origin remote URL
+if ! origin_url=$(git remote get-url origin 2>/dev/null); then
+    echo "Error: No 'origin' remote found"
+    exit 1
+fi
+
+echo "Origin URL: $origin_url"
+
+# Convert HTTPS to SSH format
+# https://github.com/user/repo.git -> git@github.com:user/repo.git
+# https://github.com/user/repo -> git@github.com:user/repo.git
+if [[ $origin_url =~ ^https?://([^/]+)/(.+)$ ]]; then
+    host="${BASH_REMATCH[1]}"
+    path="${BASH_REMATCH[2]}"
+
+    # Ensure .git suffix
+    if [[ ! $path =~ \.git$ ]]; then
+        path="${path}.git"
+    fi
+
+    new_url="git@${host}:${path}"
+
+    echo "Adding remote 'u': $new_url"
+    git remote add u "$new_url"
+    echo "Remote 'u' added successfully"
+else
+    echo "Error: Origin URL is not in HTTPS format: $origin_url"
+    exit 1
+fi
