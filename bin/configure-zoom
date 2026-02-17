@@ -107,6 +107,14 @@ crudini --set "$ZOOM_CONFIG" General enableMiniWindow false
 echo "Setting alwaysShowMeetingControls=true"
 crudini --set "$ZOOM_CONFIG" General alwaysShowMeetingControls true
 
+# Automatically join audio with computer audio
+echo "Setting zAutoJoinVoip=true"
+crudini --set "$ZOOM_CONFIG" General zAutoJoinVoip true
+
+# Mute microphone when joining meetings
+echo "Setting MuteVoipWhenJoin=true"
+crudini --set "$ZOOM_CONFIG" General MuteVoipWhenJoin true
+
 # Server configuration
 echo "Setting conf.webserver=https://zoom.us"
 crudini --set "$ZOOM_CONFIG" General conf.webserver "https://zoom.us"
