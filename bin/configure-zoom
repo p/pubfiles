@@ -145,6 +145,10 @@ crudini --set "$ZOOM_CONFIG" General captureHDCamera true
 echo "Setting newMeetingWithVideo=true"
 crudini --set "$ZOOM_CONFIG" General newMeetingWithVideo true
 
+# Hide non-video participants by default
+echo "Setting zHideNoVideoUser=true"
+crudini --set "$ZOOM_CONFIG" General zHideNoVideoUser true
+
 # Performance - Disable CEF (Chromium Embedded Framework)
 # Note: Saves RAM but disables features like whiteboard
 echo "Setting disableCef=true"
