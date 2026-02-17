@@ -155,6 +155,32 @@ crudini --set "$ZOOM_CONFIG" General newMeetingWithVideo true
 echo "Setting zHideNoVideoUser=true"
 crudini --set "$ZOOM_CONFIG" General zHideNoVideoUser true
 
+# Screen Sharing - Enable Do Not Disturb during screen sharing
+echo "Setting EnableDoNotDisturbInSharing=true"
+crudini --set "$ZOOM_CONFIG" General EnableDoNotDisturbInSharing true
+
+# Screen Sharing - Disable remote control for security
+echo "Setting DisableRemoteControl=true"
+crudini --set "$ZOOM_CONFIG" General DisableRemoteControl true
+
+# Remote Support - Disable dedicated remote support feature
+echo "Setting DisableRemoteSupport=true"
+crudini --set "$ZOOM_CONFIG" General DisableRemoteSupport true
+
+# Updates - Disable automatic updates
+echo "Setting zAutoUpdate=false"
+crudini --set "$ZOOM_CONFIG" General zAutoUpdate false
+
+echo "Setting AlwaysCheckLatestVersion=false"
+crudini --set "$ZOOM_CONFIG" General AlwaysCheckLatestVersion false
+
+echo "Setting EnableSilentAutoUpdate=false"
+crudini --set "$ZOOM_CONFIG" General EnableSilentAutoUpdate false
+
+# Zoom Apps - Disable third-party apps integration
+echo "Setting DisableZoomApps=true"
+crudini --set "$ZOOM_CONFIG" General DisableZoomApps true
+
 # Performance - Disable CEF (Chromium Embedded Framework)
 # Note: Saves RAM but disables features like whiteboard
 echo "Setting disableCef=true"
@@ -304,7 +330,7 @@ fi
 #
 # SHARING BEHAVIOR:
 # -----------------
-# EnableDoNotDisturbInSharing=true          - Silence notifications when sharing
+# EnableDoNotDisturbInSharing=true          - Silence notifications when sharing (CURRENTLY ENABLED)
 # zAutoFitWhenViewShare=true                - Auto-adjust viewing when others share
 # zAutoFullScreenWhenViewShare=true         - Auto-fullscreen when viewing shares
 #
