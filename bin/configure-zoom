@@ -23,6 +23,12 @@
 #   - Zoom must be restarted for changes to take effect
 #   - Config file location: ~/.config/zoomus.conf
 #   - For Flatpak: ~/.var/app/us.zoom.Zoom/config/zoomus.conf
+#
+# REFERENCES:
+#   Configuration options documented from:
+#   - https://gist.github.com/wallentx/4c75a2c10fd0c46f696548d9d23382d2
+#   - https://wiki.archlinux.org/title/Zoom_Meetings
+#   - https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0066626
 ################################################################################
 
 set -e  # Exit on error
@@ -173,3 +179,392 @@ if pgrep -x "zoom" > /dev/null; then
     echo "You may want to restart it now:"
     echo "  killall zoom && zoom &"
 fi
+
+################################################################################
+# ADDITIONAL CONFIGURATION OPTIONS REFERENCE
+################################################################################
+#
+# The following sections document all available Zoom configuration options.
+# These options are compiled from multiple sources:
+#
+# PRIMARY SOURCES:
+#   - Zoom Available Configuration Options (GitHub Gist)
+#     https://gist.github.com/wallentx/4c75a2c10fd0c46f696548d9d23382d2
+#     Comprehensive list of Zoom config keys for Windows, macOS, and Linux
+#
+#   - Zoom Meetings - ArchWiki
+#     https://wiki.archlinux.org/title/Zoom_Meetings
+#     Linux-specific configuration and troubleshooting
+#
+#   - Zoom Support - Troubleshooting log for Linux
+#     https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0066626
+#     Official Zoom documentation for Linux client
+#
+# To add any option below to the script, use:
+#   crudini --set "$ZOOM_CONFIG" General <option> <value>
+#
+################################################################################
+# ADDITIONAL VIDEO/CAMERA OPTIONS AVAILABLE
+################################################################################
+#
+# The following options can be added to the script if needed.
+# Add them using: crudini --set "$ZOOM_CONFIG" General <option> <value>
+#
+# VIDEO ON/OFF SETTINGS:
+# ----------------------
+# zDisableVideo=true               - Automatically turn off camera when joining
+# zDisableSendVideo=true           - Disable sending video
+# zDisableRecvVideo=true           - Disable receiving video
+#
+# VIDEO QUALITY:
+# --------------
+# zUse720PByDefault=true           - Use HD video (720p) in meetings
+# captureHDCamera=true             - Capture HD camera (CURRENTLY ENABLED)
+# newMeetingWithVideo=true         - Start new meetings with video (CURRENTLY ENABLED)
+#
+# CAMERA PREVIEW:
+# ---------------
+# AlwaysShowVideoPreviewDialog=true - Always show video preview when joining
+#
+# VIDEO APPEARANCE:
+# -----------------
+# EnableFaceBeauty=true            - Enable "Touch up my appearance" filter
+# EnableMirrorEffect=true          - Mirror your video
+# EnableAutoLightAdaption=true     - Auto adjust for low-light
+# EnableLightAdaption=true         - Enable low-light adjustment setting
+#
+# BACKGROUND & FILTERS:
+# ---------------------
+# DisableVideoFilters=true         - Disable video filters feature
+# DisableVirtualBkgnd=true         - Disable virtual background feature
+# EnableAutoReverseVirtualBkgnd=true - Auto-reverse virtual background after meeting
+#
+# GALLERY VIEW:
+# -------------
+# Enable49Video=true               - Display up to 49 participants in Gallery View
+# zHideNoVideoUser=true            - Hide non-video participants (CURRENTLY ENABLED)
+# DefaultUsePortraitView=true      - Default to portrait mode on launch
+#
+# ADVANCED VIDEO:
+# ---------------
+# VideoRenderMethod=Auto           - Rendering method (Auto/Direct3D11/Direct3D9/GDI)
+# EnableSpotlightSelf=true         - Show yourself as active speaker when speaking
+#
+# AUDIO OPTIONS:
+# ---------------
+#
+# AUTO-JOIN & CONNECTION:
+# -----------------------
+# zAutoJoinVoip=true                        - Auto-join with computer audio (CURRENTLY ENABLED)
+# DisableComputerAudio=true                 - Disable computer audio option entirely
+# DisableAudioOverProxy=true                - Prevent audio traffic over proxies
+#
+# MICROPHONE SETTINGS:
+# --------------------
+# MuteVoipWhenJoin=true                     - Start muted when joining (CURRENTLY ENABLED)
+# MuteWhenLockScreen=true                   - Auto-mute when screen locks
+# AudioAutoAdjust=true                      - Automatically adjust microphone volume
+# SetUseSystemDefaultMicForVOIP=true        - Use default system microphone
+# SetSuppressBackgroundNoiseLevel=Auto      - Background noise suppression (Auto/Low/Medium/High)
+#
+# SPEAKER SETTINGS:
+# -----------------
+# SetUseSystemDefaultSpeakerForVOIP=true    - Use default system speakers
+#
+# AUDIO SHARING:
+# --------------
+# EnableShareAudio=true                     - Enable share computer audio option when sharing screen
+#
+# HID DEVICE CONTROL:
+# -------------------
+# EnableHIDControl=true                     - Enable HID control of USB devices (headsets, etc.)
+#
+# SYSTEM AUDIO:
+# -------------
+# system.audio.type=default                 - Specify audio system (default or ALSA on Linux)
+#
+################################################################################
+# SCREEN SHARING OPTIONS:
+################################################################################
+#
+# ENABLE/DISABLE SHARING:
+# -----------------------
+# DisableScreenShare=true                   - Prevent screen sharing (receiving still works)
+# DisableDesktopShare=true                  - Remove desktop sharing option
+# DisableDirectShare=true                   - Disable Zoom Rooms direct share
+# DisableWhiteboard=true                    - Disable whiteboard feature
+# zDisableAnnotation=true                   - Remove annotation capability
+#
+# SHARING OPTIMIZATION:
+# ---------------------
+# EnableHardwareOptimizeVideoSharing=true   - Use GPU acceleration for video sharing
+# EnableShareVideo=true                     - Enable video optimization when sharing
+# LegacyCaptureMode=true                    - Disable GPU acceleration
+# SetScreenCaptureMode=value                - Select capture method
+#
+# SHARING BEHAVIOR:
+# -----------------
+# EnableDoNotDisturbInSharing=true          - Silence notifications when sharing
+# zAutoFitWhenViewShare=true                - Auto-adjust viewing when others share
+# zAutoFullScreenWhenViewShare=true         - Auto-fullscreen when viewing shares
+#
+# REMOTE CONTROL:
+# ---------------
+# DisableRemoteControl=true                 - Disable remote control feature
+# DisableRemoteSupport=true                 - Disable remote support feature
+# EnableShareClipboardWhenRemoteControl=true - Allow clipboard access during remote control
+# zRemoteControllAllApp=true                - Allow controlling all applications
+#
+# SLIDE CONTROL:
+# --------------
+# DisableSlideControl=true                  - Disable slide control feature
+#
+# NETWORK:
+# --------
+# DisableSharingOverProxy=true              - Block sharing over proxies
+#
+################################################################################
+# RECORDING OPTIONS:
+################################################################################
+#
+# RECORDING LOCATION:
+# -------------------
+# RecordPath=/path/to/recordings            - Set default recording location
+#
+# RECORDING TYPES:
+# ----------------
+# zDisableLocalRecord=true                  - Disable local device recording
+# zDisableCMR=true                          - Disable cloud recording
+#
+################################################################################
+# CHAT & MESSAGING OPTIONS:
+################################################################################
+#
+# IN-MEETING CHAT:
+# ----------------
+# zDisableChat=true                         - Disable in-meeting messaging
+# zDisableFT=true                           - Disable file transfer in meetings
+# DisableMeeting3rdPartyFileStorage=true    - Disable in-meeting 3rd party file transfer
+# DisableLinkPreviewInChat=true             - Disable link previews in chat
+#
+# ZOOM CHAT/TEAM CHAT:
+# --------------------
+# MuteIMNotificationWhenInMeeting=true      - Mute chat notifications during meetings
+# PlaySoundForIMMessage=true                - Audio alert for chat messages
+# ShowIMMessagePreview=true                 - Allow message previews
+# ShowProfilePhotosInChat=true              - Display user photos in chat
+# ShowVideoMessageButton=true               - Enable video messages
+# ShowVoiceMessageButton=true               - Enable voice messages
+# SetMessengerDoNotDropThread=true          - Move new replies to bottom
+#
+################################################################################
+# MEETING BEHAVIOR OPTIONS:
+################################################################################
+#
+# JOINING/LEAVING:
+# ----------------
+# ConfirmWhenLeave=true                     - Confirm before exiting meeting
+# FullScreenWhenJoin=true                   - Enter fullscreen automatically on join
+# AlwaysShowVideoPreviewDialog=true         - Always show video preview when joining
+#
+# MEETING CONTROLS:
+# -----------------
+# alwaysShowMeetingControls=true            - Keep controls visible (CURRENTLY ENABLED)
+# enableMiniWindow=false                    - Disable mini window overlay (CURRENTLY DISABLED)
+#
+# DISPLAY OPTIONS:
+# ----------------
+# zDualMonitorOn=true                       - Enable dual monitor mode
+# ShowConnectedTime=true                    - Display connection duration
+#
+# INTERACTIVE FEATURES:
+# ---------------------
+# DisableMeetingReactions=true              - Disable emoji reactions in meetings
+# DisableWebinarReactions=true              - Disable reactions in webinars
+# DisableNonVerbalFeedback=true             - Disable feedback options (raise hand, etc.)
+# DisableClosedCaptioning=true              - Disable closed captioning
+# DisableManualClosedCaptioning=true        - Disable user-entered captions
+# DisableQnA=true                           - Disable Q&A feature in webinars
+#
+# BREAKOUT ROOMS:
+# ---------------
+# DisableBroadcastBOMessage=true            - Disable breakout room broadcasts
+#
+################################################################################
+# SECURITY & AUTHENTICATION OPTIONS:
+################################################################################
+#
+# SIGN-IN REQUIREMENTS:
+# ---------------------
+# EnforceSignInToJoin=true                  - Require authentication before joining
+# EnforceAppSignInToJoin=true               - Require app sign-in to join
+# KeepSignedIn=true                         - Maintain session upon relaunching
+#
+# SSO CONFIGURATION:
+# ------------------
+# ForceSSOURL=https://sso.example.com       - Set and lock default SSO URL
+# zSSOHost=https://sso.example.com          - Set default SSO URL
+# zAutoSSOLogin=true                        - Default to SSO authentication
+# EnableEmbedBrowserForSSO=true             - Use embedded browser for SSO
+# DisableAutoLaunchSSO=true                 - Prevent auto-launching previous SSO URL
+#
+# LOGIN METHODS:
+# --------------
+# DisableLoginWithEmail=true                - Remove email login option
+# NoFacebook=true                           - Remove Facebook login
+# NoGoogle=true                             - Remove Google login
+# NoSSO=true                                - Remove SSO login
+# DisableKeepSignedInWithFacebook=true      - Require fresh Facebook login
+# DisableKeepSignedInWithGoogle=true        - Require fresh Google login
+# DisableKeepSignedInWithSSO=true           - Require fresh SSO login
+# EnableAppleLogin=true                     - Enable Apple login
+# EnableAlipayLogin=true                    - Enable Alipay login
+# EnablePhoneLogin=true                     - Enable phone login
+# EnableWeChatLogin=true                    - Enable WeChat login
+# EnableQQLogin=true                        - Enable QQ login
+#
+# DOMAIN & ACCOUNT:
+# -----------------
+# Login_Domain=company.com                  - Specify permitted email domains
+# Account=AccountID1;AccountID2             - Restrict client to specified accounts
+# SetWebDomain=zoom.us                      - Configure web domain for login/joining
+#
+# DEVICE POLICY:
+# --------------
+# SetDevicePolicyToken=token                - Require internal meeting authentication
+# EmbedDeviceTag=device123                  - Append device identifier to HTTP requests
+#
+################################################################################
+# NETWORK & PROXY OPTIONS:
+################################################################################
+#
+# PROXY CONFIGURATION:
+# --------------------
+# conf.webserver=https://zoom.us            - Zoom server URL (CURRENTLY ENABLED)
+# ProxyServer=proxy.example.com:8080        - Set proxy server
+# ProxyPAC=http://proxy.example.com/pac     - Set PAC file URL
+# ProxyBypass=*.local;*.internal            - Bypass proxy for specific domains
+#
+# BANDWIDTH:
+# ----------
+# BandwidthLimitUp=1024                     - Set upload bandwidth limit (kbps)
+# BandwidthLimitDown=2048                   - Set download bandwidth limit (kbps)
+# IgnoreBandwidthLimits=true                - Override web restrictions
+#
+# NETWORK RESTRICTIONS:
+# ---------------------
+# DisableAudioOverProxy=true                - Prevent audio over proxies
+# DisableVideoOverProxy=true                - Prevent video over proxies
+# DisableDirectConnection2Web=true          - Block direct web connections
+#
+# SSL/TLS:
+# --------
+# BlockUntrustedSSLCert=true                - Block untrusted certificates
+# DisableCertPin=true                       - Disable certificate pinning
+#
+################################################################################
+# UPDATES & INSTALLATION OPTIONS:
+################################################################################
+#
+# AUTO-UPDATE:
+# ------------
+# zAutoUpdate=true                          - Enable user-initiated updates
+# AlwaysCheckLatestVersion=true             - Prompt for updates if available
+# EnableSilentAutoUpdate=true               - Install updates silently
+# SetUpdatingChannel=Slow                   - Control update frequency (Slow/Fast)
+#
+# INSTALLATION:
+# -------------
+# DisableDaemonInstall=true                 - Control 32-to-64-bit upgrades
+# SetEnrollToken4CloudMDM=token             - Enroll in device management
+#
+################################################################################
+# ZOOM APPS & INTEGRATIONS:
+################################################################################
+#
+# ZOOM APPS:
+# ----------
+# DisableZoomApps=true                      - Hide Zoom Apps button
+# DisableZoomAppsGuestAccess=true           - Control guest app access
+#
+# ZOOM ROOMS:
+# -----------
+# EnableStartMeetingWithRoomSystem=true     - Display room system button
+#
+# ZOOM PHONE:
+# -----------
+# EnableLaunchApp4IncomingCalls=true        - Launch app for incoming calls
+# SetCommand4IncomingCalls=url              - Configure incoming call URL
+# HidePhoneInComingCallWhileInMeeting=true  - Suppress call notifications in meetings
+#
+################################################################################
+# UI & APPEARANCE OPTIONS:
+################################################################################
+#
+# THEME & DISPLAY:
+# ----------------
+# useSystemTheme=true                       - Use system theme
+# GeoLocale=system                          - Geographic location (CURRENTLY ENABLED)
+# SensitiveInfoMaskOn=true                  - Hide sensitive information (CURRENTLY ENABLED)
+# forceEnableTrayIcon=true                  - Force tray icon display
+#
+# SCALING:
+# --------
+# scaleFactor=1.5                           - UI scale factor
+# autoScale=true                            - Automatic UI scaling
+#
+# LAYOUT:
+# -------
+# chatListPanelLastWidth=250                - Chat panel width
+# asBarTopMargin=10                         - Top margin for bar
+#
+# WAYLAND:
+# --------
+# enableWaylandShare=true                   - Enable Wayland screen share (AUTO-DETECTED)
+# xwayland=false                            - Disable XWayland (AUTO-DETECTED if on Wayland)
+# enableScreenSaveGuard=true                - Screen saver integration
+#
+################################################################################
+# GOVERNMENT/COMPLIANCE OPTIONS (Zoom for Government):
+################################################################################
+#
+# CLOUD SWITCHING:
+# ----------------
+# EnableCloudSwitch=true                    - Toggle between Zoom commercial and Zoom for Gov
+#
+# INTERCLOUD RESTRICTIONS:
+# ------------------------
+# Intercloud_DisableAllFeatures=true        - Restrict to audio/video only
+# Intercloud_DisableAnnotation=true         - Disable annotation
+# Intercloud_DisableClosedCaptioning=true   - Disable closed captioning
+# Intercloud_DisableComputerAudio=true      - Disable computer audio
+# Intercloud_DisableMeetingChat=true        - Disable meeting chat
+# Intercloud_DisableMeetingFileTransfer=true - Disable file transfer
+# Intercloud_DisableMeetingPolls=true       - Disable polls
+# Intercloud_DisableLocalRecording=true     - Disable local recording
+# Intercloud_DisableRemoteControl=true      - Disable remote control
+# Intercloud_DisableShareScreen=true        - Disable screen sharing
+# Intercloud_DisableWhiteBoard=true         - Disable whiteboard
+# Intercloud_DisableMeetingReactions=true   - Disable reactions
+# OverrideEnforceSigninIntercloud=true      - Allow unauthenticated ZfG joins
+#
+################################################################################
+# ADVANCED/MISCELLANEOUS OPTIONS:
+################################################################################
+#
+# USER AGENT:
+# -----------
+# EmbedUserAgentString=CustomAgent/1.0      - Customize user agent string
+#
+# PERFORMANCE:
+# ------------
+# disableCef=true                           - Disable CEF/webview (CURRENTLY ENABLED)
+# enableAlphaBuffer=true                    - Enable alpha buffer
+# enableGPUEnhancement=true                 - Enable GPU enhancement
+#
+# LOGGING:
+# --------
+# enableLog=false                           - Enable logging (CONFIGURABLE via -l flag)
+# logLevel=info                             - Logging level (info/debug/error)
+#
+################################################################################
