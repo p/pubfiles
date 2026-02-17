@@ -60,4 +60,6 @@ EOF
 # Therefore, the idea is to run claude in sandboxes, e.g. in dedicated user
 # accounts and have multiple such user accounts, and disable all prompting
 # and rely on git rollbacks if necessary.
-c() { claude --dangerously-skip-permissions }
+c() {
+  /opt/claude/bin/claude-conf -rsmf ~/.claude-auth.yml --theme dark-ansi
+}
