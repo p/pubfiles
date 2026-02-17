@@ -1,0 +1,163 @@
+#!/bin/bash
+################################################################################
+# Zoom Linux Configuration Script
+#
+# This script configures Zoom settings programmatically on Linux systems.
+# It disables the mini window feature and sets other UI preferences.
+#
+# PREREQUISITES:
+#   - crudini: INI file manipulation tool
+#     Install on Ubuntu/Debian: sudo apt-get install crudini
+#     Install on Fedora/RHEL:   sudo dnf install crudini
+#     Install on Arch:          sudo pacman -S crudini
+#
+# USAGE:
+#   ./configure-zoom.sh [OPTIONS]
+#
+# OPTIONS:
+#   -l    Enable logging (disabled by default)
+#         Logs saved to: ~/.zoom/logs/
+#   -h    Show this help message
+#
+# NOTE:
+#   - Zoom must be restarted for changes to take effect
+#   - Config file location: ~/.config/zoomus.conf
+#   - For Flatpak: ~/.var/app/us.zoom.Zoom/config/zoomus.conf
+################################################################################
+
+set -e  # Exit on error
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Configuration file path
+ZOOM_CONFIG="${HOME}/.config/zoomus.conf"
+
+# Default options
+ENABLE_LOGGING=false
+
+# Show usage
+usage() {
+    cat << EOF
+Zoom Linux Configuration Script
+
+USAGE:
+    $0 [OPTIONS]
+
+OPTIONS:
+    -l    Enable logging (disabled by default)
+          Logs saved to: ~/.zoom/logs/
+    -h    Show this help message
+
+EXAMPLE:
+    $0         # Configure without logging
+    $0 -l      # Configure with logging enabled
+
+EOF
+    exit 0
+}
+
+# Parse command line options
+while getopts "lh" opt; do
+    case $opt in
+        l)
+            ENABLE_LOGGING=true
+            ;;
+        h)
+            usage
+            ;;
+        \?)
+            echo -e "${RED}Invalid option: -$OPTARG${NC}" >&2
+            echo "Use -h for help"
+            exit 1
+            ;;
+    esac
+done
+
+# Check if crudini is installed
+if ! command -v crudini &> /dev/null; then
+    echo -e "${RED}Error: crudini is not installed${NC}"
+    echo "Please install crudini first:"
+    echo "  Ubuntu/Debian: sudo apt-get install crudini"
+    echo "  Fedora/RHEL:   sudo dnf install crudini"
+    echo "  Arch:          sudo pacman -S crudini"
+    exit 1
+fi
+
+# Create config directory if it doesn't exist
+mkdir -p "$(dirname "$ZOOM_CONFIG")"
+
+# Create config file if it doesn't exist
+if [ ! -f "$ZOOM_CONFIG" ]; then
+    echo -e "${YELLOW}Config file not found. Creating new file...${NC}"
+    echo "[General]" > "$ZOOM_CONFIG"
+fi
+
+echo "Configuring Zoom settings in: $ZOOM_CONFIG"
+echo "----------------------------------------"
+
+# Disable Mini Window
+echo "Setting enableMiniWindow=false"
+crudini --set "$ZOOM_CONFIG" General enableMiniWindow false
+
+# Always show meeting controls
+echo "Setting alwaysShowMeetingControls=true"
+crudini --set "$ZOOM_CONFIG" General alwaysShowMeetingControls true
+
+# Server configuration
+echo "Setting conf.webserver=https://zoom.us"
+crudini --set "$ZOOM_CONFIG" General conf.webserver "https://zoom.us"
+
+# Logging (only enable if requested)
+if [ "$ENABLE_LOGGING" = true ]; then
+    echo "Setting enableLog=true"
+    crudini --set "$ZOOM_CONFIG" General enableLog true
+    echo "Setting logLevel=info"
+    crudini --set "$ZOOM_CONFIG" General logLevel info
+    echo -e "${YELLOW}Note: Logs will be saved to ~/.zoom/logs/${NC}"
+else
+    echo "Setting enableLog=false (use -l to enable)"
+    crudini --set "$ZOOM_CONFIG" General enableLog false
+fi
+
+# UI Settings
+echo "Setting GeoLocale=system"
+crudini --set "$ZOOM_CONFIG" General GeoLocale system
+
+echo "Setting SensitiveInfoMaskOn=true"
+crudini --set "$ZOOM_CONFIG" General SensitiveInfoMaskOn true
+
+# Video Settings
+echo "Setting captureHDCamera=true"
+crudini --set "$ZOOM_CONFIG" General captureHDCamera true
+
+echo "Setting newMeetingWithVideo=true"
+crudini --set "$ZOOM_CONFIG" General newMeetingWithVideo true
+
+# Performance - Disable CEF (Chromium Embedded Framework)
+# Note: Saves RAM but disables features like whiteboard
+echo "Setting disableCef=true"
+crudini --set "$ZOOM_CONFIG" General disableCef true
+
+# Wayland support (detect if running Wayland)
+if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
+    echo "Wayland detected - enabling Wayland screen share"
+    crudini --set "$ZOOM_CONFIG" General enableWaylandShare true
+    crudini --set "$ZOOM_CONFIG" General xwayland false
+fi
+
+echo "----------------------------------------"
+echo -e "${GREEN}Zoom configuration completed successfully!${NC}"
+echo ""
+echo "IMPORTANT: Please restart Zoom for changes to take effect."
+echo ""
+
+# Check if Zoom is currently running
+if pgrep -x "zoom" > /dev/null; then
+    echo -e "${YELLOW}Warning: Zoom is currently running.${NC}"
+    echo "You may want to restart it now:"
+    echo "  killall zoom && zoom &"
+fi
