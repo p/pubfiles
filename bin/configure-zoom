@@ -384,8 +384,8 @@ fi
 #
 # REMOTE CONTROL:
 # ---------------
-# DisableRemoteControl=true                 - Disable remote control feature
-# DisableRemoteSupport=true                 - Disable remote support feature
+# DisableRemoteControl=true                 - Disable remote control feature (CURRENTLY ENABLED)
+# DisableRemoteSupport=true                 - Disable remote support feature (CURRENTLY ENABLED)
 # EnableShareClipboardWhenRemoteControl=true - Allow clipboard access during remote control
 # zRemoteControllAllApp=true                - Allow controlling all applications
 #
@@ -542,9 +542,9 @@ fi
 #
 # AUTO-UPDATE:
 # ------------
-# zAutoUpdate=true                          - Enable user-initiated updates
-# AlwaysCheckLatestVersion=true             - Prompt for updates if available
-# EnableSilentAutoUpdate=true               - Install updates silently
+# zAutoUpdate=true                          - Enable user-initiated updates (CURRENTLY DISABLED)
+# AlwaysCheckLatestVersion=true             - Prompt for updates if available (CURRENTLY DISABLED)
+# EnableSilentAutoUpdate=true               - Install updates silently (CURRENTLY DISABLED)
 # SetUpdatingChannel=Slow                   - Control update frequency (Slow/Fast)
 #
 # INSTALLATION:
@@ -558,7 +558,7 @@ fi
 #
 # ZOOM APPS:
 # ----------
-# DisableZoomApps=true                      - Hide Zoom Apps button
+# DisableZoomApps=true                      - Hide Zoom Apps button (CURRENTLY ENABLED)
 # DisableZoomAppsGuestAccess=true           - Control guest app access
 #
 # ZOOM ROOMS:
