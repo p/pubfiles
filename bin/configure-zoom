@@ -105,7 +105,11 @@ fi
 echo "Configuring Zoom settings in: $ZOOM_CONFIG"
 echo "----------------------------------------"
 
-# Disable Mini Window
+# =============================================================================
+# MEETING CONTROLS
+# =============================================================================
+
+# Disable mini window overlay
 echo "Setting enableMiniWindow=false"
 crudini --set "$ZOOM_CONFIG" General enableMiniWindow false
 
@@ -113,19 +117,87 @@ crudini --set "$ZOOM_CONFIG" General enableMiniWindow false
 echo "Setting alwaysShowMeetingControls=true"
 crudini --set "$ZOOM_CONFIG" General alwaysShowMeetingControls true
 
-# Automatically join audio with computer audio
+# =============================================================================
+# AUDIO SETTINGS
+# =============================================================================
+
+# Auto-join with computer audio
 echo "Setting zAutoJoinVoip=true"
 crudini --set "$ZOOM_CONFIG" General zAutoJoinVoip true
 
-# Mute microphone when joining meetings
+# Start muted when joining
 echo "Setting MuteVoipWhenJoin=true"
 crudini --set "$ZOOM_CONFIG" General MuteVoipWhenJoin true
 
-# Server configuration
+# =============================================================================
+# VIDEO SETTINGS
+# =============================================================================
+
+# Capture HD camera
+echo "Setting captureHDCamera=true"
+crudini --set "$ZOOM_CONFIG" General captureHDCamera true
+
+# Start meetings with video enabled
+echo "Setting newMeetingWithVideo=true"
+crudini --set "$ZOOM_CONFIG" General newMeetingWithVideo true
+
+# Hide non-video participants
+echo "Setting zHideNoVideoUser=true"
+crudini --set "$ZOOM_CONFIG" General zHideNoVideoUser true
+
+# =============================================================================
+# SCREEN SHARING & REMOTE CONTROL
+# =============================================================================
+
+# Enable Do Not Disturb during screen sharing
+echo "Setting EnableDoNotDisturbInSharing=true"
+crudini --set "$ZOOM_CONFIG" General EnableDoNotDisturbInSharing true
+
+# Disable remote control for security
+echo "Setting DisableRemoteControl=true"
+crudini --set "$ZOOM_CONFIG" General DisableRemoteControl true
+
+# Disable remote support feature
+echo "Setting DisableRemoteSupport=true"
+crudini --set "$ZOOM_CONFIG" General DisableRemoteSupport true
+
+# =============================================================================
+# UPDATES
+# =============================================================================
+
+# Disable user-initiated updates
+echo "Setting zAutoUpdate=false"
+crudini --set "$ZOOM_CONFIG" General zAutoUpdate false
+
+# Disable update version checking
+echo "Setting AlwaysCheckLatestVersion=false"
+crudini --set "$ZOOM_CONFIG" General AlwaysCheckLatestVersion false
+
+# Disable silent auto-updates
+echo "Setting EnableSilentAutoUpdate=false"
+crudini --set "$ZOOM_CONFIG" General EnableSilentAutoUpdate false
+
+# =============================================================================
+# INTEGRATIONS
+# =============================================================================
+
+# Disable Zoom Apps (third-party integrations)
+echo "Setting DisableZoomApps=true"
+crudini --set "$ZOOM_CONFIG" General DisableZoomApps true
+
+# =============================================================================
+# NETWORK & SERVER
+# =============================================================================
+
+# Set Zoom server URL
 echo "Setting conf.webserver=https://zoom.us"
 crudini --set "$ZOOM_CONFIG" General conf.webserver "https://zoom.us"
 
-# Logging (only enable if requested)
+# =============================================================================
+# LOGGING
+# =============================================================================
+
+# Logging (only enable if requested via -l flag)
 if [ "$ENABLE_LOGGING" = true ]; then
     echo "Setting enableLog=true"
     crudini --set "$ZOOM_CONFIG" General enableLog true
@@ -137,56 +209,32 @@ else
     crudini --set "$ZOOM_CONFIG" General enableLog false
 fi
 
-# UI Settings
+# =============================================================================
+# UI & APPEARANCE
+# =============================================================================
+
+# Set geographic locale
 echo "Setting GeoLocale=system"
 crudini --set "$ZOOM_CONFIG" General GeoLocale system
 
+# Mask sensitive information
 echo "Setting SensitiveInfoMaskOn=true"
 crudini --set "$ZOOM_CONFIG" General SensitiveInfoMaskOn true
 
-# Video Settings
-echo "Setting captureHDCamera=true"
-crudini --set "$ZOOM_CONFIG" General captureHDCamera true
+# =============================================================================
+# PERFORMANCE
+# =============================================================================
 
-echo "Setting newMeetingWithVideo=true"
-crudini --set "$ZOOM_CONFIG" General newMeetingWithVideo true
-
-# Hide non-video participants by default
-echo "Setting zHideNoVideoUser=true"
-crudini --set "$ZOOM_CONFIG" General zHideNoVideoUser true
-
-# Screen Sharing - Enable Do Not Disturb during screen sharing
-echo "Setting EnableDoNotDisturbInSharing=true"
-crudini --set "$ZOOM_CONFIG" General EnableDoNotDisturbInSharing true
-
-# Screen Sharing - Disable remote control for security
-echo "Setting DisableRemoteControl=true"
-crudini --set "$ZOOM_CONFIG" General DisableRemoteControl true
-
-# Remote Support - Disable dedicated remote support feature
-echo "Setting DisableRemoteSupport=true"
-crudini --set "$ZOOM_CONFIG" General DisableRemoteSupport true
-
-# Updates - Disable automatic updates
-echo "Setting zAutoUpdate=false"
-crudini --set "$ZOOM_CONFIG" General zAutoUpdate false
-
-echo "Setting AlwaysCheckLatestVersion=false"
-crudini --set "$ZOOM_CONFIG" General AlwaysCheckLatestVersion false
-
-echo "Setting EnableSilentAutoUpdate=false"
-crudini --set "$ZOOM_CONFIG" General EnableSilentAutoUpdate false
-
-# Zoom Apps - Disable third-party apps integration
-echo "Setting DisableZoomApps=true"
-crudini --set "$ZOOM_CONFIG" General DisableZoomApps true
-
-# Performance - Disable CEF (Chromium Embedded Framework)
+# Disable CEF (Chromium Embedded Framework)
 # Note: Saves RAM but disables features like whiteboard
 echo "Setting disableCef=true"
 crudini --set "$ZOOM_CONFIG" General disableCef true
 
-# Wayland support (detect if running Wayland)
+# =============================================================================
+# WAYLAND SUPPORT
+# =============================================================================
+
+# Auto-detect and configure Wayland screen sharing
 if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
     echo "Wayland detected - enabling Wayland screen share"
     crudini --set "$ZOOM_CONFIG" General enableWaylandShare true
