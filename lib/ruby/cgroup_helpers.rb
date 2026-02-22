@@ -17,6 +17,13 @@ module CgroupHelpers
     set_cgroup_value(cgroup, "cpu.idle", value)
   end
 
+  # Set I/O priority class for a cgroup
+  # @param cgroup [String] cgroup path
+  # @param prio_class [String] Priority class: "idle", "be" (best-effort), "rt" (real-time), "no-change"
+  def set_io_prio_class(cgroup, prio_class)
+    set_cgroup_value(cgroup, "io.prio.class", prio_class)
+  end
+
   # Set an arbitrary cgroup value
   # @param cgroup_name [String] cgroup path relative to /sys/fs/cgroup
   # @param rel_path [String] file name within the cgroup (e.g., "cpu.max", "io.weight")
