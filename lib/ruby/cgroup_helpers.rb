@@ -112,5 +112,7 @@ module CgroupHelpers
     else
       warn "Missing group? #{path}"
     end
+  rescue SystemCallError => e
+    raise e.class, "Failed to write to cgroup: path=#{path.inspect}, value=#{value.inspect}: #{e.class}: #{e}", e.backtrace
   end
 end
