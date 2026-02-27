@@ -1,0 +1,134 @@
+#!/bin/sh
+
+# Calculate CPU consumption statistics over system uptime
+
+format_seconds() {
+    sec=$1
+    days=$((sec / 86400))
+    hours=$(((sec % 86400) / 3600))
+    mins=$(((sec % 3600) / 60))
+    secs=$((sec % 60))
+
+    if [ $days -gt 0 ]; then
+        printf "%dd %dh %dm" $days $hours $mins
+    elif [ $hours -gt 0 ]; then
+        printf "%dh %dm %ds" $hours $mins $secs
+    else
+        printf "%dm %ds" $mins $secs
+    fi
+}
+
+# Parse /proc/stat
+read -r _ user nice system idle iowait irq softirq _ < /proc/stat
+busy=$((user + nice + system + iowait + irq + softirq))
+total=$((busy + idle))
+
+# Uptime
+uptime_sec=$(cut -d. -f1 < /proc/uptime)
+
+# CPU cores
+cores=$(grep -c ^processor /proc/cpuinfo)
+
+# Jiffies to seconds (100 Hz)
+busy_sec=$((busy / 100))
+idle_sec=$((idle / 100))
+total_capacity=$((uptime_sec * cores))
+
+# Calculate utilization percentage (integer math with 1 decimal)
+util_pct=$((busy_sec * 1000 / total_capacity))
+util_int=$((util_pct / 10))
+util_dec=$((util_pct % 10))
+
+echo "=== System Overview ==="
+printf "Uptime:     %s (%ds)\n" "$(format_seconds $uptime_sec)" "$uptime_sec"
+printf "CPU cores:  %d\n" "$cores"
+printf "Capacity:   %s (%d core-seconds)\n" "$(format_seconds $total_capacity)" "$total_capacity"
+echo
+
+echo "=== Total CPU Consumption (all processes, including dead) ==="
+printf "Busy time:  %s (%ds)\n" "$(format_seconds $busy_sec)" "$busy_sec"
+printf "Idle time:  %s\n" "$(format_seconds $idle_sec)"
+printf "Utilization: %d.%d%% of capacity\n" "$util_int" "$util_dec"
+echo
+
+echo "=== Long-Running Services (>= 90% of system uptime) ==="
+
+min_uptime=$((uptime_sec * 90 / 100))
+tmpfile=$(mktemp)
+trap 'rm -f "$tmpfile"' EXIT
+
+for cgroup_dir in /sys/fs/cgroup/system.slice/*.service; do
+    [ -d "$cgroup_dir" ] || continue
+
+    stat_file="${cgroup_dir}/cpu.stat"
+    procs_file="${cgroup_dir}/cgroup.procs"
+    [ -f "$stat_file" ] || continue
+    [ -f "$procs_file" ] || continue
+
+    # Get oldest process uptime
+    oldest_start=0
+    while read -r pid; do
+        proc_stat="/proc/${pid}/stat"
+        [ -f "$proc_stat" ] || continue
+        starttime=$(awk '{print $22}' "$proc_stat")
+        if [ "$oldest_start" -eq 0 ] || [ "$starttime" -lt "$oldest_start" ]; then
+            oldest_start=$starttime
+        fi
+    done < "$procs_file"
+
+    [ "$oldest_start" -gt 0 ] || continue
+
+    start_sec=$((oldest_start / 100))
+    proc_uptime=$((uptime_sec - start_sec))
+
+    # Skip if process uptime < 90% of system uptime
+    [ "$proc_uptime" -ge "$min_uptime" ] || continue
+
+    service=$(basename "$cgroup_dir")
+
+    usage_usec=$(awk '/^usage_usec/ {print $2}' "$stat_file")
+    user_usec=$(awk '/^user_usec/ {print $2}' "$stat_file")
+    system_usec=$(awk '/^system_usec/ {print $2}' "$stat_file")
+
+    usage_sec=$((usage_usec / 1000000))
+    user_sec=$((user_usec / 1000000))
+    sys_sec=$((system_usec / 1000000))
+
+    # Calculate % of work
+    if [ $busy_sec -gt 0 ]; then
+        pct_work=$((usage_sec * 1000 / busy_sec))
+    else
+        pct_work=0
+    fi
+
+    # Skip if rounds to 0.0%
+    [ "$pct_work" -gt 0 ] || continue
+
+    # Store: usage_sec|service|proc_uptime|user_sec|sys_sec
+    printf "%d|%s|%d|%d|%d\n" "$usage_sec" "$service" "$proc_uptime" "$user_sec" "$sys_sec" >> "$tmpfile"
+done
+
+# Sort by usage_sec descending and output
+sort -t'|' -k1 -rn "$tmpfile" | while IFS='|' read -r usage_sec service proc_uptime user_sec sys_sec; do
+    if [ $busy_sec -gt 0 ]; then
+        pct_work=$((usage_sec * 1000 / busy_sec))
+    else
+        pct_work=0
+    fi
+    pct_work_int=$((pct_work / 10))
+    pct_work_dec=$((pct_work % 10))
+
+    pct_cap=$((usage_sec * 10000 / total_capacity))
+    pct_cap_int=$((pct_cap / 100))
+    pct_cap_dec=$((pct_cap % 100))
+
+    echo
+    echo "${service}:"
+    printf "  Process uptime: %s\n" "$(format_seconds $proc_uptime)"
+    printf "  CPU time:    %s (user: %s, sys: %s)\n" \
+        "$(format_seconds $usage_sec)" \
+        "$(format_seconds $user_sec)" \
+        "$(format_seconds $sys_sec)"
+    printf "  %% of work:   %d.%d%% of all CPU work\n" "$pct_work_int" "$pct_work_dec"
+    printf "  %% of capacity: %d.%02d%%\n" "$pct_cap_int" "$pct_cap_dec"
+done
