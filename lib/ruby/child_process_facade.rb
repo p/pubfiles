@@ -24,6 +24,9 @@ module ChildProcessFacade
         Process::GID.change_privilege(user_info.gid)
         Process::UID.change_privilege(user_info.uid)
         Dir.chdir(user_info.dir)
+        ENV['HOME'] = user_info.dir
+        ENV['USER'] = user
+        ENV['LOGNAME'] = user
         env&.each { |k, v| ENV[k.to_s] = v }
         exec(*cmd)
       end
