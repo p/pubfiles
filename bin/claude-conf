@@ -73,7 +73,7 @@ if needs_modification
       end
       auth_data = YAML.load(yaml_content)
     rescue Errno::ENOENT => e
-      $stderr.puts "Error: #{e.message}"
+      $stderr.puts "Error: #{e.class}: #{e}"
       exit 1
     rescue Psych::SyntaxError => e
       $stderr.puts "Error parsing YAML: #{e.class}: #{e}"
