@@ -18,11 +18,14 @@ module ChildProcessFacade
     if user
       puts "[CPF] Starting as #{user}: #{cmd.join(' ')}"
       user_info = Etc.getpwnam(user)
-      spawn_opts = { uid: user_info.uid, gid: user_info.gid }
-      pid = if env
-        Process.spawn(env.transform_keys(&:to_s), *cmd, spawn_opts)
-      else
-        Process.spawn(*cmd, spawn_opts)
+      pid = fork do
+        # Set supplementary groups, then gid, then uid
+        Process.initgroups(user, user_info.gid)
+        Process::GID.change_privilege(user_info.gid)
+        Process::UID.change_privilege(user_info.uid)
+        Dir.chdir(user_info.dir)
+        env&.each { |k, v| ENV[k.to_s] = v }
+        exec(*cmd)
       end
       _, status = Process.wait2(pid)
       Result.new(status.exitstatus)
