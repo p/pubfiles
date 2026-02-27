@@ -1,14 +1,35 @@
 #gem 'childprocess'
 autoload :ChildProcess, 'childprocess'
 autoload :Tempfile, 'tempfile'
+autoload :Etc, 'etc'
 
 module ChildProcessFacade
   class CalledProcessError < StandardError
   end
 
-  module_function def uncheck_call(cmd, env: nil, stdin_data: nil)
-    start_process(cmd, env: env, stdin_data: stdin_data).tap do |process|
-      process.wait
+  # Uniform result for both spawn paths
+  Result = Struct.new(:exit_code) do
+    def success?
+      exit_code == 0
+    end
+  end
+
+  module_function def uncheck_call(cmd, env: nil, stdin_data: nil, user: nil)
+    if user
+      puts "[CPF] Starting as #{user}: #{cmd.join(' ')}"
+      user_info = Etc.getpwnam(user)
+      spawn_opts = { uid: user_info.uid, gid: user_info.gid }
+      pid = if env
+        Process.spawn(env.transform_keys(&:to_s), *cmd, spawn_opts)
+      else
+        Process.spawn(*cmd, spawn_opts)
+      end
+      _, status = Process.wait2(pid)
+      Result.new(status.exitstatus)
+    else
+      start_process(cmd, env: env, stdin_data: stdin_data).tap do |process|
+        process.wait
+      end
     end
   end
 
@@ -22,9 +43,9 @@ module ChildProcessFacade
     p process.wait
   end
 
-  module_function def check_call(cmd, env: nil, stdin_data: nil)
-    process = uncheck_call(cmd, env: env, stdin_data: stdin_data)
-    check_exit_code(process, cmd)
+  module_function def check_call(cmd, env: nil, stdin_data: nil, user: nil)
+    result = uncheck_call(cmd, env: env, stdin_data: stdin_data, user: user)
+    check_exit_code(result, cmd)
   end
 
   module_function def check_output(cmd, env: nil)
