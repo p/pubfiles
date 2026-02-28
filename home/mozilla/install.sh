@@ -66,7 +66,7 @@ fi
 
 as_browser() {
   if $USE_SUDO; then
-    sudo -Hiu $(id -nu "$target_owner") "$@"
+    sudo -nHiu $(id -nu "$target_owner") "$@"
   else
     "$@"
   fi
