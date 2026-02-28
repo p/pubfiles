@@ -51,6 +51,6 @@ pids.each do |pid, info|
   info[:time_used] = (info[:end_ticks] - info[:start_ticks]).to_f / ticks_per_sec
   if info[:time_used] >= 5 * 0.9
     puts "Killing #{pid}"
-    system("sudo -u #{info[:user]} kill -9 #{pid}")
+    system("sudo -nu #{info[:user]} kill -9 #{pid}")
   end
 end

@@ -16,14 +16,14 @@ if id tw >/dev/null 2>&1; then
   usermod -s /bin/zsh tw
 else
   useradd -m -s /bin/zsh -u 3003 tw
-  echo 'export XAUTHORITY=$HOME/.Xauthority' |sudo -u tw tee /home/tw/.zshrc
+  echo 'export XAUTHORITY=$HOME/.Xauthority' |sudo -nu tw tee /home/tw/.zshrc
 fi
 
 xauthority_path=/home/tw/.Xauthority
 
 if id w; then
   echo 'w ALL = (tw) NOPASSWD: ALL' >/etc/sudoers.d/w-tw
-  sudo -u w xauth list | sed -e 's/^/add /' | sudo -u tw env HOME=/home/tw XAUTHORITY=$xauthority_path xauth
+  sudo -nu w xauth list | sed -e 's/^/add /' | sudo -nu tw env HOME=/home/tw XAUTHORITY=$xauthority_path xauth
 fi
 
 usermod -G tw w

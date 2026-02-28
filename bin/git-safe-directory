@@ -16,7 +16,7 @@
 set -e
 
 if test `id -u` = 0 && test `stat -c %u .` != 0; then
-  sudo -u "`stat -c %U .`" git "$@"
+  sudo -nu "`stat -c %U .`" git "$@"
 else
   git "$@"
 fi
