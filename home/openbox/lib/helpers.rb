@@ -54,7 +54,7 @@ module Helpers
   end
 
   def x_sudo(user)
-    "sudo -u #{user} env XAUTHORITY=/home/#{user}/.Xauthority"
+    "sudo -nu #{user} env XAUTHORITY=/home/#{user}/.Xauthority"
   end
 
   def x_firefox_path
