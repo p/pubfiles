@@ -77,6 +77,11 @@ module FsHelpers
 
   CHUNK_SIZE = 65536
 
+  # ioctl constants for ext2/ext3/ext4 filesystems
+  FS_IOC_GETFLAGS = 0x80086601
+  FS_IOC_SETFLAGS = 0x40086602
+  FS_IMMUTABLE_FL = 0x00000010
+
   module_function def files_same_contents?(a_path, b_path)
     File.open(a_path, 'rb') do |fa|
       File.open(b_path, 'rb') do |fb|
@@ -107,11 +112,6 @@ module FsHelpers
 
   # Clear immutable flag on a file (Linux ext2/ext3/ext4 filesystems)
   module_function def clear_immutable(path)
-    # ioctl constants for ext2/ext3/ext4 filesystems
-    FS_IOC_GETFLAGS = 0x80086601
-    FS_IOC_SETFLAGS = 0x40086602
-    FS_IMMUTABLE_FL = 0x00000010
-
     File.open(path, 'r') do |f|
       flags = [0].pack('L')
       f.ioctl(FS_IOC_GETFLAGS, flags)
