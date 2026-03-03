@@ -104,4 +104,26 @@ module FsHelpers
     end
     total
   end
+
+  # Clear immutable flag on a file (Linux ext2/ext3/ext4 filesystems)
+  module_function def clear_immutable(path)
+    # ioctl constants for ext2/ext3/ext4 filesystems
+    FS_IOC_GETFLAGS = 0x80086601
+    FS_IOC_SETFLAGS = 0x40086602
+    FS_IMMUTABLE_FL = 0x00000010
+
+    File.open(path, 'r') do |f|
+      flags = [0].pack('L')
+      f.ioctl(FS_IOC_GETFLAGS, flags)
+      current_flags = flags.unpack1('L')
+
+      # Clear immutable bit if set
+      if (current_flags & FS_IMMUTABLE_FL) != 0
+        new_flags = [current_flags & ~FS_IMMUTABLE_FL].pack('L')
+        f.ioctl(FS_IOC_SETFLAGS, new_flags)
+      end
+    end
+  rescue Errno::ENOTTY, Errno::EOPNOTSUPP
+    # Not a filesystem that supports immutable flag, ignore
+  end
 end
