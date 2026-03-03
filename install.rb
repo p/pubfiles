@@ -171,6 +171,7 @@ class Installer
   end
 
   def install_dir_individually(src, dest)
+    src = maybe_expand_src(src)
     src = src.sub(%r,/+\z,, '')
     Find.find(src) do |src_path|
       next if File.directory?(src_path)
