@@ -14,7 +14,7 @@ fi
 
 # Get the origin remote URL
 if ! origin_url=$(git remote get-url origin 2>/dev/null); then
-    echo "Error: No 'origin' remote found"
+    echo "Error: No 'origin' remote found" >&2
     exit 1
 fi
 
@@ -38,6 +38,6 @@ if [[ $origin_url =~ ^https?://([^/]+)/(.+)$ ]]; then
     git remote add u "$new_url"
     echo "Remote 'u' added successfully"
 else
-    echo "Error: Origin URL is not in HTTPS format: $origin_url"
+    echo "Error: Origin URL is not in HTTPS format: $origin_url" >&2
     exit 1
 fi
