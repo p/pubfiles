@@ -57,10 +57,10 @@ module FormatHelpers
   end
 
   TIME_UNITS = [
-    ['seconds', 60],
-    ['minutes', 60],
-    ['hours', 24],
-    ['days', 1_000_000],
+    ['seconds', 60, 90],
+    ['minutes', 60, 90],
+    ['hours', 24, 36],
+    ['days', 1, 1_000_000],
   ]
 
   SHORT_TIME_UNITS = [
