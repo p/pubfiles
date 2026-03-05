@@ -7,8 +7,13 @@
 set -e
 
 allow_all=false
+readonly=false
 if test "$1" = -a; then
   allow_all=true
+  shift
+fi
+if test "$1" = -r; then
+  readonly=true
   shift
 fi
 
@@ -35,6 +40,9 @@ fi
 opts=
 if $allow_all; then
   opts="$opts -o allow_other,default_permissions"
+fi
+if $readonly; then
+  opts="$opts -o ro"
 fi
 
 mkdir -p "$dest"
